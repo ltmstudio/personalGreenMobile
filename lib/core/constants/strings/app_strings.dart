@@ -19,6 +19,35 @@ class AppStrings {
   static const String repeat = 'Повторить';
 
   static const String applications = 'Заявки';
+  static const String applicationData = 'Данные заявки';
+  static const String createApplication = 'Создание заявки';
+  static const String filter = 'Фильтры';
+  static const String period = 'Период';
+  static const String primenit = 'Применить';
+  static const String selectDate = 'Выберите дату';
+  static const String address = 'Адрес';
+  static const String selectAddress = 'Выберите адрес';
+  static const String service = 'Услуга';
+  static const String selectService = 'Выберите услугу';
+  static const String workType = 'Проблема/вид работ';
+  static const String selectWorkType = 'Выберите проблему/вид работ';
+  static const String categoryType = 'Категория срочности';
+  static const String selectCategoryType = 'Выберите категорию';
+  static const String doUntil = 'Выполнить до';
+  static const String performer = 'Исполнитель';
+  static const String selectPerformer = 'Выберите исполнителя';
+  static const String contactPerson = 'Контактное лицо';
+  static const String selectContactPerson = 'Выберите контактное лицо';
+  static const String phoneContactPerson = 'Номер телефона контактного лица';
+  static const String additionalPhoneContactPerson = 'Доп. номер телефона контактного лица';
+  static const String comments = 'Комментарий';
+  static const String addComments = 'Введите комментарий';
+
+
+  static const String photoObject = 'Фото объекта';
+  static const String upload10Photo = 'Загрузите до 10 фотографий';
+  static const String createNewApplication = 'Создать заявку';
+  static const String selectTime = 'Выберите время';
 
 
 
@@ -55,7 +84,6 @@ class AppStrings {
   static const String newPassword = 'Новый пароль';
   static const String confirmPassword = 'Подтвердите пароль';
 
-  static const String comments = 'Комментарии';
   static const String history = 'История';
   static const String allInfo = 'Общая инфмормация';
   static const String client = 'Заказчик';
@@ -81,7 +109,6 @@ class AppStrings {
   static const String addOrder = 'Добавить заказ';
   static const String start = 'Начало';
   static const String create = 'Создать';
-  static const String filter = 'Фильтр';
   static const String more = 'Больше';
   static const String less = 'Меньше';
   static const String stage = 'Стадия';
@@ -92,7 +119,7 @@ class AppStrings {
   static const String reject = 'Отклонить';
   static const String moreDetails = 'Подробнее';
   static const String search = 'Поиск';
-  static const String selectDate = 'Выбрать период';
+  static const String selectDateRange = 'Выбрать период';
   static const String contactInfo = 'Контактная информация';
   static const String general = 'Общее';
   static const String company = 'Компания';

@@ -5,12 +5,14 @@ import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/config/routes/scaffold_with_nested_nav.dart';
 import 'package:hub_dom/core/config/routes/widget_keys_str.dart';
 import 'package:hub_dom/src/presentation/pages/aplications/application_page.dart';
+import 'package:hub_dom/src/presentation/pages/aplications/application_status_page.dart';
+import 'package:hub_dom/src/presentation/pages/aplications/create_aplication_page.dart';
 import 'package:hub_dom/src/presentation/pages/auth/sign_in_page.dart';
 import 'package:hub_dom/src/presentation/pages/auth/verification_page.dart';
 import 'package:hub_dom/src/presentation/pages/splash/splash_screen.dart';
 
 final goRouter = GoRouter(
-  initialLocation: AppRoutes.applications,
+  initialLocation: AppRoutes.applicationStatus,
   navigatorKey: rootNavKey,
   routes: [
     StatefulShellRoute.indexedStack(
@@ -73,6 +75,18 @@ final goRouter = GoRouter(
       path: AppRoutes.verification,
       builder: (context, state) {
         return VerificationPage(phoneNumber: '7(473)3004001',);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.createApplication,
+      builder: (context, state) {
+        return CreateApplicationPage();
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.applicationStatus,
+      builder: (context, state) {
+        return ApplicationStatusPage();
       },
     ),
     // GoRoute(

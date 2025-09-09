@@ -13,10 +13,10 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.bgColor,
        fontFamily: TextFonts.mulish,
       appBarTheme: AppBarTheme(
+        foregroundColor: AppColors.bgColor,
         backgroundColor: AppColors.bgColor,
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
-        shadowColor: Colors.white,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
           fontFamily: TextFonts.mulish,
@@ -32,8 +32,6 @@ class AppTheme {
           color: AppColors.darkBlue,
         ),
         titleMedium: TextStyle(
-          //Последние заказы
-          //  color: AppColors.accent,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
@@ -44,7 +42,6 @@ class AppTheme {
           fontWeight: FontWeight.w400,
         ),
         bodyLarge: TextStyle(
-          //   color: AppColors.darkBlue,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),

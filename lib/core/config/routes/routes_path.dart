@@ -2,7 +2,9 @@ abstract final class AppRoutes {
   static const String splash = '/splash';
   static const String home = '/home';
   static const String applications = '/applications';
+  static const String applicationStatus = '/applicationStatus';
   static const String chat = '/chat';
+  static const String createApplication = '/createApplication';
 
 
 

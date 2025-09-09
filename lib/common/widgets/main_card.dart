@@ -17,10 +17,13 @@ class MainCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      padding: padding ?? EdgeInsets.all(12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         color: color ?? AppColors.white,
+        boxShadow: [
+          BoxShadow(color: AppColors.shadowColor, blurRadius: 40),
+        ],
       ),
       child: child,
     );

@@ -14,4 +14,6 @@ class IconAssets {
   static const String error = '$iconPath/error.svg';
   static const String scanner = '$iconPath/scanner.svg';
   static const String filter = '$iconPath/filter.svg';
+  static const String success = '$iconPath/success.svg';
+  static const String search = '$iconPath/search.svg';
 }
