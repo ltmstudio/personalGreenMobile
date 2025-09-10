@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'api_provider.dart';
-import 'dio_interceptor.dart';
 
 class ApiProviderImpl implements ApiProvider {
   final Dio dio;

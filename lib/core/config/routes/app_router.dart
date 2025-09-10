@@ -1,18 +1,20 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/config/routes/scaffold_with_nested_nav.dart';
 import 'package:hub_dom/core/config/routes/widget_keys_str.dart';
-import 'package:hub_dom/src/presentation/pages/aplications/application_page.dart';
-import 'package:hub_dom/src/presentation/pages/aplications/application_status_page.dart';
-import 'package:hub_dom/src/presentation/pages/aplications/create_aplication_page.dart';
-import 'package:hub_dom/src/presentation/pages/auth/sign_in_page.dart';
-import 'package:hub_dom/src/presentation/pages/auth/verification_page.dart';
-import 'package:hub_dom/src/presentation/pages/splash/splash_screen.dart';
+import 'package:hub_dom/presentation/pages/address_details/address_details_page.dart';
+import 'package:hub_dom/presentation/pages/aplications/application_page.dart';
+import 'package:hub_dom/presentation/pages/aplications/create_aplication_page.dart';
+import 'package:hub_dom/presentation/pages/app_category/app_category_page.dart';
+import 'package:hub_dom/presentation/pages/application_details/application_details_page.dart';
+import 'package:hub_dom/presentation/pages/auth/sign_in_page.dart';
+import 'package:hub_dom/presentation/pages/auth/verification_page.dart';
+import 'package:hub_dom/presentation/pages/performer_details/performer_details_page.dart';
+import 'package:hub_dom/presentation/pages/splash/splash_screen.dart';
 
 final goRouter = GoRouter(
-  initialLocation: AppRoutes.applicationStatus,
+  initialLocation: AppRoutes.applications,
   navigatorKey: rootNavKey,
   routes: [
     StatefulShellRoute.indexedStack(
@@ -74,7 +76,7 @@ final goRouter = GoRouter(
     GoRoute(
       path: AppRoutes.verification,
       builder: (context, state) {
-        return VerificationPage(phoneNumber: '7(473)3004001',);
+        return VerificationPage(phoneNumber: '7(473)3004001');
       },
     ),
     GoRoute(
@@ -84,29 +86,37 @@ final goRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: AppRoutes.applicationStatus,
+      path: '${AppRoutes.appCategory}/:title',
+
       builder: (context, state) {
-        return ApplicationStatusPage();
+        final title = state.pathParameters['title'] ?? '';
+
+        return AppCategoryPage(title:title);
       },
     ),
-    // GoRoute(
-    //   path: AppRoutes.changePassword,
-    //   builder: (context, state) {
-    //     return ChangePasswordPage();
-    //   },
-    // ),
-    // GoRoute(
-    //   path: AppRoutes.newPassword,
-    //   builder: (context, state) {
-    //     return NewPasswordPage();
-    //   },
-    // ),
-    // GoRoute(
-    //   path: AppRoutes.confirmPassword,
-    //   builder: (context, state) {
-    //     return ConfirmPasswordPage();
-    //   },
-    // ),
+    GoRoute(
+      path: '${AppRoutes.performerDetails}/:title',
 
+      builder: (context, state) {
+        final title = state.pathParameters['title'] ?? '';
+
+        return PerformerDetailsPage(title:title);
+      },
+    ),
+    GoRoute(
+      path: '${AppRoutes.addressDetails}/:title',
+
+      builder: (context, state) {
+        final title = state.pathParameters['title'] ?? '';
+
+        return AddressDetailsPage(title:title);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.applicationDetails,
+      builder: (context, state) {
+        return ApplicationDetailsPage();
+      },
+    ),
   ],
 );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'common/widgets/scroll_behavior.dart';
+import 'presentation/widgets/scroll_behavior.dart';
 import 'core/config/routes/app_router.dart';
 import 'core/config/theme/app_theme.dart';
 import 'core/constants/strings/app_strings.dart';
