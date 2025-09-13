@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hub_dom/presentation/pages/applications/main_applications/components/services_widget.dart';
+import 'package:hub_dom/presentation/pages/applications/main_applications/components/urgency_category_widget.dart';
+import 'package:hub_dom/presentation/pages/applications/main_applications/components/work_type_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
-import 'package:hub_dom/presentation/pages/aplications/components/services_widget.dart';
-import 'package:hub_dom/presentation/pages/aplications/components/urgency_category_widget.dart';
-import 'package:hub_dom/presentation/pages/aplications/components/work_type_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
 import 'package:hub_dom/presentation/widgets/date_widgets/date_range_widget.dart';
@@ -28,14 +28,13 @@ class _FilterPerformerWidgetState extends State<FilterPerformerWidget> {
     super.initState();
     clear();
   }
-  clear(){
+
+  clear() {
     selectedService = null;
     selectedWorkType = null;
     selectedUrgency = null;
     selectedDate = null;
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
@@ -156,6 +155,7 @@ class _FilterPerformerWidgetState extends State<FilterPerformerWidget> {
             selectedService = value;
           });
         },
+        isSelected: true,
       ),
     );
   }
@@ -170,6 +170,7 @@ class _FilterPerformerWidgetState extends State<FilterPerformerWidget> {
             selectedWorkType = value;
           });
         },
+        isSelected: true,
       ),
     );
   }
@@ -184,8 +185,8 @@ class _FilterPerformerWidgetState extends State<FilterPerformerWidget> {
             selectedUrgency = value;
           });
         },
+        isSelected: true,
       ),
     );
   }
-
 }

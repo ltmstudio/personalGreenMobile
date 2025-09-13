@@ -14,7 +14,7 @@ class OtpTimerBloc extends Bloc<OtpTimerEvent, OtpTimerState> {
 
   OtpTimerBloc({required TimeTicker ticker})
       : _ticker = ticker,
-        super(const OtpTimerInitial(minutes: 2, seconds: 0)) {
+        super(const OtpTimerInitial(minutes: 1, seconds: 0)) {
     on<OtpTimerStartedEvent>(_onStarted);
     on<OtpTimerTickedEvent>(_onTicked);
     on<OtpTimerStopEvent>(_onReset);
@@ -50,6 +50,6 @@ class OtpTimerBloc extends Bloc<OtpTimerEvent, OtpTimerState> {
 
   void _onReset(OtpTimerStopEvent event, Emitter<OtpTimerState> emit) {
     _tickerSubscription?.cancel();
-    emit(const OtpTimerInitial(minutes: 2, seconds: 0));
+    emit(const OtpTimerInitial(minutes: 1, seconds: 0));
   }
 }

@@ -12,6 +12,7 @@ class MainButton extends StatelessWidget {
     this.hasIcon,
     this.btnColor,
     this.elevation,
+    this.titleColor,
     required this.isLoading,
   });
 
@@ -23,6 +24,8 @@ class MainButton extends StatelessWidget {
   final Color? btnColor;
   final double? elevation;
   final bool isLoading;
+  final Color? titleColor;
+
 
   final void Function()? onPressed;
 
@@ -67,7 +70,7 @@ class MainButton extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.white,
+                      color: titleColor ?? AppColors.white,
                     ),
                   ),
                   const SizedBox(width: 6),

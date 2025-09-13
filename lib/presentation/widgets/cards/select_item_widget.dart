@@ -6,18 +6,22 @@ class SelectItemWidget extends StatelessWidget {
     required this.index,
     required this.services,
     required this.onSelectItem,
+    required this.isSelected,
   });
 
   final int index;
   final List<String> services;
   final ValueChanged<String> onSelectItem;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
         onSelectItem(services[index]);
-        Navigator.of(context).pop();
+        if (isSelected) {
+          Navigator.of(context).pop();
+        }
       },
       borderRadius: BorderRadius.circular(6),
       child: Padding(

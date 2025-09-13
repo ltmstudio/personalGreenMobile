@@ -19,4 +19,8 @@ class IconAssets {
   static const String search = '$iconPath/search.svg';
   static const String emptySearch = '$iconPath/emptySearch.svg';
   static const String call = '$iconPath/call.svg';
+  static const String house = '$iconPath/house.svg';
+  static const String torch = '$iconPath/torch.svg';
+  static const String logout = '$iconPath/logout.svg';
+  static const String location = '$iconPath/location.svg';
 }

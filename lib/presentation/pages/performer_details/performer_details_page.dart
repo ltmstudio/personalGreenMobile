@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
-import 'package:hub_dom/presentation/widgets/cards/status_item_card.dart';
+import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 
@@ -23,6 +25,9 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
   final TextEditingController searchCtrl = TextEditingController();
 
   final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', 'Контроль'];
+  int selectedCategory = 0;
+
+
 
   @override
   void dispose() {
@@ -54,7 +59,10 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                 ),
               ]
             : [
-                AppBarIcon(icon: IconAssets.scanner, onTap: () {}),
+                AppBarIcon(icon: IconAssets.scanner, onTap: () {
+                  context.push(AppRoutes.scanner);
+
+                }),
                 AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
                 Padding(
                   padding: const EdgeInsets.only(right: 15.0),
@@ -73,7 +81,9 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
         padding: const EdgeInsets.fromLTRB(0, 0, 5, 8),
         child: FloatingActionButton(
           backgroundColor: AppColors.green,
-          onPressed: () {},
+          onPressed: () {
+            context.push(AppRoutes.createApplication);
+          },
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
@@ -92,7 +102,12 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                 itemBuilder: (context, index) {
                   return ChipWidget(
                     title: statuses[index],
-                    isSelected: index == 0,
+                    isSelected: index == selectedCategory,
+                    onTap: (){
+                      setState(() {
+                        selectedCategory = index;
+                      });
+                    },
                   );
                 },
                 separatorBuilder: (context, index) => SizedBox(width: 5),
@@ -119,11 +134,11 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Align(
               alignment: Alignment.center,
@@ -131,27 +146,27 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
 
             Align(
@@ -160,11 +175,11 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
           ],
         ),

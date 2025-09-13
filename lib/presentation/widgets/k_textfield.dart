@@ -25,6 +25,7 @@ class KTextField extends StatefulWidget {
   final bool? isDense;
   final bool? autofocus;
   final bool? obscureText;
+  final bool? filled;
 
   const KTextField({
     super.key,
@@ -50,6 +51,7 @@ class KTextField extends StatefulWidget {
     this.isDense,
     this.autofocus,
     this.obscureText,
+    this.filled,
   });
 
   @override
@@ -142,8 +144,8 @@ class _KTextFieldState extends State<KTextField> {
         labelText: widget.labelText,
         labelStyle: widget.labelStyle,
         alignLabelWithHint: true,
-        // fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-        filled: false,
+         fillColor: widget.filled != null ? AppColors.white : null, //Theme.of(context).inputDecorationTheme.fillColor,
+        filled: widget.filled ?? false,
         counterText: '',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusColor: widget.borderColor ?? AppColors.primary,
@@ -174,6 +176,8 @@ class PhoneNumField extends StatelessWidget {
   final String? label;
   final bool showContactPicker;
   final Function(String)? onChange;
+  final bool? filled;
+  final Color? borderColor;
 
   const PhoneNumField({
     super.key,
@@ -182,7 +186,7 @@ class PhoneNumField extends StatelessWidget {
     this.hint,
     this.label,
     this.showContactPicker = true,
-    this.onChange,
+    this.onChange, this.filled, this.borderColor,
   });
 
   @override
@@ -191,20 +195,22 @@ class PhoneNumField extends StatelessWidget {
       controller: phoneCtrl,
       isSubmitted: isSubmitted,
       keyboardType: TextInputType.number,
-      prefixText: '+7| ',
+      prefixText: '+7 ',
       maxLength: 10,
       hintText: hint,
       labelText: label ?? '',
       onChange: onChange,
+      filled: filled,
+      borderColor: borderColor,
       validator: (val) {
         if (val == null || val.isEmpty) {
-          return 'to fill'; //AppLocalizations.of(context)!.requiredToFill;
-        } else if (val.length < 8) {
-          return 'phoneNumberIncorrect'; //AppLocalizations.of(context)!.phoneNumberIncorrect;
+          return 'Требуется номер телефона';
+        } else if (val.length < 10) {
+          return 'Номер телефона должен состоять из 10 цифр.';
         }
         num? v = num.tryParse(val);
         if (v == null) {
-          return 'phoneNumberIncorrect'; //AppLocalizations.of(context)!.phoneNumberIncorrect;
+          return 'Требуется номер телефона';
         }
         return null;
       },

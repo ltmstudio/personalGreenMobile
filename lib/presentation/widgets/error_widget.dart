@@ -4,8 +4,9 @@ import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 
-class ErrorWidget extends StatelessWidget {
-  const ErrorWidget({super.key});
+class KErrorWidget extends StatelessWidget {
+  const KErrorWidget({super.key, required this.onTap});
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class ErrorWidget extends StatelessWidget {
 
         InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () {},
+          onTap: onTap,
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 7,horizontal: 40),
             decoration: BoxDecoration(color: Color(0xffE2E5E9),

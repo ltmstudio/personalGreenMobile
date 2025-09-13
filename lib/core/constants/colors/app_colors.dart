@@ -9,6 +9,7 @@ abstract class AppColors {
   static const Color whiteG = Color(0xffECEEEF);
   static const Color lightGray = Color(0xffC1C9D7);
   static const Color lightGrayBorder = Color(0xffE0E4EB);
+  static const Color closeBtnGray = Color(0xffE6E7EA);
   static const Color red = Colors.red;
 
 
@@ -18,6 +19,7 @@ abstract class AppColors {
   static const Color lightGreen = Color(0xff93CD64);
   static const Color lightRed = Color(0xffEB7B36);
   static const Color lightBlue = Color(0xff87CFF8);
+  static const Color selectedBlue = Color(0xffC4E7FB);
   static const Color green = Color(0xff3DAE3B);
   static const Color shadowColor =Color.fromRGBO(94, 92, 154, 0.06);
 

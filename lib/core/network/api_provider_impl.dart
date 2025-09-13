@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'api_provider.dart';
+import 'dio_interceptor.dart';
 
 class ApiProviderImpl implements ApiProvider {
   final Dio dio;
@@ -16,7 +17,7 @@ class ApiProviderImpl implements ApiProvider {
       ),
     );
     // Only the interceptor sets the Authorization header
-  //  dio.interceptors.add(TokenInterceptor(dio));
+   dio.interceptors.add(TokenInterceptor(dio));
     return dio;
   }
 

@@ -8,13 +8,14 @@ class HomePageSearchWidget extends StatefulWidget {
   final Function onSearch;
   final Function? onClear;
   final String? hint;
+  final bool? filled;
 
   const HomePageSearchWidget({
     super.key,
     required this.searchCtrl,
     required this.onSearch,
     this.hint,
-    this.onClear,
+    this.onClear, this.filled,
   });
 
   @override
@@ -75,8 +76,8 @@ class _HomePageSearchWidgetState extends State<HomePageSearchWidget> {
             .copyWith(color:AppColors.gray),
         contentPadding:
         const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-        fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-        filled: false,
+        fillColor: AppColors.white,
+        filled: widget.filled ?? false,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.lightGrayBorder),

@@ -37,7 +37,7 @@ class AppStrings {
   static const String performer = 'Исполнитель';
   static const String selectPerformer = 'Выберите исполнителя';
   static const String contactPerson = 'Контактное лицо';
-  static const String selectContactPerson = 'Выберите контактное лицо';
+  static const String selectContactPerson = 'Введите контактное лицо';
   static const String phoneContactPerson = 'Номер телефона контактного лица';
   static const String additionalPhoneContactPerson = 'Доп. номер телефона контактного лица';
   static const String comments = 'Комментарий';
@@ -188,9 +188,9 @@ class AppStrings {
   static const String efficiency = 'Эффективность';
   static const String lastActivity = 'Последнее действие';
   static const String all = 'Все';
-  static const String confirmExit = 'Подтвердите выход';
+  static const String confirmExit = 'Выйти из профиля';
   static const String confirmDelete = 'Подтвердите удаление';
-  static const String confirmLogout = 'Вы уверены, что хотите выйти?';
+  static const String confirmLogout = 'Вы действительно хотите выйти из профиля?';
   static const String confirmedDelete = 'Вы уверены, что хотите удалить?';
   static const String cancel = 'Отмена';
   static const String logout = 'Выйти';

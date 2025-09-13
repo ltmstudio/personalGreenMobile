@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:hub_dom/presentation/pages/performer_details/components/filter_performer_widget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
-import 'package:hub_dom/presentation/widgets/cards/status_item_card.dart';
+import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
+
+import 'components/filter_address_widget.dart';
 
 
 class AddressDetailsPage extends StatefulWidget {
@@ -22,7 +25,8 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', 'Контроль'];
+  final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', ];
+  int selectedCategory = 0;
 
   @override
   void dispose() {
@@ -54,7 +58,10 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
           ),
         ]
             : [
-          AppBarIcon(icon: IconAssets.scanner, onTap: () {}),
+          AppBarIcon(icon: IconAssets.scanner, onTap: () {
+            context.push(AppRoutes.scanner);
+
+          }),
           AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
           Padding(
             padding: const EdgeInsets.only(right: 15.0),
@@ -73,7 +80,9 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
         padding: const EdgeInsets.fromLTRB(0, 0, 5, 8),
         child: FloatingActionButton(
           backgroundColor: AppColors.green,
-          onPressed: () {},
+          onPressed: () {
+            context.push(AppRoutes.createApplication);
+          },
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
@@ -92,7 +101,12 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
                 itemBuilder: (context, index) {
                   return ChipWidget(
                     title: statuses[index],
-                    isSelected: index == 0,
+                    isSelected: index == selectedCategory,
+                    onTap: (){
+                      setState(() {
+                        selectedCategory = index;
+                      });
+                    },
                   );
                 },
                 separatorBuilder: (context, index) => SizedBox(width: 5),
@@ -119,11 +133,11 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Align(
               alignment: Alignment.center,
@@ -131,27 +145,27 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
 
             Align(
@@ -160,11 +174,11 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: StatusItemCard(),
+              child: AppItemCard(isManager: true,),
             ),
           ],
         ),
@@ -176,7 +190,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: FilterPerformerWidget(),
+      child: FilterAddressWidget(),
     );
   }
 }
