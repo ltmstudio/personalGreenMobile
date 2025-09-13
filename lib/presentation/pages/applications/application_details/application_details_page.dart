@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/report_page.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
@@ -18,7 +19,7 @@ class ApplicationDetailsPage extends StatefulWidget {
 }
 
 class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
-  final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', 'Контроль'];
+  final statuses = AppStrings.statuses;
   int index = 0;
   String? selectedPerformer;
   String? selectedContact;
@@ -52,7 +53,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Контроль",
+                    AppStrings.control,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   SizedBox(width: 5),
@@ -71,7 +72,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               children: [
                 SelectableBtn(
                   isSelected: index == 0,
-                  title: "Заявка",
+                  title: AppStrings.application,
                   onTap: () {
                     setState(() {
                       index = 0;
@@ -81,7 +82,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 SizedBox(width: 5),
                 SelectableBtn(
                   isSelected: index == 1,
-                  title: "Отчет",
+                  title: AppStrings.report,
                   onTap: () {
                     setState(() {
                       index = 1;

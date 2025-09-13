@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/pages/scanner/widgets/scanner_bg_widget.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -75,8 +76,8 @@ class _MobileScannerCustomState extends State<MobileScannerCustom> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(color: Colors.white),
-        title: const Text(
-        'Назад',
+        title: Text(
+          AppStrings.back,
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
       ),
@@ -109,16 +110,24 @@ class _MobileScannerCustomState extends State<MobileScannerCustom> {
             right: 20,
             child: Column(
               children: [
-                const Text(
-                  "Отсканируйте QR-код",
+                Text(
+                  AppStrings.scan,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 SizedBox(height: 16),
-                const Text(
-                  "Наведите камеру на QR-код на стене для начала осмотра",
+                Text(
+                  AppStrings.scanBody,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/utils/time_format.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/address_widget.dart';
-import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/select_time_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/services_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/urgency_category_widget.dart';
@@ -322,7 +321,7 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
             SizedBox(height: 80),
 
             Text(
-              'Заявка назначена на выбранного исполнителя и ожидает выполнения',
+              AppStrings.createdAppSuccess,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,

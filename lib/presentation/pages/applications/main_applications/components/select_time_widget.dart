@@ -26,11 +26,11 @@ class SelectTimeWidget extends StatelessWidget {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          BottomSheetTitle(title: 'Время визита', onClear: onClear),
+          BottomSheetTitle(title: AppStrings.visitTime, onClear: onClear),
           SizedBox(height: 20),
 
           TextFieldTitle(
-            title: 'Дата визита',
+            title: AppStrings.visitDate,
             child: SelectDateWidget(
               onDateSelected: (v) {
                 onSelectDate(v);
@@ -41,7 +41,7 @@ class SelectTimeWidget extends StatelessWidget {
           SizedBox(height: 16),
 
           TextFieldTitle(
-            title: 'Время визита',
+            title: AppStrings.visitTime,
             child: TimePickerWidget(
               onTimeSelected: (v) {
                 onSelectTime(v);

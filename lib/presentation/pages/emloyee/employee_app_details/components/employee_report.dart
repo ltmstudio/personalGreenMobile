@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
-import 'package:hub_dom/presentation/pages/applications/application_details/application_details_page.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/image_picker_widget.dart';
 import 'package:hub_dom/presentation/widgets/k_textfield.dart';
-import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
-import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
 class EmployeeReportPage extends StatefulWidget {
   const EmployeeReportPage({super.key});
@@ -37,7 +34,7 @@ class _EmployeeReportPageState extends State<EmployeeReportPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Заключение",
+                    AppStrings.conclusion,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -53,7 +50,7 @@ class _EmployeeReportPageState extends State<EmployeeReportPage> {
                     filled: true,
                     borderColor: AppColors.lightGrayBorder,
                     maxLines: 3,
-                    hintText: 'Напишите заключение',
+                    hintText: AppStrings.addConclusion,
                   ),
                 ),
                 SizedBox(height: 20),
@@ -61,7 +58,7 @@ class _EmployeeReportPageState extends State<EmployeeReportPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Фотоотчёт",
+                    AppStrings.photoReport,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -86,7 +83,7 @@ class _EmployeeReportPageState extends State<EmployeeReportPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0,vertical: 30),
           child: MainButton(
-            buttonTile: 'Завершить заявку',
+            buttonTile: AppStrings.closeApp,
             onPressed: (){},
             isLoading: false,
           ),

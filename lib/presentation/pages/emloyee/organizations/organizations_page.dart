@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 
@@ -36,7 +37,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Организации')),
+      appBar: AppBar(title: Text(AppStrings.organizations)),
       body: ListView.separated(
         padding: EdgeInsets.all(20),
         itemBuilder: (context, index) {

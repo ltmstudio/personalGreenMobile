@@ -47,7 +47,7 @@ class _AppsPageState extends State<AppsPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Данные заявки",
+                    AppStrings.applicationData,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -119,7 +119,7 @@ class _AppsPageState extends State<AppsPage> {
 
                 ExpansionTile(
                   title: Text(
-                    "Действия",
+                    AppStrings.action,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
 
@@ -143,7 +143,7 @@ class _AppsPageState extends State<AppsPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Фото объекта",
+                    AppStrings.photoObject,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -190,7 +190,7 @@ class _AppsPageState extends State<AppsPage> {
             children: [
               Expanded(
                 child: MainButton(
-                  buttonTile: 'Отклонить',
+                  buttonTile: AppStrings.reject,
                   onPressed: _confirmAccept,
                   isLoading: false,
                   btnColor: AppColors.red,
@@ -199,10 +199,10 @@ class _AppsPageState extends State<AppsPage> {
               SizedBox(width: 12),
               Expanded(
                 child: MainButton(
-                  buttonTile: 'Назначить',
+                  buttonTile: AppStrings.assign,
                   onPressed: () => Toast.show(
                     context,
-                    "Выберите исполнителя и контактное лицо",
+                    AppStrings.selectContactFace,
                   ),
                   isLoading: false,
                   btnColor: AppColors.green,
@@ -219,7 +219,8 @@ class _AppsPageState extends State<AppsPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: false,
-      child: ConfirmBottomSheet(title: 'Подтвердить заявку?', body: 'Вы уверены, что хотите подтвердить заявку? Данное действие нельзя будет отменить', onTap: () {  },),
+      child: ConfirmBottomSheet(title: AppStrings.confirmApp,
+        body: AppStrings.confirmAppBody, onTap: () {  },),
     );
   }
 }

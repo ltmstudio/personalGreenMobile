@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 
@@ -12,7 +13,7 @@ class AddressCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Адрес',
+            AppStrings.address,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
@@ -43,14 +44,14 @@ class AddressCardWidget extends StatelessWidget {
           ),
           SizedBox(height: 12),
           Text(
-            'Участок',
+            AppStrings.plot,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           SizedBox(height: 4),
           Text(
-            'Домостроителей',
+            AppStrings.homeBuilder,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium,

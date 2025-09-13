@@ -39,7 +39,7 @@ class ProfilePage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFieldTitle(
-                title: 'Должность',
+                title: AppStrings.jobTitle,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Text('Инженер - электрик'),
@@ -47,7 +47,7 @@ class ProfilePage extends StatelessWidget {
               ),
               SizedBox(height: 12),
               TextFieldTitle(
-                title: 'Телефон',
+                title: AppStrings.phone,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Text('+7 (900) 000-00-00'),
@@ -55,7 +55,7 @@ class ProfilePage extends StatelessWidget {
               ),
               SizedBox(height: 12),
               TextFieldTitle(
-                title: 'Электронная почта',
+                title: AppStrings.email,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Text('example@mail.ru'),

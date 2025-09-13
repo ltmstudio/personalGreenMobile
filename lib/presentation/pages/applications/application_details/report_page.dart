@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
 import 'application_details_page.dart';
-
 
 class AppDetailsReportPage extends StatefulWidget {
   const AppDetailsReportPage({super.key});
@@ -28,7 +28,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Заключение",
+                    AppStrings.conclusion,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -49,7 +49,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Фотоотчёт",
+                    AppStrings.photoReport,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyLarge,
@@ -89,7 +89,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
             children: [
               Expanded(
                 child: MainButton(
-                  buttonTile: 'Отклонить',
+                  buttonTile: AppStrings.reject,
                   onPressed: () {},
                   isLoading: false,
                   btnColor: AppColors.red,
@@ -98,11 +98,9 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
               SizedBox(width: 12),
               Expanded(
                 child: MainButton(
-                  buttonTile: 'Назначить',
-                  onPressed: () => Toast.show(
-                    context,
-                    "Выберите исполнителя и контактное лицо",
-                  ),
+                  buttonTile: AppStrings.assign,
+                  onPressed: () =>
+                      Toast.show(context, AppStrings.selectContactFace),
                   isLoading: false,
                   btnColor: AppColors.green,
                 ),

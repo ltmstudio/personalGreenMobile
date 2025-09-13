@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 
 import 'widgets/support_item_widget.dart';
@@ -12,17 +13,17 @@ class SupportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Поддержка')),
+      appBar: AppBar(title: Text(AppStrings.support)),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
             GestureDetector(
-              onTap: (){
+              onTap: () {
                 context.push(AppRoutes.objects);
               },
               child: SupportItemWidget(
-                title: 'Объекты',
+                title: AppStrings.objects,
                 icon: IconAssets.house,
                 color: AppColors.timeColor,
               ),
@@ -30,11 +31,11 @@ class SupportPage extends StatelessWidget {
 
             SizedBox(height: 12),
             GestureDetector(
-              onTap: (){
+              onTap: () {
                 context.push(AppRoutes.contacts);
               },
               child: SupportItemWidget(
-                title: 'Контакты УК',
+                title: AppStrings.ukContacts,
                 icon: IconAssets.call,
                 color: AppColors.green,
               ),

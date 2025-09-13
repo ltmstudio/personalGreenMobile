@@ -66,7 +66,7 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "Данные заявки",
+                AppStrings.applicationData,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -82,7 +82,7 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "Категории для осмотра",
+                AppStrings.categoryInspection,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -101,8 +101,10 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Освещение работает",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                        AppStrings.lightingWorks,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
 
@@ -170,8 +172,10 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                 child: ExpansionTile(
                   tilePadding: EdgeInsets.symmetric(horizontal: 12),
                   title: Text(
-                    "Состояние чистоты",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                    AppStrings.pureState,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   initiallyExpanded: false,
@@ -273,8 +277,10 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Исправность почтовых ящиков",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                        AppStrings.mailBox,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       CheckStatusBtn(
@@ -376,8 +382,10 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Исправность почтовых ящиков",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                        AppStrings.mailBox,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
 
@@ -444,7 +452,7 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
             Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20),
               child: MainButton(
-                buttonTile: 'Осмотрено',
+                buttonTile: AppStrings.inspected,
                 onPressed: () {},
                 isLoading: false,
               ),

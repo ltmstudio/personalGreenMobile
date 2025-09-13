@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/pages/support/widgets/support_item_widget.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
@@ -25,7 +26,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Информация об объекте')),
+      appBar: AppBar(title: Text(AppStrings.objectData)),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: CustomScrollView(
@@ -35,7 +36,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Данные',
+                    AppStrings.data,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
 
@@ -45,7 +46,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextFieldTitle(
-                          title: 'Адрес',
+                          title: AppStrings.address,
                           child: Text(
                             'г. Воронеж, ЖК «Тестовый», ул. Краснознаменная, д. 62а',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -54,7 +55,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                         SizedBox(height: 14),
 
                         TextFieldTitle(
-                          title: 'Подъездов',
+                          title: AppStrings.entrances,
                           child: Text(
                             '5',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -63,7 +64,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                         SizedBox(height: 14),
 
                         TextFieldTitle(
-                          title: 'Этажей',
+                          title: AppStrings.floor,
                           child: Text(
                             '12',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -72,7 +73,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                         SizedBox(height: 14),
 
                         TextFieldTitle(
-                          title: 'Квартир',
+                          title: AppStrings.apartment,
                           child: Text(
                             '160',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -82,7 +83,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
 
                         TextFieldTitle(
                           title:
-                              'Ключи от подвала находятся в диспетчерской УК',
+                              AppStrings.keys,
                           child: Text(
                             '160',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -91,9 +92,9 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                         SizedBox(height: 14),
 
                         TextFieldTitle(
-                          title: 'Комментарий',
+                          title: AppStrings.comments,
                           child: Text(
-                            'Нумерация подъездов начинается с правой стороны',
+                            AppStrings.numberEntrance,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
@@ -104,7 +105,7 @@ class _ObjectDetailsPageState extends State<ObjectDetailsPage> {
                   SizedBox(height: 20),
 
                   Text(
-                    'Контакты',
+                    AppStrings.contacts,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   SizedBox(height: 4),

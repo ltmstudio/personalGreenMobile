@@ -23,12 +23,12 @@ class CreatePerformerWidget extends StatelessWidget {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          BottomSheetTitle(title: 'Выберите контактное лицо'),
+          BottomSheetTitle(title: AppStrings.selectContactPerson),
 
           SizedBox(height: 12),
 
           TextFieldTitle(
-            title: 'Контактное лицо',
+            title:AppStrings.contactPerson ,
             child: KTextField(
               controller: nameCtrl,
               isSubmitted: false,

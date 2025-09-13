@@ -80,7 +80,7 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              "Данные заявки",
+              AppStrings.applicationData,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge,
@@ -130,7 +130,7 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
 
           ExpansionTile(
             title: Text(
-              "Действия",
+              AppStrings.action,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
 
@@ -152,7 +152,7 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              "Фото объекта",
+              AppStrings.photoObject,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge,

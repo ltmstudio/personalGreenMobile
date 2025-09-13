@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/pages/support/widgets/object_card_item.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
@@ -35,7 +36,7 @@ class _ObjectsPageState extends State<ObjectsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Объекты')),
+      appBar: AppBar(title: Text(AppStrings.objects)),
       body: Column(
         children: [
           Padding(
@@ -43,7 +44,7 @@ class _ObjectsPageState extends State<ObjectsPage> {
             child: HomePageSearchWidget(
               searchCtrl: searchCtrl,
               onSearch: () {},
-              hint: 'Поиск',
+              hint: AppStrings.search,
               filled: true,
             ),
           ),

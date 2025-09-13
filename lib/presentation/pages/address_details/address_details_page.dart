@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -25,7 +26,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', ];
+  final statuses = AppStrings.statuses;
   int selectedCategory = 0;
 
   @override
@@ -52,7 +53,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
               });
             },
             child: Text(
-              "Отменить",
+              AppStrings.cancelIt,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
@@ -119,7 +120,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Всего заявок",
+                    AppStrings.allApps,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   ChipWidget(title: '21'),

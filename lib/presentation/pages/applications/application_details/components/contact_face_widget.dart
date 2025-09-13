@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -14,7 +15,7 @@ class ContactFaceCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Контактное лицо',
+            AppStrings.contactPerson,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
@@ -29,13 +30,13 @@ class ContactFaceCardWidget extends StatelessWidget {
           SizedBox(height: 12),
           _contactNumberWidget(
             context,
-            'Основной телефон',
+            AppStrings.mainPhone,
             '+7 (900) 000-00-00',
           ),
           SizedBox(height: 12),
           _contactNumberWidget(
             context,
-            'Доп. номер телефона контактного лица',
+            AppStrings.additionalPhoneContactPerson,
             '+7 (900) 000-00-00',
           ),
         ],

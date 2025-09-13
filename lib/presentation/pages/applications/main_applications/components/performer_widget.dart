@@ -41,7 +41,7 @@ class _PerformerWidgetState extends State<PerformerWidget> {
         children: [
           BottomSheetTitle(title: AppStrings.selectPerformer),
           HomePageSearchWidget(
-              hint: 'Введите ФИО или должность сотрудника',
+              hint: AppStrings.searchHintEmployee,
               searchCtrl: _searchCtrl, onSearch: () {}),
           SizedBox(height: 10),
 

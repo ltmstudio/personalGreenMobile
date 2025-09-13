@@ -110,7 +110,7 @@ class _KTextFieldState extends State<KTextField> {
             if (value != null && value.isNotEmpty) {
               return null;
             }
-            return 'Hokman doldurmaly'; //AppLocalizations.of(context)!.requiredToFill;
+            return '';
           },
       decoration: InputDecoration(
         isDense: widget.isDense,

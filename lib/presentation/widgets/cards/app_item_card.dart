@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
-import 'package:hub_dom/core/constants/strings/app_strings.dart';
 
 class AppItemCard extends StatelessWidget {
   const AppItemCard({super.key, required this.isManager});

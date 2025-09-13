@@ -67,7 +67,6 @@ class _VerificationPageState extends State<VerificationPage> {
 
   bool disableButton() {
     if (pinController.text == code) {
-      print('pin ${pinController.text} ----- $code');
       return false;
     } else {
       return true;
@@ -264,7 +263,6 @@ class _VerificationPageState extends State<VerificationPage> {
                               // Add tap gesture if needed
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  print("Персональные данные tapped");
                                 },
                             ),
                             const TextSpan(text: " и с "),
@@ -278,7 +276,6 @@ class _VerificationPageState extends State<VerificationPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  print("Политика конфиденциальности tapped");
                                 },
                             ),
                           ],

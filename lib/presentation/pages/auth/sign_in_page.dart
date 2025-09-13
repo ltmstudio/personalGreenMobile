@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -138,9 +136,6 @@ class _SignInPageState extends State<SignInPage> {
                         code: data.code,
                         session: data.session,
                       );
-                      // context.push('${AppRoutes.verification}/${_phoneCtrl.text.trim()}');
-
-                      log(params.toString(), name: 'params');
 
                       context.go(
                         AppRoutes.verification,
@@ -190,13 +185,12 @@ class _SignInPageState extends State<SignInPage> {
           ),
           contentPadding: EdgeInsets.all(15),
           title: Text(
-            "Номер не зарегистрирован",
+            AppStrings.phoneNotRegistered,
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
           content: Text(
-            "Ваш номер телефона не зарегистрирован в системе «Дом коннект». "
-            "Обратитесь в вашу организацию для добавления сотрудника.",
+            AppStrings.phoneNotRegisteredBody,
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
@@ -204,7 +198,7 @@ class _SignInPageState extends State<SignInPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
+              child: Text(AppStrings.ok),
             ),
           ],
         );

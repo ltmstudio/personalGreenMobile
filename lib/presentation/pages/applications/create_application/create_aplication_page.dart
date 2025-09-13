@@ -388,7 +388,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
             SizedBox(height: 80),
 
             Text(
-              'Заявка назначена на выбранного исполнителя и ожидает выполнения',
+              AppStrings.createdAppSuccess,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,

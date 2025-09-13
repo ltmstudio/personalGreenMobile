@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
+import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -24,10 +25,8 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = ['Все', 'В работе', 'Просрочена', 'Контроль', 'Контроль'];
+  final statuses = AppStrings.statuses;
   int selectedCategory = 0;
-
-
 
   @override
   void dispose() {
@@ -53,16 +52,18 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                     });
                   },
                   child: Text(
-                    "Отменить",
+                    AppStrings.cancelIt,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
               ]
             : [
-                AppBarIcon(icon: IconAssets.scanner, onTap: () {
-                  context.push(AppRoutes.scanner);
-
-                }),
+                AppBarIcon(
+                  icon: IconAssets.scanner,
+                  onTap: () {
+                    context.push(AppRoutes.scanner);
+                  },
+                ),
                 AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
                 Padding(
                   padding: const EdgeInsets.only(right: 15.0),
@@ -103,7 +104,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                   return ChipWidget(
                     title: statuses[index],
                     isSelected: index == selectedCategory,
-                    onTap: (){
+                    onTap: () {
                       setState(() {
                         selectedCategory = index;
                       });
@@ -120,7 +121,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Всего заявок",
+                    AppStrings.allApps,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   ChipWidget(title: '21'),
@@ -134,11 +135,11 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Align(
               alignment: Alignment.center,
@@ -146,27 +147,27 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
 
             Align(
@@ -175,11 +176,11 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
           ],
         ),
