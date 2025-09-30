@@ -10,7 +10,7 @@ abstract final class AppRoutes {
   static const String addressDetails = '/addressDetails';
 
 
-  static const String organization = '/organizations';
+  static const String organizations = '/organizations';
   static const String organizationDetails = '/organizationDetails';
   static const String employeeAppDetails = '/employeeAppDetails';
   static const String createEmployeeApp = '/createEmployeeApp';
@@ -27,6 +27,7 @@ abstract final class AppRoutes {
   static const String signIn = '/signIn';
   static const String verification = '/verification';
   static const String profile = '/profile';
+  static const String securityCodePage = '/securityCode';
 
 
 }

@@ -12,6 +12,11 @@ final class OtpLoaded extends OtpState {
   OtpLoaded({required this.data});
 }
 
-final class OtpError extends OtpState {}
+final class OtpError extends OtpState {
+  final int code;
+  final String message;
+
+  OtpError( this.code,  this.message);
+}
 
 final class OtpConnectionError extends OtpState {}

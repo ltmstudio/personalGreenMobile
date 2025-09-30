@@ -5,18 +5,21 @@ import 'package:hub_dom/core/config/routes/scaffold_with_nested_nav.dart';
 import 'package:hub_dom/core/config/routes/widget_keys_str.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/models/auth/auth_params.dart';
+import 'package:hub_dom/data/models/auth/crm_system_model.dart';
 import 'package:hub_dom/presentation/pages/address_details/address_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/app_category/app_category_page.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/application_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/create_application/create_aplication_page.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/application_page.dart';
 import 'package:hub_dom/presentation/pages/auth/profile_page.dart';
+import 'package:hub_dom/presentation/pages/auth/security_code_page.dart';
 import 'package:hub_dom/presentation/pages/auth/sign_in_page.dart';
 import 'package:hub_dom/presentation/pages/auth/verification_page.dart';
 import 'package:hub_dom/presentation/pages/emloyee/create_employee_app/create_employee_app_page.dart';
 import 'package:hub_dom/presentation/pages/emloyee/employee_app_details/employee_app_details_page.dart';
 import 'package:hub_dom/presentation/pages/emloyee/new_employee_app/new_employee_app_page.dart';
 import 'package:hub_dom/presentation/pages/emloyee/organization_details/organization_details.dart';
+import 'package:hub_dom/presentation/pages/emloyee/organizations/organizations_page.dart';
 import 'package:hub_dom/presentation/pages/performer_details/performer_details_page.dart';
 import 'package:hub_dom/presentation/pages/scanner/scanner_page.dart';
 import 'package:hub_dom/presentation/pages/splash/splash_screen.dart';
@@ -108,9 +111,24 @@ final goRouter = GoRouter(
 
         return Scaffold(
           appBar: AppBar(),
-          body: Center(
-            child: Text(AppStrings.error),
-          ),
+          body: Center(child: Text(AppStrings.error)),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.securityCodePage,
+      builder: (context, state) {
+        if (state.extra != null && state.extra is Map<String, dynamic>) {
+          final extra = state.extra as Map<String, dynamic>;
+
+          final LoginParams loginParams = extra['params'];
+
+          return SecurityCodePage(params: loginParams);
+        }
+
+        return Scaffold(
+          appBar: AppBar(),
+          body: Center(child: Text(AppStrings.error)),
         );
       },
     ),
@@ -162,13 +180,30 @@ final goRouter = GoRouter(
     ),
 
     ///part 2
+    //     GoRoute(
+    //       path: '${AppRoutes.organizationDetails}/:title',
+    // CrmSystemModel data
+    //       builder: (context, state) {
+    //         final title = state.pathParameters['title'] ?? '';
+    //
+    //         return OrganizationDetailsPage(title: title);
+    //       },
+    //     ),
     GoRoute(
-      path: '${AppRoutes.organizationDetails}/:title',
-
+      path: AppRoutes.organizationDetails,
       builder: (context, state) {
-        final title = state.pathParameters['title'] ?? '';
+        if (state.extra != null && state.extra is Map<String, dynamic>) {
+          final extra = state.extra as Map<String, dynamic>;
 
-        return OrganizationDetailsPage(title: title);
+          final CrmSystemModel model = extra['model'];
+
+          return OrganizationDetailsPage(model: model);
+        }
+
+        return Scaffold(
+          appBar: AppBar(),
+          body: Center(child: Text(AppStrings.error)),
+        );
       },
     ),
     GoRoute(
@@ -212,6 +247,11 @@ final goRouter = GoRouter(
         return ObjectDetailsPage();
       },
     ),
-
+    GoRoute(
+      path: AppRoutes.organizations,
+      builder: (context, state) {
+        return OrganizationPage();
+      },
+    ),
   ],
 );

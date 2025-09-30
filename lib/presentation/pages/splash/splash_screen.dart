@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
 import 'package:hub_dom/presentation/widgets/main_logo_widget.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -22,11 +23,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _goNext() async {
     final isRegistered = locator<UserAuthBloc>().state;
+    final isCrmRegistered = locator<SelectedCrmCubit>().state;
 
     if (!mounted) return;
 
     if (isRegistered is UserAuthenticated) {
-      context.go(AppRoutes.applications);
+
+      if(isCrmRegistered is SelectedCrmRegistered){
+          context.go(AppRoutes.organizations);
+      }
+
+   //   context.go(AppRoutes.applications);
     } else {
      context.go(AppRoutes.signIn);
     }

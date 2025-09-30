@@ -14,6 +14,11 @@ class AppStrings {
       "Пароли не совпадают. Попробуйте снова";
   static const String confirm = 'Подтвердить';
 
+
+  static const String enterCode = 'Пароль для входа';
+  static const String enter4Digit = 'Установите 4-х значный пароль для входа в приложение';
+  static const String changePassword = 'Изменить пароль';
+
   static const String error = 'Ошибка!';
   static const String hasError = 'Что-то пошло не так';
   static const String repeat = 'Повторить';
@@ -130,5 +135,12 @@ class AppStrings {
 
   static const emptySearch = 'Нет результатов';
   static const emptySearchBody = 'По вашему запросу ничего не найдено, проверьте правильность введенных данных и повторите попытку';
+
+  static const tryLater = 'Слишком много попыток';
+  static const tryLaterBody = 'Попробуйте ещё раз позже';
+  static const loggedInNumber = 'Телефон уже зарегистрирован';
+  static const loggedInNumberBody = 'Этот номер уже привязан к учетной записи';
+  static const lockedNumber = 'Временно заблокирован';
+  static const lockedNumberBody = 'Этот аккаунт временно заблокирован';
 
 }

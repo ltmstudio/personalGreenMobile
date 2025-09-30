@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/data/models/auth/auth_params.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
@@ -31,6 +32,7 @@ class _VerificationPageState extends State<VerificationPage> {
   final formKey = GlobalKey<FormState>();
   final timerBloc = locator<OtpTimerBloc>();
   final otpCubit = locator<OtpCubit>();
+  final crmSystemCubit = locator<CrmSystemCubit>();
 
   String? code;
   String? session;
@@ -54,8 +56,6 @@ class _VerificationPageState extends State<VerificationPage> {
     timerBloc.add(OtpTimerStartedEvent(minutes: 1, seconds: 00));
     pinController.addListener(disableButton);
     locator<UserAuthBloc>().add(InitialEvent());
-
-
   }
 
   @override
@@ -80,7 +80,8 @@ class _VerificationPageState extends State<VerificationPage> {
       otpCubit.sendOtp(phoneNumber);
 
       // wait for the next OtpLoaded state
-      final otpState = await otpCubit.stream.firstWhere((s) => s is OtpLoaded) as OtpLoaded;
+      final otpState =
+          await otpCubit.stream.firstWhere((s) => s is OtpLoaded) as OtpLoaded;
 
       setState(() {
         code = otpState.data.code;
@@ -88,9 +89,7 @@ class _VerificationPageState extends State<VerificationPage> {
       });
       locator<UserAuthBloc>().add(InitialEvent());
     }
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -215,12 +214,10 @@ class _VerificationPageState extends State<VerificationPage> {
                         child: BlocConsumer<OtpTimerBloc, OtpTimerState>(
                           listener: (context, state) {
                             if (state is OtpTimeOver) {
-
-                             setState(() {
-                               code = null;
-                               session = null;
-
-                             });
+                              setState(() {
+                                code = null;
+                                session = null;
+                              });
                             }
                           },
                           builder: (context, state) {
@@ -246,47 +243,69 @@ class _VerificationPageState extends State<VerificationPage> {
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 11,
-                          ),
-                          children: [
-                            const TextSpan(text: "Продолжая, Вы соглашаетесь на "),
-                            TextSpan(
-                              text: "обработку персональных данных",
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                decoration: TextDecoration.underline,
-                                decorationThickness: 1.5,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 11,
                               ),
+                          children: [
+                            const TextSpan(
+                              text: "Продолжая, Вы соглашаетесь на ",
+                            ),
+                            TextSpan(
+                              text: "обработку персональных данных",
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    decoration: TextDecoration.underline,
+                                    decorationThickness: 1.5,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                  ),
                               // Add tap gesture if needed
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                },
+                              recognizer: TapGestureRecognizer()..onTap = () {},
                             ),
                             const TextSpan(text: " и с "),
                             TextSpan(
                               text: "политикой конфиденциальности",
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                decoration: TextDecoration.underline,
-                                decorationThickness: 1.5,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 11,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                },
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    decoration: TextDecoration.underline,
+                                    decorationThickness: 1.5,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                  ),
+                              recognizer: TapGestureRecognizer()..onTap = () {},
                             ),
                           ],
                         ),
                       ),
                       SizedBox(height: 20),
+                      //todo do it on security code page
+
+                      // BlocListener<UserAuthBloc, UserAuthState>(
+                      //   listener: (context, state) async {
+                      //     if (state is UserAuthenticated) {
+                      //       // Trigger CRM loading once user is authenticated
+                      //       context.read<CrmSystemCubit>().getCrmSystem();
+                      //     }
+                      //   },
+                      //   child: const SizedBox.shrink(),
+                      // ),
+                      //todo do it on security code page
+                      // BlocListener<CrmSystemCubit, CrmSystemState>(
+                      //   listener: (context, state) {
+                      //     if (state is CrmSystemLoaded) {
+                      //       context.go(AppRoutes.applications);
+                      //     }
+                      //   },
+                      //   child: const SizedBox.shrink(),
+                      // ),
+
 
                       BlocConsumer<UserAuthBloc, UserAuthState>(
-                        listener: (context, state) {
+                        listener: (context, state) async{
                           if (state is UserAuthenticated) {
-                            context.go(AppRoutes.applications);
+                             context.go(AppRoutes.securityCodePage,extra: {'params': widget.params});
                           }
                         },
                         builder: (context, state) {

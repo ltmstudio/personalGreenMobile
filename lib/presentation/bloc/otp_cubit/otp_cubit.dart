@@ -1,4 +1,3 @@
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/core/error/failure.dart';
 import 'package:hub_dom/data/models/auth/otp_model.dart';
@@ -9,7 +8,7 @@ part 'otp_state.dart';
 class OtpCubit extends Cubit<OtpState> {
   OtpCubit(this.repository) : super(OtpInitial());
 
-final AuthenticationRepository repository;
+  final AuthenticationRepository repository;
 
   Future<void> sendOtp(int phoneNumber) async {
     emit(OtpLoading());
@@ -18,8 +17,10 @@ final AuthenticationRepository repository;
       (failure) {
         if (failure is ConnectionFailure) {
           emit(OtpConnectionError());
+        } else if (failure is OtpFailure) {
+          emit(OtpError(failure.statusCode, failure.message));
         } else {
-          emit(OtpError());
+          emit(OtpError(500, failure.message));
         }
       },
       (success) {

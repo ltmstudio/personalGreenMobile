@@ -48,6 +48,4 @@ class KErrorWidget extends StatelessWidget {
       ],
     );
   }
-
-
 }

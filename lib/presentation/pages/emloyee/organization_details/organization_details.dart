@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
+import 'package:hub_dom/data/models/auth/crm_system_model.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -11,14 +12,14 @@ import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'components/filter_organization_widget.dart';
 
-
 class OrganizationDetailsPage extends StatefulWidget {
-  const OrganizationDetailsPage({super.key, required this.title});
+  const OrganizationDetailsPage({super.key, required this.model});
 
-  final String title;
+  final CrmSystemModel model;
 
   @override
-  State<OrganizationDetailsPage> createState() => _OrganizationDetailsPageState();
+  State<OrganizationDetailsPage> createState() =>
+      _OrganizationDetailsPageState();
 }
 
 class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
@@ -40,41 +41,43 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
       appBar: AppBar(
         title: isSearching
             ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {})
-            : Text(widget.title),
+            : Text(widget.model.crm.name),
         actions: isSearching
             ? [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isSearching = false;
-                searchCtrl.clear();
-                FocusManager.instance.primaryFocus?.unfocus();
-              });
-            },
-            child: Text(
-              AppStrings.cancelIt,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        ]
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      isSearching = false;
+                      searchCtrl.clear();
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    });
+                  },
+                  child: Text(
+                    AppStrings.cancelIt,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ]
             : [
-          AppBarIcon(icon: IconAssets.scanner, onTap: () {
-            context.push(AppRoutes.scanner);
-
-          }),
-          AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
-          Padding(
-            padding: const EdgeInsets.only(right: 15.0),
-            child: AppBarIcon(
-              icon: IconAssets.search,
-              onTap: () {
-                setState(() {
-                  isSearching = true;
-                });
-              },
-            ),
-          ),
-        ],
+                AppBarIcon(
+                  icon: IconAssets.scanner,
+                  onTap: () {
+                    context.push(AppRoutes.scanner);
+                  },
+                ),
+                AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: AppBarIcon(
+                    icon: IconAssets.search,
+                    onTap: () {
+                      setState(() {
+                        isSearching = true;
+                      });
+                    },
+                  ),
+                ),
+              ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 5, 8),
@@ -91,7 +94,7 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.title.contains('Все'))
+            //if (widget.title.contains('Все'))
               SizedBox(
                 height: 50,
                 child: ListView.separated(
@@ -103,7 +106,7 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
                     return ChipWidget(
                       title: statuses[index],
                       isSelected: index == selectedCategory,
-                      onTap: (){
+                      onTap: () {
                         setState(() {
                           selectedCategory = index;
                         });
@@ -134,11 +137,11 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Align(
               alignment: Alignment.center,
@@ -146,27 +149,27 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
 
             Align(
@@ -175,11 +178,11 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: false,),
+              child: AppItemCard(isManager: false),
             ),
           ],
         ),

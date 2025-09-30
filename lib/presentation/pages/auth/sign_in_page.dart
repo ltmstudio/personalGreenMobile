@@ -142,7 +142,7 @@ class _SignInPageState extends State<SignInPage> {
                         extra: {"params": params},
                       );
                     } else if (state is OtpError) {
-                      showNumberNotRegisteredDialog(context);
+                      showNumberNotRegisteredDialog(context, state.code);
                     } else if (state is OtpConnectionError) {
                       Toast.show(context, AppStrings.noInternet);
                     }
@@ -174,10 +174,30 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  void showNumberNotRegisteredDialog(BuildContext context) {
+  void showNumberNotRegisteredDialog(BuildContext context, int statusCode) {
+    String title;
+    String body;
+
+    switch (statusCode) {
+      case 429:
+        title = AppStrings.tryLater;
+        body = AppStrings.tryLaterBody;
+        break;
+      case 409:
+        title = AppStrings.loggedInNumber;
+        body = AppStrings.loggedInNumberBody;
+        break;
+      case 423:
+        title = AppStrings.lockedNumber;
+        body = AppStrings.lockedNumberBody;
+        break;
+      default:
+        title = AppStrings.phoneNotRegistered;
+        body = AppStrings.phoneNotRegisteredBody;
+    }
     showDialog(
       context: context,
-      barrierDismissible: false, // user must tap OK
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(

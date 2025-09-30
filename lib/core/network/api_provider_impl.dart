@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'api_provider.dart';
 import 'dio_interceptor.dart';
 
@@ -11,7 +10,7 @@ class ApiProviderImpl implements ApiProvider {
   static Dio _initializeDio() {
     Dio dio = Dio(
       BaseOptions(
-        baseUrl: ApiEndpoints.baseUrl,
+      //  baseUrl: ApiEndpoints.baseUrl,
         receiveDataWhenStatusError: true,
         connectTimeout: const Duration(seconds: 20),
       ),

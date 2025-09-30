@@ -1,10 +1,10 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/config/routes/widget_keys_str.dart';
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
+import 'package:hub_dom/core/local/app_prefs.dart';
 import 'package:hub_dom/core/local/token_store.dart';
 import 'package:hub_dom/locator.dart';
 
@@ -18,8 +18,30 @@ class TokenInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    String? token = await locator<Store>().getToken();
+    final store = locator<Store>();
+    final prefs = locator<AppPreferences>();
 
+    // Decide which token to use
+    // String? token;
+    String? token = await store.getToken();
+
+    String? engineerToken;
+    if (options.path.contains(ApiEndpoints.login) ||
+        options.path.contains(ApiEndpoints.sendOtp) ||
+        options.path.contains(ApiEndpoints.refresh) ||
+        options.path.contains(ApiEndpoints.crmAvailable)) {
+      // login/otp use main token
+      // token = await store.getToken();
+      options.baseUrl = ApiEndpoints.baseUrl;
+    } else {
+      // after login, use crm engineerToken + crm baseUrl
+      engineerToken = await prefs.getCrmToken();
+      options.baseUrl = (await prefs.getCrmHost()) ?? ApiEndpoints.baseUrl;
+
+      if (engineerToken != null) {
+        options.headers["X-Engineer-Token"] = engineerToken;
+      }
+    }
     if (token != null) {
       options.headers["Authorization"] = "Bearer $token";
     }
@@ -63,6 +85,7 @@ class TokenInterceptor extends Interceptor {
       } catch (e) {
         debugPrint("Failed to refresh token: $e");
         await locator<Store>().clear();
+        await locator<AppPreferences>().clearCrm();
 
         rootNavKey.currentContext!.go(AppRoutes.signIn);
       }
@@ -77,7 +100,7 @@ class TokenInterceptor extends Interceptor {
       if (refreshToken != null) {
         var response = await dio.post(
           ApiEndpoints.refresh,
-          data: {'refresh_token' : refreshToken}
+          data: {'refresh_token': refreshToken},
         );
 
         if (response.statusCode == 200) {

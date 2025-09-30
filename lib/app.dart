@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
+import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
+import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
 
 import 'locator.dart';
 import 'presentation/widgets/scroll_behavior.dart';
@@ -20,6 +23,9 @@ class AppStart extends StatelessWidget {
           create: (context) => locator<UserAuthBloc>(),
         ),
         BlocProvider<OtpCubit>(create: (context) => locator<OtpCubit>()),
+        BlocProvider<CrmSystemCubit>(create: (context) => locator<CrmSystemCubit>()),
+        BlocProvider<SetProfileCubit>(create: (context) => locator<SetProfileCubit>()),
+        BlocProvider<SelectedCrmCubit>(create: (context) => locator<SelectedCrmCubit>()),
       ],
       child: MaterialApp.router(
         title: AppStrings.appName,
