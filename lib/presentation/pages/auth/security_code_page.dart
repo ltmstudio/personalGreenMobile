@@ -12,9 +12,11 @@ import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:pinput/pinput.dart';
 
 class SecurityCodePage extends StatefulWidget {
-  const SecurityCodePage({super.key, required this.params});
+  const SecurityCodePage({
+    super.key, // required this.params
+  });
 
-  final LoginParams params;
+  //final LoginParams params;
 
   @override
   State<SecurityCodePage> createState() => _SecurityCodePageState();
@@ -25,24 +27,24 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
   final focusNode = FocusNode();
   final formKey = GlobalKey<FormState>();
 
-  String? code;
+  //String? code;
   bool showChangeButton = false;
 
   bool validate() {
     // Run form validators first
     final isValid = formKey.currentState?.validate() ?? false;
     if (!isValid) return false;
-    if (code == null) return false;
+    //if (code == null) return false;
 
     final pinNumber = pinController.text.trim();
 
-    return pinNumber == code;
+    return pinNumber.length == 4;
   }
 
   @override
   void initState() {
     super.initState();
-    code = widget.params.code;
+    // code = widget.params.code;
     pinController.addListener(disableButton);
   }
 
@@ -54,7 +56,7 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
   }
 
   bool disableButton() {
-    if (pinController.text == code) {
+    if (pinController.text.length == 4) {
       return false;
     } else {
       return true;
@@ -120,8 +122,8 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                           debugPrint('onCompleted: $pin');
                         },
                         validator: (s) {
-                          showChangeButton = s != code;
-                          return s == code
+                          //   showChangeButton = s != code;
+                          return s != null && s.isNotEmpty
                               ? null
                               : AppStrings.wrongVerification;
                         },
@@ -208,18 +210,14 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                         onPressed: () async {
                           final String pinNumber = pinController.text.trim();
 
-                          if (code != null) {
-                            final params = SetProfileParams(
-                              securityCode: code!,
-                              securityCodeConfirm: pinNumber,
-                            );
-                            log(params.toString(), name: 'login');
+                          final params = SetProfileParams(
+                            securityCode: pinNumber,
+                            securityCodeConfirm: pinNumber,
+                          );
+                          log(params.toString(), name: 'login');
 
-                            if (validate()) {
-                              context.read<SetProfileCubit>().setProfile(
-                                params,
-                              );
-                            }
+                          if (validate()) {
+                            context.read<SetProfileCubit>().setProfile(params);
                           }
                         },
                         isLoading: state is SetProfileLoading,

@@ -305,7 +305,8 @@ class _VerificationPageState extends State<VerificationPage> {
                       BlocConsumer<UserAuthBloc, UserAuthState>(
                         listener: (context, state) async{
                           if (state is UserAuthenticated) {
-                             context.go(AppRoutes.securityCodePage,extra: {'params': widget.params});
+                             context.go(AppRoutes.securityCodePage//extra: {'params': widget.params}
+                             );
                           }
                         },
                         builder: (context, state) {

@@ -60,6 +60,7 @@ class AppStrings {
   static const String selectTime = 'Выберите время';
 
   static const String noInternet = "Нет подключения к Интернету";
+  static const String empty = "Нет никаких данных";
 
   static const String login = "Войти";
 

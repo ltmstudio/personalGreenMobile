@@ -6,7 +6,7 @@ import 'package:hub_dom/data/repositories/auth/auth_repository.dart';
 part 'crm_system_state.dart';
 
 class CrmSystemCubit extends Cubit<CrmSystemState> {
-  CrmSystemCubit(this.repository) : super(CrmSystemInitial());
+  CrmSystemCubit(this.repository) : super(CrmSystemLoading());
 
   final AuthenticationRepository repository;
 
@@ -24,7 +24,14 @@ class CrmSystemCubit extends Cubit<CrmSystemState> {
         }
       },
       (data) {
-        emit(CrmSystemLoaded(data));
+
+        if(data.isEmpty){
+          emit(CrmSystemEmpty());
+        }else{
+          emit(CrmSystemLoaded(data));
+
+        }
+
       },
     );
   }

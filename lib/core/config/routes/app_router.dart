@@ -115,21 +115,27 @@ final goRouter = GoRouter(
         );
       },
     ),
+    // GoRoute(
+    //   path: AppRoutes.securityCodePage,
+    //   builder: (context, state) {
+    //     if (state.extra != null && state.extra is Map<String, dynamic>) {
+    //      // final extra = state.extra as Map<String, dynamic>;
+    //
+    //      // final LoginParams loginParams = extra['params'];
+    //
+    //       return SecurityCodePage();
+    //     }
+    //
+    //     return Scaffold(
+    //       appBar: AppBar(),
+    //       body: Center(child: Text(AppStrings.error)),
+    //     );
+    //   },
+    // ),
     GoRoute(
       path: AppRoutes.securityCodePage,
       builder: (context, state) {
-        if (state.extra != null && state.extra is Map<String, dynamic>) {
-          final extra = state.extra as Map<String, dynamic>;
-
-          final LoginParams loginParams = extra['params'];
-
-          return SecurityCodePage(params: loginParams);
-        }
-
-        return Scaffold(
-          appBar: AppBar(),
-          body: Center(child: Text(AppStrings.error)),
-        );
+        return SecurityCodePage();
       },
     ),
     GoRoute(

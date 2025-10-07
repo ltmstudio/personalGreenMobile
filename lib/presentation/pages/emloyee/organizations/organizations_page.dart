@@ -35,21 +35,28 @@ class _OrganizationPageState extends State<OrganizationPage> {
       appBar: AppBar(title: Text(AppStrings.organizations)),
       body: BlocConsumer<CrmSystemCubit, CrmSystemState>(
         listener: (BuildContext context, CrmSystemState state) {
-          if (state is CrmSystemLoaded && state.data.length == 1 && !_navigated) {
+          if (state is CrmSystemLoaded &&
+              state.data.length == 1 &&
+              !_navigated) {
             _navigated = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                locator<SelectedCrmCubit>().setCrmSystem(0);
-                context.go(
-                  AppRoutes.organizationDetails,
-                  extra: {'model': state.data.first},
-                );
-              }
-            });
+            // WidgetsBinding.instance.addPostFrameCallback((_) {
+            //   if (mounted) {
+            //     locator<SelectedCrmCubit>().setCrmSystem(0);
+            //     context.go(
+            //       AppRoutes.organizationDetails,
+            //       extra: {'model': state.data.first},
+            //     );
+            //   }
+            // });
+            locator<SelectedCrmCubit>().setCrmSystem(0);
+            context.go(
+              AppRoutes.organizationDetails,
+              extra: {'model': state.data.first},
+            );
           }
         },
         builder: (context, state) {
-          if (state is CrmSystemLoaded) {
+          if (state is CrmSystemLoaded && state.data.length > 1) {
             return ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               itemCount: state.data.length,
@@ -95,6 +102,8 @@ class _OrganizationPageState extends State<OrganizationPage> {
             );
           } else if (state is CrmSystemLoading) {
             return const Center(child: CircularProgressIndicator());
+          } else if (state is CrmSystemEmpty) {
+            return Center(child: Text(AppStrings.empty));
           } else if (state is CrmSystemConnectionError) {
             return Center(child: Text(AppStrings.noInternet));
           } else {
