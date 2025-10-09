@@ -15,6 +15,7 @@ import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'components/filter_organization_widget.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
 class OrganizationDetailsPage extends StatefulWidget {
   const OrganizationDetailsPage({super.key, required this.model});
@@ -33,6 +34,12 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
 
   final statuses = AppStrings.ticketStatuses;
   int selectedCategory = 0;
+
+  // Состояние фильтров
+  DateTimeRange<DateTime>? selectedDate;
+  ServiceType? selectedServiceType;
+  TroubleType? selectedTroubleType;
+  Type? selectedPriorityType;
 
   @override
   void initState() {
@@ -338,7 +345,21 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: FilterOrganizationWidget(),
+      child: FilterOrganizationWidget(
+        ticketsBloc: _ticketsBloc,
+        initialDate: selectedDate,
+        initialServiceType: selectedServiceType,
+        initialTroubleType: selectedTroubleType,
+        initialPriorityType: selectedPriorityType,
+        onFiltersApplied: (date, serviceType, troubleType, priorityType) {
+          setState(() {
+            selectedDate = date;
+            selectedServiceType = serviceType;
+            selectedTroubleType = troubleType;
+            selectedPriorityType = priorityType;
+          });
+        },
+      ),
     );
   }
 }

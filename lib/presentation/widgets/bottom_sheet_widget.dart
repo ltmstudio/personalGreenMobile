@@ -21,6 +21,7 @@ bottomSheetWidget({
     builder: (ctx) => child,
   );
 }
+
 Future<bool> showConfirmBack(BuildContext context) async {
   // Create a local context for the bottom sheet
   final shouldPop = await showModalBottomSheet<bool>(
@@ -40,9 +41,9 @@ Future<bool> showConfirmBack(BuildContext context) async {
               const SizedBox(height: 10),
               Text(
                 'При выходе со страницы заполненные данные не сохранятся',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 20),
               MainButton(
@@ -73,7 +74,6 @@ Future<bool> showConfirmBack(BuildContext context) async {
   return shouldPop ?? false;
 }
 
-
 class BottomSheetTitle extends StatelessWidget {
   const BottomSheetTitle({
     super.key,
@@ -91,11 +91,17 @@ class BottomSheetTitle extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
+        Flexible(
+          child: Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontSize: 18),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (onClear != null)
               TextButton(

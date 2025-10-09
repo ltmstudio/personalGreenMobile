@@ -50,4 +50,10 @@ class DateTimeUtils {
       return formatDate(date);
     }
   }
+
+  /// Форматирует DateTime в формат для API (yyyy-MM-dd)
+  static String formatDateForApi(DateTime dateTime) {
+    final formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(dateTime);
+  }
 }
