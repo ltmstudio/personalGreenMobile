@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
@@ -23,9 +24,15 @@ class AppStart extends StatelessWidget {
           create: (context) => locator<UserAuthBloc>(),
         ),
         BlocProvider<OtpCubit>(create: (context) => locator<OtpCubit>()),
-        BlocProvider<CrmSystemCubit>(create: (context) => locator<CrmSystemCubit>()),
-        BlocProvider<SetProfileCubit>(create: (context) => locator<SetProfileCubit>()),
-        BlocProvider<SelectedCrmCubit>(create: (context) => locator<SelectedCrmCubit>()),
+        BlocProvider<CrmSystemCubit>(
+          create: (context) => locator<CrmSystemCubit>(),
+        ),
+        BlocProvider<SetProfileCubit>(
+          create: (context) => locator<SetProfileCubit>(),
+        ),
+        BlocProvider<SelectedCrmCubit>(
+          create: (context) => locator<SelectedCrmCubit>(),
+        ),
       ],
       child: MaterialApp.router(
         title: AppStrings.appName,
@@ -33,6 +40,13 @@ class AppStart extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         scrollBehavior: const NoGlowScrollBehavior(),
         routerConfig: goRouter,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('ru', 'RU'), Locale('en', 'US')],
+        locale: const Locale('ru', 'RU'),
       ),
     );
   }

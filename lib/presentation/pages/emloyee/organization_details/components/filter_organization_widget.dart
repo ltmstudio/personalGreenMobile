@@ -100,6 +100,12 @@ class _FilterOrganizationWidgetState extends State<FilterOrganizationWidget> {
                         TextFieldTitle(
                           title: AppStrings.period,
                           child: SelectDateRangeWidget(
+                            firstDate: DateTime(
+                              2020,
+                            ), // Разрешаем выбирать даты с 2020 года
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ), // До года вперед
                             onDateRangeSelected: (v) {
                               setState(() {
                                 selectedDate = v;

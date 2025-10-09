@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class SelectDateRangeWidget extends StatefulWidget {
   final DateTime? firstDate;
@@ -42,9 +42,14 @@ class _SelectDateRangeWidgetState extends State<SelectDateRangeWidget> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(formattedRange, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color:  selectedDateRange != null ? AppColors.primary : AppColors.gray
-            )),
+            Text(
+              formattedRange,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: selectedDateRange != null
+                    ? AppColors.primary
+                    : AppColors.gray,
+              ),
+            ),
             const Icon(Icons.calendar_today, size: 18, color: AppColors.gray),
           ],
         ),
@@ -61,10 +66,15 @@ class _SelectDateRangeWidgetState extends State<SelectDateRangeWidget> {
       lastDate: widget.lastDate ?? DateTime(2100),
       initialDateRange: selectedDateRange != null
           ? DateTimeRange(
-        start: selectedDateRange!.start,
-        end: selectedDateRange!.end,
-      )
+              start: selectedDateRange!.start,
+              end: selectedDateRange!.end,
+            )
           : null,
+      locale: const Locale('ru', 'RU'),
+      saveText: 'Сохранить',
+      confirmText: 'OK',
+      cancelText: 'Отмена',
+      helpText: 'Выберите период',
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
