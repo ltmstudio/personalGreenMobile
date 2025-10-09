@@ -105,7 +105,7 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
                     return ChipWidget(
                       title: statuses[index],
                       isSelected: index == selectedCategory,
-                      onTap: (){
+                      onTap: () {
                         setState(() {
                           selectedCategory = index;
                         });

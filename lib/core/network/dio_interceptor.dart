@@ -36,7 +36,13 @@ class TokenInterceptor extends Interceptor {
     } else {
       // after login, use crm engineerToken + crm baseUrl
       engineerToken = await prefs.getCrmToken();
-      options.baseUrl = (await prefs.getCrmHost()) ?? ApiEndpoints.baseUrl;
+      String? crmHost = await prefs.getCrmHost();
+      if (crmHost != null) {
+        // Убеждаемся, что в конце есть слеш
+        options.baseUrl = crmHost.endsWith('/') ? crmHost : '$crmHost/';
+      } else {
+        options.baseUrl = ApiEndpoints.baseUrl;
+      }
 
       if (engineerToken != null) {
         options.headers["X-Engineer-Token"] = engineerToken;

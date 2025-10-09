@@ -8,7 +8,7 @@ class AppPreferences {
   final _boardingScreen = "_boardingScreen";
   final _crmName = "_crmName";
   final _crmHost = "_crmHost";
-  final _crmToken = "_crmHost";
+  final _crmToken = "_crmToken";
 
   Future<void> setOnBoardingScreenViewed() async {
     _sharedPreferences.setBool(_boardingScreen, true);

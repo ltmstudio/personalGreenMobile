@@ -9,11 +9,7 @@ class ApiEndpoints {
 
   static const logout = 'logout';
 
-
-
   static const crmAvailable = 'crm/available';
   static const collections = 'engineer_api/tickets';
-
-
-
+  static const dictionaries = 'engineer_api/tickets/dictionaries';
 }

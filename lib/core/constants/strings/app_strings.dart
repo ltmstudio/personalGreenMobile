@@ -14,9 +14,9 @@ class AppStrings {
       "Пароли не совпадают. Попробуйте снова";
   static const String confirm = 'Подтвердить';
 
-
   static const String enterCode = 'Пароль для входа';
-  static const String enter4Digit = 'Установите 4-х значный пароль для входа в приложение';
+  static const String enter4Digit =
+      'Установите 4-х значный пароль для входа в приложение';
   static const String changePassword = 'Изменить пароль';
 
   static const String error = 'Ошибка!';
@@ -35,7 +35,8 @@ class AppStrings {
   static const String floor = 'Этажей';
   static const String apartment = 'Квартир';
   static const String keys = 'Ключи от подвала находятся в диспетчерской УК';
-  static const String numberEntrance = 'Нумерация подъездов начинается с правой стороны';
+  static const String numberEntrance =
+      'Нумерация подъездов начинается с правой стороны';
   static const String selectAddress = 'Выберите адрес';
   static const String service = 'Услуга';
   static const String selectService = 'Выберите услугу';
@@ -73,7 +74,21 @@ class AppStrings {
   static const String cancelIt = 'Отменить';
   static const String logout = 'Выйти';
 
-  static const List<String> statuses = ['Все', 'В работе', 'Просрочена', 'Контроль' ];
+  static const List<String> statuses = [
+    'Все',
+    'В работе',
+    'Просрочена',
+    'Контроль',
+  ];
+
+  // Реальные статусы tickets
+  static const List<String> ticketStatuses = [
+    'Все',
+    'Назначен исполнитель',
+    'В работе',
+    'Согласование',
+    'Выполнено',
+  ];
 
   static const allApps = "Всего заявок";
   static const plot = 'Участок';
@@ -88,13 +103,15 @@ class AppStrings {
 
   static const selectContactFace = 'Выберите исполнителя и контактное лицо';
   static const confirmApp = 'Подтвердить заявку?';
-  static const confirmAppBody = 'Вы уверены, что хотите подтвердить заявку? Данное действие нельзя будет отменить';
+  static const confirmAppBody =
+      'Вы уверены, что хотите подтвердить заявку? Данное действие нельзя будет отменить';
 
   static const conclusion = 'Заключение';
   static const addConclusion = 'Напишите заключение';
   static const photoReport = 'Фотоотчёт';
 
-  static const createdAppSuccess = 'Заявка назначена на выбранного исполнителя и ожидает выполнения';
+  static const createdAppSuccess =
+      'Заявка назначена на выбранного исполнителя и ожидает выполнения';
 
   static const searchHintEmployee = 'Введите ФИО или должность сотрудника';
 
@@ -106,7 +123,8 @@ class AppStrings {
   static const email = 'Электронная почта';
 
   static const phoneNotRegistered = 'Номер не зарегистрирован';
-  static const phoneNotRegisteredBody = 'Ваш номер телефона не зарегистрирован в системе «Дом коннект». Обратитесь в вашу организацию для добавления сотрудника.';
+  static const phoneNotRegisteredBody =
+      'Ваш номер телефона не зарегистрирован в системе «Дом коннект». Обратитесь в вашу организацию для добавления сотрудника.';
 
   static const ok = 'OK';
   static const selectContactFacee = 'Выберите контактное лицо';
@@ -118,13 +136,13 @@ class AppStrings {
 
   static const mailBox = 'Исправность почтовых ящиков';
 
-
   static const inspected = 'Осмотрено';
 
   static const organizations = 'Организации';
   static const back = 'Назад';
   static const scan = 'Отсканируйте QR-код';
-  static const scanBody = 'Наведите камеру на QR-код на стене для начала осмотра';
+  static const scanBody =
+      'Наведите камеру на QR-код на стене для начала осмотра';
 
   static const contacts = 'Контакты';
   static const objectData = 'Информация об объекте';
@@ -135,7 +153,8 @@ class AppStrings {
   static const ukContacts = 'Контакты УК';
 
   static const emptySearch = 'Нет результатов';
-  static const emptySearchBody = 'По вашему запросу ничего не найдено, проверьте правильность введенных данных и повторите попытку';
+  static const emptySearchBody =
+      'По вашему запросу ничего не найдено, проверьте правильность введенных данных и повторите попытку';
 
   static const tryLater = 'Слишком много попыток';
   static const tryLaterBody = 'Попробуйте ещё раз позже';
@@ -143,5 +162,4 @@ class AppStrings {
   static const loggedInNumberBody = 'Этот номер уже привязан к учетной записи';
   static const lockedNumber = 'Временно заблокирован';
   static const lockedNumberBody = 'Этот аккаунт временно заблокирован';
-
 }
