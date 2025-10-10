@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'package:hub_dom/core/network/api_provider.dart';
 import 'package:hub_dom/data/models/tickets/collection_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
@@ -24,6 +26,10 @@ abstract class TicketsRemoteDatasource {
     int? page,
     int? perPage,
   });
+
+  Future<CreateTicketResponseModel> createTicket(
+    CreateTicketRequestModel request,
+  );
 }
 
 class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
@@ -49,7 +55,17 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   Future<DictionaryModel> getDictionaries() async {
     final response = await apiProvider.get(endPoint: ApiEndpoints.dictionaries);
 
-    log(response.toString(), name: 'response');
+    log('=== DICTIONARIES API RESPONSE ===', name: 'TicketsDatasource');
+    log(response.data.toString(), name: 'TicketsDatasource');
+
+    // Проверяем структуру service_types
+    if (response.data != null && response.data['service_types'] != null) {
+      log('=== SERVICE TYPES RAW DATA ===', name: 'TicketsDatasource');
+      final serviceTypes = response.data['service_types'] as List;
+      for (int i = 0; i < serviceTypes.length && i < 3; i++) {
+        log('Service $i: ${serviceTypes[i]}', name: 'TicketsDatasource');
+      }
+    }
 
     return DictionaryModel.fromJson(response.data);
   }
@@ -122,5 +138,25 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     log('Response data: ${response.data}', name: 'TicketsDatasource');
 
     return TicketResponseModel.fromJson(response.data);
+  }
+
+  @override
+  Future<CreateTicketResponseModel> createTicket(
+    CreateTicketRequestModel request,
+  ) async {
+    log('=== CREATE TICKET REQUEST ===', name: 'TicketsDatasource');
+    log('Endpoint: ${ApiEndpoints.createTicket}', name: 'TicketsDatasource');
+    log('Request data: ${request.toFormData()}', name: 'TicketsDatasource');
+
+    final response = await apiProvider.postFormData(
+      endPoint: ApiEndpoints.createTicket,
+      data: request.toFormData(),
+    );
+
+    log('=== CREATE TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
+
+    return CreateTicketResponseModel.fromJson(response.data);
   }
 }

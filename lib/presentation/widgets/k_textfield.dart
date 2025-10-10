@@ -26,6 +26,7 @@ class KTextField extends StatefulWidget {
   final bool? autofocus;
   final bool? obscureText;
   final bool? filled;
+  final List<TextInputFormatter>? inputFormatters;
 
   const KTextField({
     super.key,
@@ -52,6 +53,7 @@ class KTextField extends StatefulWidget {
     this.autofocus,
     this.obscureText,
     this.filled,
+    this.inputFormatters,
   });
 
   @override
@@ -85,6 +87,7 @@ class _KTextFieldState extends State<KTextField> {
       maxLength: widget.maxLength,
       maxLines: widget.maxLines,
       enabled: widget.isEnabled,
+      inputFormatters: widget.inputFormatters,
       onTapOutside: (event) {
         FocusScope.of(context).unfocus();
       },
@@ -144,7 +147,9 @@ class _KTextFieldState extends State<KTextField> {
         labelText: widget.labelText,
         labelStyle: widget.labelStyle,
         alignLabelWithHint: true,
-         fillColor: widget.filled != null ? AppColors.white : null, //Theme.of(context).inputDecorationTheme.fillColor,
+        fillColor: widget.filled != null
+            ? AppColors.white
+            : null, //Theme.of(context).inputDecorationTheme.fillColor,
         filled: widget.filled ?? false,
         counterText: '',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -186,7 +191,9 @@ class PhoneNumField extends StatelessWidget {
     this.hint,
     this.label,
     this.showContactPicker = true,
-    this.onChange, this.filled, this.borderColor,
+    this.onChange,
+    this.filled,
+    this.borderColor,
   });
 
   @override

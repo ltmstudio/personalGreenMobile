@@ -4,6 +4,8 @@ import 'package:hub_dom/core/error/failure.dart';
 import 'package:hub_dom/core/network/network.dart';
 import 'package:hub_dom/data/datasources/tickets/tickets_datasource.dart';
 import 'package:hub_dom/data/models/tickets/collection_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
@@ -70,6 +72,22 @@ class TicketsRepository {
           page: page,
           perPage: perPage,
         );
+        return Right(response);
+      } catch (error) {
+        return Left(ServerFailure(error.toString()));
+      }
+    } else {
+      return Left(ConnectionFailure(AppStrings.noInternet));
+    }
+  }
+
+  Future<Either<Failure, CreateTicketResponseModel>> createTicket(
+    CreateTicketRequestModel request,
+  ) async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        final response = await remoteDataSource.createTicket(request);
         return Right(response);
       } catch (error) {
         return Left(ServerFailure(error.toString()));

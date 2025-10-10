@@ -232,13 +232,55 @@ class _FilterOrganizationWidgetState extends State<FilterOrganizationWidget> {
   }
 
   _showWorkType() {
-    if (selectedServiceType == null) return;
+    if (selectedServiceType == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Сначала выберите услугу')));
+      return;
+    }
     if (_dictionariesBloc == null) return;
 
     final state = _dictionariesBloc!.state;
 
     if (state is DictionariesLoaded) {
-      final troubleTypes = selectedServiceType!.troubleTypes ?? [];
+      // Получаем troubleTypes для выбранной услуги
+      // Сначала пробуем из вложенного списка в service
+      var troubleTypes = selectedServiceType!.troubleTypes ?? [];
+
+      // Если список пустой, фильтруем общий список по service_type_id
+      if (troubleTypes.isEmpty) {
+        final allTroubleTypes = state.dictionaries.troubleTypes ?? [];
+        troubleTypes = allTroubleTypes
+            .where((tt) => tt.serviceTypeId == selectedServiceType!.id)
+            .toList();
+      }
+
+      // Отладочная информация
+      print('=== DEBUG FILTER WORK TYPE ===');
+      print(
+        'Selected service: ${selectedServiceType!.title} (ID: ${selectedServiceType!.id})',
+      );
+      print(
+        'Service trouble types count: ${selectedServiceType!.troubleTypes?.length ?? 0}',
+      );
+      print(
+        'General trouble types count: ${state.dictionaries.troubleTypes?.length ?? 0}',
+      );
+      print('Filtered trouble types count: ${troubleTypes.length}');
+      for (int i = 0; i < troubleTypes.length; i++) {
+        print(
+          'Trouble type $i: ${troubleTypes[i].title} (ID: ${troubleTypes[i].id}, ServiceTypeId: ${troubleTypes[i].serviceTypeId})',
+        );
+      }
+
+      if (troubleTypes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Для выбранной услуги нет доступных типов работ'),
+          ),
+        );
+        return;
+      }
 
       bottomSheetWidget(
         context: context,
@@ -391,29 +433,38 @@ class _TroubleTypesSelectionWidget extends StatelessWidget {
         children: [
           BottomSheetTitle(
             title: AppStrings.selectWorkType,
-            onClear: () =>
-                onSelect(troubleTypes.first), // Можно добавить логику очистки
+            onClear: troubleTypes.isNotEmpty
+                ? () => onSelect(troubleTypes.first)
+                : null,
           ),
           const SizedBox(height: 20),
           Flexible(
-            child: ListView.builder(
-              itemCount: troubleTypes.length,
-              itemBuilder: (context, index) {
-                final troubleType = troubleTypes[index];
-                final isSelected = selectedTroubleType?.id == troubleType.id;
+            child: troubleTypes.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('Нет доступных типов работ'),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: troubleTypes.length,
+                    itemBuilder: (context, index) {
+                      final troubleType = troubleTypes[index];
+                      final isSelected =
+                          selectedTroubleType?.id == troubleType.id;
 
-                return ListTile(
-                  title: Text(troubleType.title ?? ''),
-                  trailing: isSelected
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
-                  onTap: () {
-                    onSelect(troubleType);
-                    context.pop();
-                  },
-                );
-              },
-            ),
+                      return ListTile(
+                        title: Text(troubleType.title ?? ''),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          onSelect(troubleType);
+                          context.pop();
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),

@@ -12,4 +12,6 @@ class ApiEndpoints {
   static const crmAvailable = 'crm/available';
   static const collections = 'engineer_api/tickets';
   static const dictionaries = 'engineer_api/tickets/dictionaries';
+  static const createTicket = 'engineer_api/tickets';
+  static const addresses = 'engineer_api/addresses';
 }

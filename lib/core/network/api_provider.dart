@@ -57,4 +57,15 @@ abstract class ApiProvider {
     int? timeOut,
     bool isMultiPart = false,
   });
+
+  Future<Response> postFormData({
+    String? baseUrl,
+    required String endPoint,
+    Map<String, dynamic> data,
+    dynamic query,
+    String? token,
+    ProgressCallback? progressCallback,
+    CancelToken? cancelToken,
+    int? timeOut,
+  });
 }

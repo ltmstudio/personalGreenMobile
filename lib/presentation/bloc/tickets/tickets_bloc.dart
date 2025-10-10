@@ -1,6 +1,9 @@
 import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hub_dom/core/usecase/tickets/create_ticket_usecase.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 import 'package:hub_dom/data/repositories/tickets/tickets_repository.dart';
 
@@ -9,12 +12,15 @@ part 'tickets_state.dart';
 
 class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
   final TicketsRepository _repository;
+  final CreateTicketUseCase _createTicketUseCase;
 
-  TicketsBloc(this._repository) : super(const TicketsInitial()) {
+  TicketsBloc(this._repository, this._createTicketUseCase)
+    : super(const TicketsInitial()) {
     on<LoadTicketsEvent>(_onLoadTickets);
     on<UpdateTicketsFiltersEvent>(_onUpdateFilters);
     on<ResetTicketsFiltersEvent>(_onResetFilters);
     on<RefreshTicketsEvent>(_onRefreshTickets);
+    on<CreateTicketEvent>(_onCreateTicket);
   }
 
   /// Обработчик загрузки tickets
@@ -255,5 +261,35 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
       return (state as TicketsLoaded).hasActiveFilters;
     }
     return false;
+  }
+
+  /// Обработчик создания тикета
+  Future<void> _onCreateTicket(
+    CreateTicketEvent event,
+    Emitter<TicketsState> emit,
+  ) async {
+    emit(const TicketsCreating());
+
+    log('=== CREATE TICKET REQUEST ===', name: 'TicketsBloc');
+    log('Request data: ${event.request.toFormData()}', name: 'TicketsBloc');
+
+    final result = await _createTicketUseCase.execute(event.request);
+
+    result.fold(
+      (failure) {
+        log('=== CREATE TICKET ERROR ===', name: 'TicketsBloc');
+        log('Error: ${failure.message}', name: 'TicketsBloc');
+        emit(TicketCreationError(failure.message));
+      },
+      (data) {
+        log('=== CREATE TICKET SUCCESS ===', name: 'TicketsBloc');
+        log('Created ticket ID: ${data.data?.id}', name: 'TicketsBloc');
+        log(
+          'Created ticket status: ${data.data?.status?.title}',
+          name: 'TicketsBloc',
+        );
+        emit(TicketCreated(data));
+      },
+    );
   }
 }

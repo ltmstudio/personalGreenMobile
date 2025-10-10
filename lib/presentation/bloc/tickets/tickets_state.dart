@@ -176,3 +176,28 @@ class TicketsEmpty extends TicketsState {
   @override
   List<Object?> get props => [hasFilters];
 }
+
+/// Состояние создания тикета
+class TicketsCreating extends TicketsState {
+  const TicketsCreating();
+}
+
+/// Состояние успешного создания тикета
+class TicketCreated extends TicketsState {
+  final CreateTicketResponseModel createdTicket;
+
+  const TicketCreated(this.createdTicket);
+
+  @override
+  List<Object?> get props => [createdTicket];
+}
+
+/// Состояние ошибки создания тикета
+class TicketCreationError extends TicketsState {
+  final String message;
+
+  const TicketCreationError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

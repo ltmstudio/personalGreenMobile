@@ -10,13 +10,13 @@ class ApiProviderImpl implements ApiProvider {
   static Dio _initializeDio() {
     Dio dio = Dio(
       BaseOptions(
-      //  baseUrl: ApiEndpoints.baseUrl,
+        //  baseUrl: ApiEndpoints.baseUrl,
         receiveDataWhenStatusError: true,
         connectTimeout: const Duration(seconds: 20),
       ),
     );
     // Only the interceptor sets the Authorization header
-   dio.interceptors.add(TokenInterceptor(dio));
+    dio.interceptors.add(TokenInterceptor(dio));
     return dio;
   }
 
@@ -166,5 +166,36 @@ class ApiProviderImpl implements ApiProvider {
     };
 
     return await dio.delete(endPoint, data: data, queryParameters: query);
+  }
+
+  @override
+  Future<Response> postFormData({
+    String? baseUrl,
+    required String endPoint,
+    Map<String, dynamic>? data,
+    query,
+    String? token,
+    ProgressCallback? progressCallback,
+    CancelToken? cancelToken,
+    int? timeOut,
+  }) async {
+    if (timeOut != null) {
+      dio.options.connectTimeout = Duration(seconds: timeOut);
+    }
+
+    // Удаляем Content-Type заголовок для multipart/form-data
+    // Dio автоматически установит правильный заголовок с boundary
+    dio.options.headers.remove('Content-Type');
+
+    // Создаем FormData для multipart запроса
+    FormData formData = FormData.fromMap(data ?? {});
+
+    return await dio.post(
+      endPoint,
+      data: formData,
+      queryParameters: query,
+      onSendProgress: progressCallback,
+      cancelToken: cancelToken,
+    );
   }
 }

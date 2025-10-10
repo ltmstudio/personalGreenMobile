@@ -103,3 +103,13 @@ class ResetTicketsFiltersEvent extends TicketsEvent {
 class RefreshTicketsEvent extends TicketsEvent {
   const RefreshTicketsEvent();
 }
+
+/// Событие для создания нового тикета
+class CreateTicketEvent extends TicketsEvent {
+  final CreateTicketRequestModel request;
+
+  const CreateTicketEvent(this.request);
+
+  @override
+  List<Object?> get props => [request];
+}
