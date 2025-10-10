@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/utils/date_time_utils.dart';
-import 'package:hub_dom/data/models/auth/crm_system_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
@@ -14,26 +13,26 @@ import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
-import 'components/filter_organization_widget.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
-class OrganizationDetailsPage extends StatefulWidget {
-  const OrganizationDetailsPage({super.key, required this.model});
+import 'components/filter_manager_tickets_widget.dart';
 
-  final CrmSystemModel model;
+class ManagerTicketsPage extends StatefulWidget {
+  const ManagerTicketsPage({super.key, this.initialTab = 0});
+
+  final int initialTab;
 
   @override
-  State<OrganizationDetailsPage> createState() =>
-      _OrganizationDetailsPageState();
+  State<ManagerTicketsPage> createState() => _ManagerTicketsPageState();
 }
 
-class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
+class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   late final TicketsBloc _ticketsBloc;
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
   final statuses = AppStrings.ticketStatuses;
-  int selectedCategory = 0;
+  late int selectedCategory;
 
   // Состояние фильтров
   DateTimeRange<DateTime>? selectedDate;
@@ -46,8 +45,11 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
     super.initState();
     _ticketsBloc = locator<TicketsBloc>();
 
-    // Загружаем все tickets при инициализации (без фильтров)
-    _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 10));
+    // Устанавливаем начальный таб
+    selectedCategory = widget.initialTab;
+
+    // Загружаем tickets при инициализации
+    _loadTicketsForTab(selectedCategory);
   }
 
   @override
@@ -57,13 +59,27 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
     super.dispose();
   }
 
+  /// Загружает заявки для выбранного таба
+  void _loadTicketsForTab(int tabIndex) {
+    if (tabIndex == 0) {
+      // "Все" - загружаем без фильтров
+      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+    } else {
+      // Фильтруем по конкретному статусу
+      final statusApiValue = _getStatusApiValue(tabIndex);
+      _ticketsBloc.add(
+        LoadTicketsEvent(page: 1, perPage: 1000, status: statusApiValue),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: isSearching
             ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {})
-            : Text(widget.model.crm.name),
+            : Text(AppStrings.applications),
         actions: isSearching
             ? [
                 TextButton(
@@ -115,7 +131,7 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
         child: FloatingActionButton(
           backgroundColor: AppColors.green,
           onPressed: () {
-            context.push(AppRoutes.createEmployeeApp);
+            context.push(AppRoutes.createApplication);
           },
           child: const Icon(Icons.add, color: Colors.white),
         ),
@@ -300,7 +316,7 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
         widgets.add(
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: AppItemCard(isManager: false, ticket: ticket),
+            child: AppItemCard(isManager: true, ticket: ticket),
           ),
         );
       }
@@ -312,24 +328,13 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
   /// Фильтрация по статусу
   void _filterByStatus(int index) {
     if (index == 0) {
-      // "Все" - загружаем без фильтров (все заявки: и экстренные, и обычные, все статусы)
-      _ticketsBloc.add(
-        const LoadTicketsEvent(
-          page: 1,
-          perPage: 10,
-          // Не передаем status и isEmergency чтобы получить ВСЕ заявки
-        ),
-      );
+      // "Все" - загружаем без фильтров
+      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
     } else {
-      // Фильтруем по конкретному статусу (но все еще показываем и экстренные, и обычные)
+      // Фильтруем по конкретному статусу
       final statusApiValue = _getStatusApiValue(index);
       _ticketsBloc.add(
-        LoadTicketsEvent(
-          page: 1,
-          perPage: 10,
-          status: statusApiValue,
-          // Не передаем isEmergency чтобы показать и экстренные, и обычные заявки этого статуса
-        ),
+        LoadTicketsEvent(page: 1, perPage: 1000, status: statusApiValue),
       );
     }
   }
@@ -354,7 +359,7 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: FilterOrganizationWidget(
+      child: FilterManagerTicketsWidget(
         ticketsBloc: _ticketsBloc,
         initialDate: selectedDate,
         initialServiceType: selectedServiceType,

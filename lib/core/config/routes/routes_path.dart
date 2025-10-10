@@ -3,6 +3,7 @@ abstract final class AppRoutes {
   static const String home = '/home';
   static const String applications = '/applications';
   static const String appCategory = '/applicationStatus';
+  static const String managerTickets = '/managerTickets';
   static const String support = '/chat';
   static const String createApplication = '/createApplication';
   static const String performerDetails = '/performerDetails';

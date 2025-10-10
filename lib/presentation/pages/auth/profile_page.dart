@@ -20,7 +20,7 @@ class ProfilePage extends StatelessWidget {
         title: Text('Иванов Иван Иванович'),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 15.0),
+            padding: const EdgeInsets.only(right: 15.0, top: 10),
             child: AppBarIcon(
               icon: IconAssets.logout,
               onTap: () {

@@ -10,6 +10,8 @@ class AppBarIcon extends StatelessWidget {
     this.iconWidth,
     this.color,
     this.padding,
+    this.showIndicator,
+    this.indicatorValue,
   });
 
   final String icon;
@@ -18,6 +20,8 @@ class AppBarIcon extends StatelessWidget {
   final double? iconWidth;
   final Color? color;
   final EdgeInsetsGeometry? padding;
+  final bool? showIndicator;
+  final int? indicatorValue;
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +29,46 @@ class AppBarIcon extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding:padding ?? const EdgeInsets.symmetric(horizontal: 8.0),
-        child: SvgPicture.asset(
-          icon,
-          height: iconHeight ?? 24,
-          width: iconWidth ?? 24,
-          // color: color ??  Theme.of(context).appBarTheme.iconTheme!.color,
-          colorFilter: ColorFilter.mode(
-            color ?? Theme.of(context).appBarTheme.iconTheme!.color!,
-            BlendMode.srcIn,
-          ),
-
+        padding: padding ?? EdgeInsets.zero,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            SvgPicture.asset(
+              icon,
+              height: iconHeight ?? 24,
+              width: iconWidth ?? 24,
+              colorFilter: ColorFilter.mode(
+                color ?? Theme.of(context).appBarTheme.iconTheme!.color!,
+                BlendMode.srcIn,
+              ),
+            ),
+            if (showIndicator == true && indicatorValue != null)
+              Positioned(
+                right: -2,
+                top: -0,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: const BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                    border: Border.fromBorderSide(
+                      BorderSide(color: Colors.white, width: 1),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      indicatorValue.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

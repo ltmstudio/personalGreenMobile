@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hub_dom/core/utils/date_time_utils.dart';
+import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
@@ -8,7 +10,16 @@ import 'bottom_sheet_widget.dart';
 import 'date_widgets/date_range_widget.dart';
 
 class FilterApplicationsWidget extends StatefulWidget {
-  const FilterApplicationsWidget({super.key});
+  final TicketsBloc ticketsBloc;
+  final DateTimeRange<DateTime>? initialDate;
+  final Function(DateTimeRange<DateTime>?)? onFiltersApplied;
+
+  const FilterApplicationsWidget({
+    super.key,
+    required this.ticketsBloc,
+    this.initialDate,
+    this.onFiltersApplied,
+  });
 
   @override
   State<FilterApplicationsWidget> createState() =>
@@ -21,22 +32,69 @@ class _FilterApplicationsWidgetState extends State<FilterApplicationsWidget> {
   @override
   void initState() {
     super.initState();
+    selectedDate = widget.initialDate;
+  }
 
-    selectedDate = null;
+  void _applyFilters() {
+    // Формируем параметры фильтрации
+    String? startDate;
+    String? endDate;
+
+    if (selectedDate != null) {
+      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
+      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
+    }
+
+    // Отправляем событие в блок
+    widget.ticketsBloc.add(
+      LoadTicketsEvent(
+        startDate: startDate,
+        endDate: endDate,
+        page: 1,
+        perPage: 1000,
+      ),
+    );
+
+    // Вызываем callback для сохранения состояния фильтров
+    widget.onFiltersApplied?.call(selectedDate);
+
+    context.pop();
+  }
+
+  void _clearFilters() {
+    setState(() {
+      selectedDate = null;
+    });
+    // Сбрасываем фильтр
+    widget.ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+    widget.onFiltersApplied?.call(null);
+    context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.only(
+        left: 20.0,
+        right: 20.0,
+        top: 20.0,
+        bottom: 20.0 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          BottomSheetTitle(title: AppStrings.filter),
+          BottomSheetTitle(
+            title: AppStrings.filter,
+            onClear: selectedDate != null ? _clearFilters : null,
+          ),
           SizedBox(height: 20),
 
           TextFieldTitle(
             title: AppStrings.period,
             child: SelectDateRangeWidget(
+              firstDate: DateTime(2020),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+              initialDateRange: selectedDate,
               onDateRangeSelected: (v) {
                 setState(() {
                   selectedDate = v;
@@ -48,9 +106,7 @@ class _FilterApplicationsWidgetState extends State<FilterApplicationsWidget> {
 
           MainButton(
             buttonTile: AppStrings.primenit,
-            onPressed: () {
-              context.pop();
-            },
+            onPressed: _applyFilters,
             isLoading: false,
             isDisable: selectedDate == null,
           ),

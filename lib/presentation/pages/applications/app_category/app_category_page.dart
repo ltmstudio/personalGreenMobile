@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
+import 'package:hub_dom/core/utils/date_time_utils.dart';
+import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
+import 'package:hub_dom/locator.dart';
+import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -22,6 +27,7 @@ class AppCategoryPage extends StatefulWidget {
 }
 
 class _AppCategoryPageState extends State<AppCategoryPage> {
+  late final TicketsBloc _ticketsBloc;
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
@@ -29,9 +35,66 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
   int selectedCategory = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _ticketsBloc = locator<TicketsBloc>();
+    _loadTicketsForCategory();
+  }
+
+  @override
   void dispose() {
     searchCtrl.dispose();
+    _ticketsBloc.close();
     super.dispose();
+  }
+
+  /// Загружает заявки в зависимости от категории (title)
+  void _loadTicketsForCategory() {
+    final String? status = _getStatusFromTitle(widget.title);
+
+    if (widget.title == 'Все') {
+      // Загружаем все заявки
+      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+    } else if (widget.title == 'Просрочено' || widget.title == 'Просрочена') {
+      // Для просроченных передаем специальный статус (если API поддерживает)
+      // Если API не поддерживает - будет пустой список
+      _ticketsBloc.add(
+        const LoadTicketsEvent(
+          page: 1,
+          perPage: 1000,
+          status: 'overdue', // или 'expired', 'delayed' - зависит от API
+        ),
+      );
+    } else if (status != null) {
+      // Загружаем заявки по конкретному статусу
+      _ticketsBloc.add(
+        LoadTicketsEvent(page: 1, perPage: 1000, status: status),
+      );
+    } else {
+      // По умолчанию загружаем все заявки
+      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+    }
+  }
+
+  /// Получает API-значение статуса по названию категории
+  String? _getStatusFromTitle(String title) {
+    switch (title) {
+      case 'В работе':
+        return 'in_progress';
+      case 'Контроль':
+        return 'approval';
+      case 'Выполнена':
+        return 'done';
+      default:
+        return null;
+    }
+  }
+
+  /// Фильтрует заявки по выбранной категории
+  List<Ticket> _filterTickets(List<Ticket> tickets) {
+    // Вся фильтрация происходит на уровне API
+    // Просто возвращаем то, что пришло
+    return tickets;
   }
 
   @override
@@ -58,15 +121,24 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
                 ),
               ]
             : [
-                AppBarIcon(
-                  icon: IconAssets.scanner,
-                  onTap: () {
-                    context.push(AppRoutes.scanner);
-                  },
-                ),
-                AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
                 Padding(
-                  padding: const EdgeInsets.only(right: 15.0),
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.scanner,
+                    onTap: () {
+                      context.push(AppRoutes.scanner);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.filter,
+                    onTap: _showFilter,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
                   child: AppBarIcon(
                     icon: IconAssets.search,
                     onTap: () {
@@ -88,105 +160,183 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.title.contains('Все'))
-              SizedBox(
-                height: 50,
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+      body: BlocBuilder<TicketsBloc, TicketsState>(
+        bloc: _ticketsBloc,
+        builder: (context, state) {
+          // Отображаем индикатор загрузки
+          if (state is TicketsInitial || state is TicketsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                  scrollDirection: Axis.horizontal,
-                  itemCount: statuses.length,
-                  itemBuilder: (context, index) {
-                    return ChipWidget(
-                      title: statuses[index],
-                      isSelected: index == selectedCategory,
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = index;
-                        });
-                      },
-                    );
-                  },
-                  separatorBuilder: (context, index) => SizedBox(width: 5),
-                ),
-              ),
-
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Отображаем ошибку
+          if (state is TicketsError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                  const SizedBox(height: 16),
                   Text(
-                    AppStrings.allApps,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    AppStrings.error,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  ChipWidget(title: '21'),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      _loadTicketsForCategory();
+                    },
+                    child: Text(AppStrings.repeat),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Получаем и фильтруем заявки
+          final allTickets = state is TicketsLoaded
+              ? state.tickets
+              : <Ticket>[];
+          final filteredTickets = _filterTickets(allTickets);
+          final ticketsCount = filteredTickets.length;
+
+          // Проверяем, есть ли заявки
+          final isEmpty = filteredTickets.isEmpty;
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              _loadTicketsForCategory();
+            },
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.title.contains('Все'))
+                    SizedBox(
+                      height: 50,
+                      child: ListView.separated(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: statuses.length,
+                        itemBuilder: (context, index) {
+                          return ChipWidget(
+                            title: statuses[index],
+                            isSelected: index == selectedCategory,
+                            onTap: () {
+                              setState(() {
+                                selectedCategory = index;
+                              });
+                            },
+                          );
+                        },
+                        separatorBuilder: (context, index) =>
+                            SizedBox(width: 5),
+                      ),
+                    ),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppStrings.allApps,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        ChipWidget(title: '$ticketsCount'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Если нет заявок - показываем сообщение
+                  if (isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 100),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 64,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              AppStrings.empty,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Заявки будут отображаться здесь',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Иначе показываем список заявок с группировкой по датам
+                  if (!isEmpty) ..._buildTicketsList(filteredTickets),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.center,
-              child: ChipWidget(title: '09.09.2025'),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Align(
-              alignment: Alignment.center,
-              child: ChipWidget(title: '09.09.2025'),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-
-            Align(
-              alignment: Alignment.center,
-              child: ChipWidget(title: '09.09.2025'),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
+  }
+
+  /// Строит список заявок с группировкой по датам
+  List<Widget> _buildTicketsList(List<Ticket> tickets) {
+    if (tickets.isEmpty) {
+      return [];
+    }
+
+    // Группируем заявки по датам
+    final Map<String, List<Ticket>> groupedTickets = {};
+
+    for (final ticket in tickets) {
+      if (ticket.createdAt != null) {
+        final dateKey = DateTimeUtils.getRelativeDate(ticket.createdAt!);
+        groupedTickets.putIfAbsent(dateKey, () => []).add(ticket);
+      } else {
+        // Заявки без даты в отдельную группу
+        groupedTickets.putIfAbsent('Без даты', () => []).add(ticket);
+      }
+    }
+
+    final List<Widget> widgets = [];
+
+    groupedTickets.forEach((dateKey, ticketsForDate) {
+      // Заголовок с датой
+      widgets.add(
+        Align(
+          alignment: Alignment.center,
+          child: ChipWidget(title: dateKey),
+        ),
+      );
+
+      // Заявки за эту дату
+      for (final ticket in ticketsForDate) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: AppItemCard(isManager: true, ticket: ticket),
+          ),
+        );
+      }
+    });
+
+    return widgets;
   }
 
   _showFilter() {

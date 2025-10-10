@@ -12,7 +12,6 @@ import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 
 import 'components/filter_address_widget.dart';
 
-
 class AddressDetailsPage extends StatefulWidget {
   const AddressDetailsPage({super.key, required this.title});
 
@@ -44,38 +43,49 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             : Text(widget.title),
         actions: isSearching
             ? [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isSearching = false;
-                searchCtrl.clear();
-                FocusManager.instance.primaryFocus?.unfocus();
-              });
-            },
-            child: Text(
-              AppStrings.cancelIt,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        ]
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      isSearching = false;
+                      searchCtrl.clear();
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    });
+                  },
+                  child: Text(
+                    AppStrings.cancelIt,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ]
             : [
-          AppBarIcon(icon: IconAssets.scanner, onTap: () {
-            context.push(AppRoutes.scanner);
-
-          }),
-          AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
-          Padding(
-            padding: const EdgeInsets.only(right: 15.0),
-            child: AppBarIcon(
-              icon: IconAssets.search,
-              onTap: () {
-                setState(() {
-                  isSearching = true;
-                });
-              },
-            ),
-          ),
-        ],
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.scanner,
+                    onTap: () {
+                      context.push(AppRoutes.scanner);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.filter,
+                    onTap: _showFilter,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.search,
+                    onTap: () {
+                      setState(() {
+                        isSearching = true;
+                      });
+                    },
+                  ),
+                ),
+              ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 5, 8),
@@ -103,7 +113,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
                   return ChipWidget(
                     title: statuses[index],
                     isSelected: index == selectedCategory,
-                    onTap: (){
+                    onTap: () {
                       setState(() {
                         selectedCategory = index;
                       });
@@ -134,11 +144,11 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Align(
               alignment: Alignment.center,
@@ -146,27 +156,27 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
 
             Align(
@@ -175,11 +185,11 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: AppItemCard(isManager: true,),
+              child: AppItemCard(isManager: true),
             ),
           ],
         ),

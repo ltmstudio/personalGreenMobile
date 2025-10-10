@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hub_dom/core/config/routes/app_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
@@ -29,9 +30,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (isRegistered is UserAuthenticated) {
 
-      if(isCrmRegistered is SelectedCrmRegistered){
+      if(isMain){
+        if(isCrmRegistered is SelectedCrmRegistered){
           context.go(AppRoutes.organizations);
+        }
+      }else{
+        context.go(AppRoutes.applications);
       }
+
+
 
    //   context.go(AppRoutes.applications);
     } else {

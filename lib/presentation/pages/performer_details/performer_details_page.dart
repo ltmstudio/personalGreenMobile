@@ -58,15 +58,24 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                 ),
               ]
             : [
-                AppBarIcon(
-                  icon: IconAssets.scanner,
-                  onTap: () {
-                    context.push(AppRoutes.scanner);
-                  },
-                ),
-                AppBarIcon(icon: IconAssets.filter, onTap: _showFilter),
                 Padding(
-                  padding: const EdgeInsets.only(right: 15.0),
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.scanner,
+                    onTap: () {
+                      context.push(AppRoutes.scanner);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.filter,
+                    onTap: _showFilter,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
                   child: AppBarIcon(
                     icon: IconAssets.search,
                     onTap: () {

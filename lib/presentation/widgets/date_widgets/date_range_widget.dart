@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 class SelectDateRangeWidget extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final DateTimeRange? initialDateRange;
   final Function(DateTimeRange)? onDateRangeSelected;
 
   const SelectDateRangeWidget({
     super.key,
     this.firstDate,
     this.lastDate,
+    this.initialDateRange,
     this.onDateRangeSelected,
   });
 
@@ -22,6 +23,12 @@ class SelectDateRangeWidget extends StatefulWidget {
 
 class _SelectDateRangeWidgetState extends State<SelectDateRangeWidget> {
   DateTimeRange? selectedDateRange;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDateRange = widget.initialDateRange;
+  }
 
   String get formattedRange {
     if (selectedDateRange == null) return AppStrings.selectDate;

@@ -11,6 +11,7 @@ import 'package:hub_dom/presentation/pages/applications/app_category/app_categor
 import 'package:hub_dom/presentation/pages/applications/application_details/application_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/create_application/create_aplication_page.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/application_page.dart';
+import 'package:hub_dom/presentation/pages/applications/manager_tickets/manager_tickets_page.dart';
 import 'package:hub_dom/presentation/pages/auth/profile_page.dart';
 import 'package:hub_dom/presentation/pages/auth/security_code_page.dart';
 import 'package:hub_dom/presentation/pages/auth/sign_in_page.dart';
@@ -28,31 +29,49 @@ import 'package:hub_dom/presentation/pages/support/object_details_page.dart';
 import 'package:hub_dom/presentation/pages/support/objects_page.dart';
 import 'package:hub_dom/presentation/pages/support/support_page.dart';
 
-final goRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
-  navigatorKey: rootNavKey,
-  routes: [
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
-      },
-      branches: [
-        StatefulShellBranch(
-          navigatorKey: shellNavKey1,
-          routes: [
-            GoRoute(
-              // path: AppRoutes.organization,
-              path: AppRoutes.profile,
+const bool isMain = false;
+
+final List<StatefulShellBranch> mainBranches = [
+  StatefulShellBranch(
+    navigatorKey: shellNavKey1,
+    routes: [
+      GoRoute(
+        // path: AppRoutes.organization,
+        path: AppRoutes.profile,
+        pageBuilder: (context, state) {
+          return const NoTransitionPage(child: ProfilePage());
+        },
+      ),
+    ],
+  ),
+
+  StatefulShellBranch(
+    navigatorKey: shellNavKey2,
+    routes: [
+      isMain
+          ? GoRoute(
+              path: AppRoutes.organizationDetails,
               pageBuilder: (context, state) {
-                return const NoTransitionPage(child: ProfilePage());
+                if (state.extra != null &&
+                    state.extra is Map<String, dynamic>) {
+                  final extra = state.extra as Map<String, dynamic>;
+
+                  final CrmSystemModel model = extra['model'];
+
+                  return NoTransitionPage(
+                    child: OrganizationDetailsPage(model: model),
+                  );
+                }
+
+                return NoTransitionPage(
+                  child: Scaffold(
+                    appBar: AppBar(),
+                    body: Center(child: Text(AppStrings.error)),
+                  ),
+                );
               },
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: shellNavKey2,
-          routes: [
-            GoRoute(
+            )
+          : GoRoute(
               path: AppRoutes.applications,
               pageBuilder: (context, state) {
                 return NoTransitionPage(
@@ -61,20 +80,31 @@ final goRouter = GoRouter(
                 );
               },
             ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: shellNavKey3,
-          routes: [
-            GoRoute(
-              path: AppRoutes.support,
-              pageBuilder: (context, state) {
-                return NoTransitionPage(child: SupportPage());
-              },
-            ),
-          ],
-        ),
-      ],
+    ],
+  ),
+
+  StatefulShellBranch(
+    navigatorKey: shellNavKey3,
+    routes: [
+      GoRoute(
+        path: AppRoutes.support,
+        pageBuilder: (context, state) {
+          return NoTransitionPage(child: SupportPage());
+        },
+      ),
+    ],
+  ),
+];
+
+final goRouter = GoRouter(
+  initialLocation: AppRoutes.splash,
+  navigatorKey: rootNavKey,
+  routes: [
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
+      },
+      branches: mainBranches,
     ),
 
     GoRoute(
@@ -154,6 +184,19 @@ final goRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: AppRoutes.managerTickets,
+      builder: (context, state) {
+        // Получаем initialTab из extra
+        int initialTab = 0;
+        if (state.extra != null && state.extra is Map<String, dynamic>) {
+          final extra = state.extra as Map<String, dynamic>;
+          initialTab = extra['initialTab'] ?? 0;
+        }
+
+        return ManagerTicketsPage(initialTab: initialTab);
+      },
+    ),
+    GoRoute(
       path: '${AppRoutes.performerDetails}/:title',
 
       builder: (context, state) {
@@ -195,23 +238,24 @@ final goRouter = GoRouter(
     //         return OrganizationDetailsPage(title: title);
     //       },
     //     ),
-    GoRoute(
-      path: AppRoutes.organizationDetails,
-      builder: (context, state) {
-        if (state.extra != null && state.extra is Map<String, dynamic>) {
-          final extra = state.extra as Map<String, dynamic>;
 
-          final CrmSystemModel model = extra['model'];
-
-          return OrganizationDetailsPage(model: model);
-        }
-
-        return Scaffold(
-          appBar: AppBar(),
-          body: Center(child: Text(AppStrings.error)),
-        );
-      },
-    ),
+    // GoRoute(
+    //   path: AppRoutes.organizationDetails,
+    //   builder: (context, state) {
+    //     if (state.extra != null && state.extra is Map<String, dynamic>) {
+    //       final extra = state.extra as Map<String, dynamic>;
+    //
+    //       final CrmSystemModel model = extra['model'];
+    //
+    //       return OrganizationDetailsPage(model: model);
+    //     }
+    //
+    //     return Scaffold(
+    //       appBar: AppBar(),
+    //       body: Center(child: Text(AppStrings.error)),
+    //     );
+    //   },
+    // ),
     GoRoute(
       path: '${AppRoutes.employeeAppDetails}/:title',
 
