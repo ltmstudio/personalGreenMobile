@@ -6,6 +6,7 @@ import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
+import 'package:hub_dom/presentation/widgets/reject_bottom_sheet.dart';
 import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
@@ -129,7 +130,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 Toast.show(context, 'Заявка отклонена');
                 Navigator.of(context).pop();
               } else if (state is ApplicationDetailsError) {
-                Toast.show(context, 'Ошибка: ${state.message}');
+                Toast.show(context, state.message);
               }
             },
             builder: (context, state) {
@@ -152,16 +153,10 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                   SizedBox(width: 12),
                   Expanded(
                     child: MainButton(
-                      buttonTile: AppStrings.assign,
-                      onPressed:
-                          widget.ticketId != null &&
-                              !isProcessing &&
-                              widget.selectedExecutorId != null
-                          ? () => _confirmAccept(context, widget.ticketId!)
-                          : () => Toast.show(
-                              context,
-                              AppStrings.selectContactFace,
-                            ),
+                      buttonTile: AppStrings.confirm,
+                      onPressed: widget.ticketId != null && !isProcessing
+                          ? () => _handleConfirm(context, widget.ticketId!)
+                          : null,
                       isLoading: state is ApplicationDetailsAccepting,
                       btnColor: AppColors.green,
                     ),
@@ -175,15 +170,33 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
     );
   }
 
+  void _handleConfirm(BuildContext context, int ticketId) {
+    // Проверяем наличие отчета (comment или photos)
+    final hasReport =
+        widget.ticketData?.comment != null &&
+            widget.ticketData!.comment.toString().isNotEmpty ||
+        (widget.ticketData?.photos != null &&
+            widget.ticketData!.photos is List &&
+            (widget.ticketData!.photos as List).isNotEmpty);
+
+    if (hasReport) {
+      // Если есть отчет, показываем диалог подтверждения
+      _confirmAccept(context, ticketId);
+    } else {
+      // Если отчета нет, сразу отправляем запрос
+      context.read<ApplicationDetailsBloc>().add(AcceptTicketEvent(ticketId));
+    }
+  }
+
   void _confirmAccept(BuildContext context, int ticketId) {
     bottomSheetWidget(
       context: context,
       isScrollControlled: false,
       child: ConfirmBottomSheet(
-        title: AppStrings.confirmApp,
-        body: AppStrings.confirmAppBody,
+        title: AppStrings.confirmReport,
+        body: AppStrings.confirmReportBody,
+        confirmButtonText: AppStrings.confirm,
         onTap: () {
-          Navigator.of(context).pop();
           context.read<ApplicationDetailsBloc>().add(
             AcceptTicketEvent(ticketId),
           );
@@ -195,14 +208,11 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
   void _confirmReject(BuildContext context, int ticketId) {
     bottomSheetWidget(
       context: context,
-      isScrollControlled: false,
-      child: ConfirmBottomSheet(
-        title: 'Отклонить заявку?',
-        body: 'Вы уверены, что хотите отклонить заявку?',
-        onTap: () {
-          Navigator.of(context).pop();
+      isScrollControlled: true,
+      child: RejectBottomSheet(
+        onConfirm: (rejectReason) {
           context.read<ApplicationDetailsBloc>().add(
-            RejectTicketEvent(ticketId),
+            RejectTicketEvent(ticketId, rejectReason: rejectReason),
           );
         },
       ),

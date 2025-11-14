@@ -15,7 +15,7 @@ class ApiEndpoints {
   static const createTicket = 'engineer_api/tickets';
   static const getTicket = 'engineer_api/tickets';
   static const acceptTicket = 'engineer_api/tickets/:ticket_id/accept';
-  static const rejectTicket = 'engineer_api/tickets';
+  static const rejectTicket = 'engineer_api/tickets/:ticket_id/reject';
   static const assignExecutor = 'engineer_api/tickets/:ticket_id/assign_executor';
   static const addresses = 'engineer_api/addresses';
   static const employees = 'engineer_api/employee';

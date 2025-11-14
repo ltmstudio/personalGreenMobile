@@ -105,6 +105,9 @@ class AppStrings {
   static const confirmApp = 'Подтвердить заявку?';
   static const confirmAppBody =
       'Вы уверены, что хотите подтвердить заявку? Данное действие нельзя будет отменить';
+  static const confirmReport = 'Подтвердить отчет?';
+  static const confirmReportBody =
+      'Вы уверены, что хотите подтвердить отчет? Данное действие нельзя будет отменить';
 
   static const conclusion = 'Заключение';
   static const addConclusion = 'Напишите заключение';

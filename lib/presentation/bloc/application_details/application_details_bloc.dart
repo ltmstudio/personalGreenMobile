@@ -111,7 +111,10 @@ class ApplicationDetailsBloc
       return;
     }
 
-    final result = await _repository.rejectTicket(event.ticketId);
+    final result = await _repository.rejectTicket(
+      event.ticketId,
+      rejectReason: event.rejectReason,
+    );
 
     result.fold(
       (failure) {

@@ -36,7 +36,7 @@ abstract class TicketsRemoteDatasource {
 
   Future<void> acceptTicket(int ticketId);
 
-  Future<void> rejectTicket(int ticketId);
+  Future<void> rejectTicket(int ticketId, {String? rejectReason});
 
   Future<void> assignExecutor(int ticketId, int executorId);
 }
@@ -210,17 +210,26 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   }
 
   @override
-  Future<void> rejectTicket(int ticketId) async {
+  Future<void> rejectTicket(int ticketId, {String? rejectReason}) async {
     log('=== REJECT TICKET REQUEST ===', name: 'TicketsDatasource');
-    log(
-      'Endpoint: ${ApiEndpoints.rejectTicket}/$ticketId/reject',
-      name: 'TicketsDatasource',
+    final endpoint = ApiEndpoints.rejectTicket.replaceAll(
+      ':ticket_id',
+      ticketId.toString(),
     );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
     log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Reject Reason: $rejectReason', name: 'TicketsDatasource');
+
+    final requestBody = <String, dynamic>{};
+    if (rejectReason != null && rejectReason.isNotEmpty) {
+      requestBody['reject_reason'] = rejectReason;
+    }
+
+    log('Request body: $requestBody', name: 'TicketsDatasource');
 
     final response = await apiProvider.post(
-      endPoint: '${ApiEndpoints.rejectTicket}/$ticketId/reject',
-      data: <String, dynamic>{},
+      endPoint: endpoint,
+      data: requestBody,
     );
 
     log('=== REJECT TICKET RESPONSE ===', name: 'TicketsDatasource');

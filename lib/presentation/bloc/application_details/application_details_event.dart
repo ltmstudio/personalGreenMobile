@@ -30,11 +30,12 @@ class AcceptTicketEvent extends ApplicationDetailsEvent {
 /// Событие для отклонения тикета
 class RejectTicketEvent extends ApplicationDetailsEvent {
   final int ticketId;
+  final String? rejectReason;
 
-  const RejectTicketEvent(this.ticketId);
+  const RejectTicketEvent(this.ticketId, {this.rejectReason});
 
   @override
-  List<Object?> get props => [ticketId as Object?];
+  List<Object?> get props => [ticketId as Object?, rejectReason as Object?];
 }
 
 /// Событие для назначения исполнителя

@@ -130,11 +130,11 @@ class TicketsRepository {
     }
   }
 
-  Future<Either<Failure, void>> rejectTicket(int ticketId) async {
+  Future<Either<Failure, void>> rejectTicket(int ticketId, {String? rejectReason}) async {
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
       try {
-        await remoteDataSource.rejectTicket(ticketId);
+        await remoteDataSource.rejectTicket(ticketId, rejectReason: rejectReason);
         return const Right(null);
       } catch (error) {
         final errorMessage = ErrorMessageHelper.getErrorMessage(error);
