@@ -6,6 +6,7 @@ import 'package:hub_dom/data/models/tickets/collection_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
 abstract class TicketsRemoteDatasource {
@@ -30,6 +31,14 @@ abstract class TicketsRemoteDatasource {
   Future<CreateTicketResponseModel> createTicket(
     CreateTicketRequestModel request,
   );
+
+  Future<GetTicketResponseModel> getTicket(int ticketId);
+
+  Future<void> acceptTicket(int ticketId);
+
+  Future<void> rejectTicket(int ticketId);
+
+  Future<void> assignExecutor(int ticketId, int executorId);
 }
 
 class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
@@ -158,5 +167,88 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     log('Response data: ${response.data}', name: 'TicketsDatasource');
 
     return CreateTicketResponseModel.fromJson(response.data);
+  }
+
+  @override
+  Future<GetTicketResponseModel> getTicket(int ticketId) async {
+    log('=== GET TICKET REQUEST ===', name: 'TicketsDatasource');
+    log(
+      'Endpoint: ${ApiEndpoints.getTicket}/$ticketId',
+      name: 'TicketsDatasource',
+    );
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+
+    final response = await apiProvider.get(
+      endPoint: '${ApiEndpoints.getTicket}/$ticketId',
+    );
+
+    log('=== GET TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
+
+    return GetTicketResponseModel.fromJson(response.data);
+  }
+
+  @override
+  Future<void> acceptTicket(int ticketId) async {
+    log('=== ACCEPT TICKET REQUEST ===', name: 'TicketsDatasource');
+    final endpoint = ApiEndpoints.acceptTicket.replaceAll(
+      ':ticket_id',
+      ticketId.toString(),
+    );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+
+    final response = await apiProvider.post(
+      endPoint: endpoint,
+      data: <String, dynamic>{},
+    );
+
+    log('=== ACCEPT TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
+  }
+
+  @override
+  Future<void> rejectTicket(int ticketId) async {
+    log('=== REJECT TICKET REQUEST ===', name: 'TicketsDatasource');
+    log(
+      'Endpoint: ${ApiEndpoints.rejectTicket}/$ticketId/reject',
+      name: 'TicketsDatasource',
+    );
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+
+    final response = await apiProvider.post(
+      endPoint: '${ApiEndpoints.rejectTicket}/$ticketId/reject',
+      data: <String, dynamic>{},
+    );
+
+    log('=== REJECT TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
+  }
+
+  @override
+  Future<void> assignExecutor(int ticketId, int executorId) async {
+    log('=== ASSIGN EXECUTOR REQUEST ===', name: 'TicketsDatasource');
+    final endpoint = ApiEndpoints.assignExecutor.replaceAll(
+      ':ticket_id',
+      ticketId.toString(),
+    );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Executor ID: $executorId', name: 'TicketsDatasource');
+
+    final requestBody = {'executor_id': executorId};
+    log('Request body: $requestBody', name: 'TicketsDatasource');
+
+    final response = await apiProvider.post(
+      endPoint: endpoint,
+      data: requestBody,
+    );
+
+    log('=== ASSIGN EXECUTOR RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
   }
 }

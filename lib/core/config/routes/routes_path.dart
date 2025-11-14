@@ -8,6 +8,7 @@ abstract final class AppRoutes {
   static const String createApplication = '/createApplication';
   static const String performerDetails = '/performerDetails';
   static const String applicationDetails = '/applicationDetails';
+  static const String applicationDetailsWithId = '/applicationDetails/:ticketId';
   static const String addressDetails = '/addressDetails';
 
   static const String organizations = '/organizations';

@@ -17,7 +17,12 @@ class AppItemCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (isManager) {
-          context.push(AppRoutes.applicationDetails);
+          final ticketId = ticket?.id;
+          if (ticketId != null) {
+            context.push('${AppRoutes.applicationDetails}/$ticketId');
+          } else {
+            context.push(AppRoutes.applicationDetails);
+          }
         } else {
           final ticketId = ticket?.id ?? 123;
           context.push('${AppRoutes.employeeAppDetails}/Заявка №$ticketId');

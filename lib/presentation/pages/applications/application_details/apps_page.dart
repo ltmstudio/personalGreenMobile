@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
+import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
@@ -9,7 +12,6 @@ import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
 import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
-import 'application_details_page.dart';
 import 'components/address_card_widget.dart';
 import 'components/application_detail_data_card.dart';
 import 'components/check_list_widget.dart';
@@ -18,14 +20,18 @@ import 'components/contact_face_widget.dart';
 class AppsPage extends StatefulWidget {
   const AppsPage({
     super.key,
+    this.ticketData,
     required this.selectedPerformer,
     required this.selectedContact,
+    this.selectedExecutorId,
     required this.onShowPerformer,
     required this.onShowContact,
   });
 
+  final Data? ticketData;
   final String? selectedPerformer;
   final String? selectedContact;
+  final int? selectedExecutorId;
   final VoidCallback onShowPerformer;
   final VoidCallback onShowContact;
 
@@ -79,7 +85,9 @@ class _AppsPageState extends State<AppsPage> {
                 SizedBox(height: 6),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: ApplicationDetailDataCard(),
+                  child: ApplicationDetailDataCard(
+                    ticketData: widget.ticketData,
+                  ),
                 ),
                 SizedBox(height: 12),
                 Padding(
@@ -107,13 +115,13 @@ class _AppsPageState extends State<AppsPage> {
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: AddressCardWidget(),
+                  child: AddressCardWidget(ticketData: widget.ticketData),
                 ),
                 SizedBox(height: 12),
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: ContactFaceCardWidget(),
+                  child: ContactFaceCardWidget(ticketData: widget.ticketData),
                 ),
                 SizedBox(height: 16),
 
@@ -151,26 +159,42 @@ class _AppsPageState extends State<AppsPage> {
                 ),
                 SizedBox(height: 14),
 
-                SizedBox(
-                  height: 70,
-
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    itemBuilder: (context, index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: ImageWithShimmer(
-                          imageUrl: img,
-                          width: 70,
-                          height: 70,
+                widget.ticketData?.photos != null &&
+                        (widget.ticketData!.photos is List) &&
+                        (widget.ticketData!.photos as List).isNotEmpty
+                    ? SizedBox(
+                        height: 70,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: (widget.ticketData!.photos as List).length,
+                          itemBuilder: (context, index) {
+                            final photo =
+                                (widget.ticketData!.photos as List)[index];
+                            final photoUrl = photo is String
+                                ? photo
+                                : photo.toString();
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: ImageWithShimmer(
+                                imageUrl: photoUrl,
+                                width: 70,
+                                height: 70,
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) =>
+                              SizedBox(width: 6),
                         ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => SizedBox(width: 6),
-                    itemCount: 10,
-                  ),
-                ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          'Данных нет',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.gray),
+                        ),
+                      ),
                 SizedBox(height: 20),
               ],
             ),
@@ -186,41 +210,89 @@ class _AppsPageState extends State<AppsPage> {
               topLeft: Radius.circular(20),
             ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: MainButton(
-                  buttonTile: AppStrings.reject,
-                  onPressed: _confirmAccept,
-                  isLoading: false,
-                  btnColor: AppColors.red,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: MainButton(
-                  buttonTile: AppStrings.assign,
-                  onPressed: () => Toast.show(
-                    context,
-                    AppStrings.selectContactFace,
+          child: BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
+            listener: (context, state) {
+              if (state is ApplicationDetailsAccepted) {
+                Toast.show(context, 'Заявка принята');
+                Navigator.of(context).pop();
+              } else if (state is ApplicationDetailsRejected) {
+                Toast.show(context, 'Заявка отклонена');
+                Navigator.of(context).pop();
+              } else if (state is ApplicationDetailsError) {
+                Toast.show(context, 'Ошибка: ${state.message}');
+              }
+            },
+            builder: (context, state) {
+              final isProcessing =
+                  state is ApplicationDetailsAccepting ||
+                  state is ApplicationDetailsRejecting;
+              final ticketId = widget.ticketData?.id;
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: MainButton(
+                      buttonTile: AppStrings.reject,
+                      onPressed: ticketId != null && !isProcessing
+                          ? () => _confirmReject(context, ticketId)
+                          : null,
+                      isLoading: state is ApplicationDetailsRejecting,
+                      btnColor: AppColors.red,
+                    ),
                   ),
-                  isLoading: false,
-                  btnColor: AppColors.green,
-                ),
-              ),
-            ],
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: MainButton(
+                      buttonTile: AppStrings.assign,
+                      onPressed: ticketId != null && 
+                          !isProcessing && 
+                          widget.selectedExecutorId != null
+                          ? () => _confirmAccept(context, ticketId)
+                          : null,
+                      isLoading: state is ApplicationDetailsAccepting,
+                      btnColor: AppColors.green,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  _confirmAccept() {
+  void _confirmAccept(BuildContext context, int ticketId) {
     bottomSheetWidget(
       context: context,
       isScrollControlled: false,
-      child: ConfirmBottomSheet(title: AppStrings.confirmApp,
-        body: AppStrings.confirmAppBody, onTap: () {  },),
+      child: ConfirmBottomSheet(
+        title: AppStrings.confirmApp,
+        body: AppStrings.confirmAppBody,
+        onTap: () {
+          Navigator.of(context).pop();
+          context.read<ApplicationDetailsBloc>().add(
+            AcceptTicketEvent(ticketId),
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmReject(BuildContext context, int ticketId) {
+    bottomSheetWidget(
+      context: context,
+      isScrollControlled: false,
+      child: ConfirmBottomSheet(
+        title: 'Отклонить заявку?',
+        body: 'Вы уверены, что хотите отклонить заявку?',
+        onTap: () {
+          Navigator.of(context).pop();
+          context.read<ApplicationDetailsBloc>().add(
+            RejectTicketEvent(ticketId),
+          );
+        },
+      ),
     );
   }
 }

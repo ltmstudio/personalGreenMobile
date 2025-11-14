@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
+import 'package:hub_dom/core/utils/color_utils.dart';
+import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/report_page.dart';
+import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/selectable_btn.dart';
+import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
+import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
 import 'apps_page.dart';
 
-final String img =
-    'https://plus.unsplash.com/premium_photo-1707213919549-deeb789008c0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8NnNNVmpUTFNrZVF8fGVufDB8fHx8fA%3D%3D';
-
 class ApplicationDetailsPage extends StatefulWidget {
-  const ApplicationDetailsPage({super.key});
+  final int? ticketId;
+
+  const ApplicationDetailsPage({super.key, this.ticketId});
 
   @override
   State<ApplicationDetailsPage> createState() => _ApplicationDetailsPageState();
@@ -23,6 +29,9 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   int index = 0;
   String? selectedPerformer;
   String? selectedContact;
+  int? selectedExecutorId;
+  Employee?
+  _pendingEmployee; // Временно сохраненный исполнитель до успешного ответа
 
   @override
   void initState() {
@@ -37,87 +46,256 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Заявка №123'),
-        actions: [
-          InkWell(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              decoration: BoxDecoration(
-                color: AppColors.yellow,
-                borderRadius: BorderRadius.circular(34),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.control,
-                    style: Theme.of(context).textTheme.bodyMedium,
+    return BlocProvider(
+      create: (context) {
+        final bloc = GetIt.instance<ApplicationDetailsBloc>();
+        if (widget.ticketId != null) {
+          bloc.add(LoadTicketDetailsEvent(widget.ticketId!));
+        }
+        return bloc;
+      },
+      child: BlocListener<ApplicationDetailsBloc, ApplicationDetailsState>(
+        listener: (context, state) {
+          if (state is ApplicationDetailsExecutorAssigned) {
+            // Закрываем bottom sheet после успешного назначения исполнителя
+            Navigator.of(context).pop();
+            Toast.show(context, 'Исполнитель назначен');
+            // Применяем выбранного исполнителя только после успешного ответа
+            if (_pendingEmployee != null) {
+              setState(() {
+                selectedExecutorId = _pendingEmployee!.id;
+                selectedPerformer = _pendingEmployee!.fullName;
+                selectedContact = _pendingEmployee!.fullName;
+                _pendingEmployee = null;
+              });
+            }
+          } else if (state is ApplicationDetailsError) {
+            // Показываем понятное сообщение об ошибке
+            Toast.show(context, state.message);
+            // Сбрасываем выбранного исполнителя и текстовое поле при ошибке
+            setState(() {
+              selectedExecutorId = null;
+              selectedPerformer = null;
+              selectedContact = null;
+              _pendingEmployee = null;
+            });
+          }
+        },
+        child: BlocBuilder<ApplicationDetailsBloc, ApplicationDetailsState>(
+          builder: (context, state) {
+            String title = 'Заявка';
+            String? statusTitle;
+            Color statusColor = AppColors.yellow;
+            if (state is ApplicationDetailsLoaded) {
+              title = 'Заявка №${state.ticket.data?.id ?? ''}';
+              statusTitle = state.ticket.data?.status?.title;
+              if (state.ticket.data?.status?.color != null) {
+                statusColor = ColorUtils.hexToColor(
+                  state.ticket.data!.status!.color!,
+                );
+              }
+            } else if (widget.ticketId != null) {
+              title = 'Заявка №${widget.ticketId}';
+            }
+
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(title),
+                actions: [
+                  InkWell(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      margin: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(34),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            statusTitle ?? AppStrings.control,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          SizedBox(width: 5),
+                          Icon(Icons.check_circle_outline_sharp, size: 18),
+                        ],
+                      ),
+                    ),
                   ),
-                  SizedBox(width: 5),
-                  Icon(Icons.check_circle_outline_sharp, size: 18),
                 ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(50.0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SelectableBtn(
+                          isSelected: index == 0,
+                          title: AppStrings.application,
+                          onTap: () {
+                            setState(() {
+                              index = 0;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 5),
+                        SelectableBtn(
+                          isSelected: index == 1,
+                          title: AppStrings.report,
+                          onTap: () {
+                            setState(() {
+                              index = 1;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SelectableBtn(
-                  isSelected: index == 0,
-                  title: AppStrings.application,
-                  onTap: () {
-                    setState(() {
-                      index = 0;
-                    });
-                  },
-                ),
-                SizedBox(width: 5),
-                SelectableBtn(
-                  isSelected: index == 1,
-                  title: AppStrings.report,
-                  onTap: () {
-                    setState(() {
-                      index = 1;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
+
+              body: _buildBody(context, state),
+            );
+          },
         ),
       ),
-
-      body: index == 0
-          ? AppsPage(
-              selectedPerformer: selectedPerformer,
-              selectedContact: selectedContact,
-              onShowPerformer: _showPerformer,
-              onShowContact: _showPerformer,
-            )
-          : AppDetailsReportPage(),
     );
   }
 
-  _showPerformer() {
+  Widget _buildBody(BuildContext context, ApplicationDetailsState state) {
+    if (state is ApplicationDetailsLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    // Показываем экран ошибки только при ошибке загрузки данных
+    // Для ошибок операций (accept/reject/assign) показываем предыдущее состояние
+    // которое эмитится сразу после ошибки, поэтому эта проверка сработает
+    // только для ошибок загрузки
+    if (state is ApplicationDetailsError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Ошибка: ${state.message}'),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                if (widget.ticketId != null) {
+                  context.read<ApplicationDetailsBloc>().add(
+                    LoadTicketDetailsEvent(widget.ticketId!),
+                  );
+                }
+              },
+              child: Text('Повторить'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final ticketData = state is ApplicationDetailsLoaded
+        ? state.ticket.data
+        : null;
+
+    final bloc = context.read<ApplicationDetailsBloc>();
+
+    return index == 0
+        ? AppsPage(
+            ticketData: ticketData,
+            selectedPerformer: selectedPerformer,
+            selectedContact: selectedContact,
+            selectedExecutorId: selectedExecutorId,
+            onShowPerformer: () => _showPerformer(context, bloc),
+            onShowContact: () => _showPerformer(context, bloc),
+          )
+        : AppDetailsReportPage(
+            ticketData: ticketData,
+            selectedExecutorId: selectedExecutorId,
+            ticketId: widget.ticketId,
+          );
+  }
+
+  void _showPerformer(BuildContext context, ApplicationDetailsBloc bloc) {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: PerformerWidget(
-        onSelectItem: (String value) {
-          setState(() {
-            selectedPerformer = value;
-            selectedContact = value;
-          });
-        },
-        isSelected: true,
+      child: BlocProvider.value(
+        value: bloc,
+        child: PerformerWidget(
+          onSelectItem: (String value) {
+            setState(() {
+              selectedPerformer = value;
+              selectedContact = value;
+            });
+          },
+          onSelectEmployee: (Employee employee) {
+            print('=== EMPLOYEE SELECTED ===');
+            print('Employee ID: ${employee.id}');
+            print('Employee Name: ${employee.fullName}');
+            // PerformerWidget уже закрывает bottom sheet при isSelected == true
+            // Показываем диалог подтверждения после небольшой задержки
+            // чтобы bottom sheet успел закрыться
+            Future.microtask(() {
+              if (mounted) {
+                _showAssignExecutorDialog(context, bloc, employee);
+              }
+            });
+          },
+          isSelected: true,
+        ),
+      ),
+    );
+  }
+
+  void _showAssignExecutorDialog(
+    BuildContext context,
+    ApplicationDetailsBloc bloc,
+    Employee employee,
+  ) {
+    print('=== SHOWING ASSIGN EXECUTOR DIALOG ===');
+    print('Ticket ID: ${widget.ticketId}');
+    print('Executor ID: ${employee.id}');
+
+    bottomSheetWidget(
+      context: context,
+      isScrollControlled: false,
+      child: BlocProvider.value(
+        value: bloc,
+        child: ConfirmBottomSheet(
+          title: 'Назначить исполнителя?',
+          body: 'Заявка будет назначена на выбранного исполнителя',
+          confirmButtonText: AppStrings.assign,
+          cancelButtonText: 'Закрыть',
+          onTap: () {
+            print('=== CONFIRM BUTTON TAPPED ===');
+            // Сохраняем выбранного исполнителя во временную переменную
+            // Применим его только после успешного ответа
+            setState(() {
+              _pendingEmployee = employee;
+            });
+            // Вызываем assignExecutor после подтверждения
+            if (widget.ticketId != null && employee.id != null) {
+              print('=== CALLING ASSIGN EXECUTOR ===');
+              print('Ticket ID: ${widget.ticketId}');
+              print('Executor ID: ${employee.id}');
+              bloc.add(
+                AssignExecutorEvent(
+                  ticketId: widget.ticketId!,
+                  executorId: employee.id!,
+                ),
+              );
+            } else {
+              print('=== ASSIGN EXECUTOR SKIPPED ===');
+              print('Ticket ID: ${widget.ticketId}');
+              print('Executor ID: ${employee.id}');
+            }
+          },
+        ),
       ),
     );
   }

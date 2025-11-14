@@ -50,6 +50,7 @@ final List<StatefulShellBranch> mainBranches = [
     routes: [
       isMain
           ? GoRoute(
+              //Заявки Для сотдудника
               path: AppRoutes.organizationDetails,
               pageBuilder: (context, state) {
                 if (state.extra != null &&
@@ -70,7 +71,7 @@ final List<StatefulShellBranch> mainBranches = [
                   ),
                 );
               },
-            )
+            ) //Заявки для руководителей
           : GoRoute(
               path: AppRoutes.applications,
               pageBuilder: (context, state) {
@@ -218,6 +219,20 @@ final goRouter = GoRouter(
       path: AppRoutes.applicationDetails,
       builder: (context, state) {
         return ApplicationDetailsPage();
+      },
+    ),
+    GoRoute(
+      path: '${AppRoutes.applicationDetails}/:ticketId',
+      builder: (context, state) {
+        final ticketIdStr = state.pathParameters['ticketId'] ?? '';
+        final ticketId = int.tryParse(ticketIdStr);
+        if (ticketId == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(child: Text('Неверный ID заявки')),
+          );
+        }
+        return ApplicationDetailsPage(ticketId: ticketId);
       },
     ),
 

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hub_dom/presentation/pages/applications/application_details/application_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/address_card_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/application_detail_data_card.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/check_list_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/contact_face_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
-import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
@@ -160,20 +158,13 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           ),
           SizedBox(height: 14),
 
-          SizedBox(
-            height: 70,
-
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              itemBuilder: (context, index) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: ImageWithShimmer(imageUrl: img, width: 70, height: 70),
-                );
-              },
-              separatorBuilder: (context, index) => SizedBox(width: 6),
-              itemCount: 10,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Данных нет',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
             ),
           ),
           SizedBox(height: 20),

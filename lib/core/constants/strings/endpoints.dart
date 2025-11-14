@@ -13,5 +13,10 @@ class ApiEndpoints {
   static const collections = 'engineer_api/tickets';
   static const dictionaries = 'engineer_api/tickets/dictionaries';
   static const createTicket = 'engineer_api/tickets';
+  static const getTicket = 'engineer_api/tickets';
+  static const acceptTicket = 'engineer_api/tickets/:ticket_id/accept';
+  static const rejectTicket = 'engineer_api/tickets';
+  static const assignExecutor = 'engineer_api/tickets/:ticket_id/assign_executor';
   static const addresses = 'engineer_api/addresses';
+  static const employees = 'engineer_api/employee';
 }
