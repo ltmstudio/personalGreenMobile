@@ -8,6 +8,7 @@ import 'package:hub_dom/data/models/tickets/collection_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
+import 'package:hub_dom/data/models/tickets/employee_report_request_model.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
@@ -55,6 +56,7 @@ class TicketsRepository {
     int? troubleTypeId,
     int? priorityTypeId,
     int? sourceChannelTypeId,
+    int? executorId,
     int? page,
     int? perPage,
   }) async {
@@ -71,6 +73,7 @@ class TicketsRepository {
           troubleTypeId: troubleTypeId,
           priorityTypeId: priorityTypeId,
           sourceChannelTypeId: sourceChannelTypeId,
+          executorId: executorId,
           page: page,
           perPage: perPage,
         );
@@ -153,6 +156,24 @@ class TicketsRepository {
     if (isConnected) {
       try {
         await remoteDataSource.assignExecutor(ticketId, executorId);
+        return const Right(null);
+      } catch (error) {
+        final errorMessage = ErrorMessageHelper.getErrorMessage(error);
+        return Left(ServerFailure(errorMessage));
+      }
+    } else {
+      return Left(ConnectionFailure(AppStrings.noInternet));
+    }
+  }
+
+  Future<Either<Failure, void>> submitReport(
+    int ticketId,
+    EmployeeReportRequestModel request,
+  ) async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        await remoteDataSource.submitReport(ticketId, request);
         return const Right(null);
       } catch (error) {
         final errorMessage = ErrorMessageHelper.getErrorMessage(error);

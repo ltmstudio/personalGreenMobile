@@ -37,6 +37,7 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     final result = await _repository.getEmployees(
       page: event.page,
       perPage: event.perPage,
+      withStatistics: event.withStatistics,
     );
 
     result.fold(
@@ -73,6 +74,7 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
       page: event.page,
       perPage: event.perPage,
       fullName: event.fullName,
+      withStatistics: event.withStatistics,
     );
 
     result.fold(

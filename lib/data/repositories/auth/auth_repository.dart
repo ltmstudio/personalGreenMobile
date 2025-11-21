@@ -49,13 +49,54 @@ class AuthenticationRepository {
   }
 
   Future<Either<Failure, void>> logout() async {
-    try {
-      await locator<Store>().clear();
-      await locator<AppPreferences>().clearCrm();
+    final bool isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        // Сначала вызываем API для логаута
+        await remoteDataSource.logout();
+        
+        // Затем очищаем локальное хранилище
+        await locator<Store>().clear();
+        await locator<AppPreferences>().clearCrm();
 
-      return right(null);
-    } catch (error) {
-      return left(CacheFailure('Logout failed: $error'));
+        return right(null);
+      } catch (error) {
+        // Даже если API вызов не удался, очищаем локальное хранилище
+        try {
+          await locator<Store>().clear();
+          await locator<AppPreferences>().clearCrm();
+        } catch (clearError) {
+          return left(CacheFailure('Logout failed: $error. Clear failed: $clearError'));
+        }
+        return left(ServerFailure('Logout API failed: $error'));
+      }
+    } else {
+      // Если нет интернета, все равно очищаем локальное хранилище
+      try {
+        await locator<Store>().clear();
+        await locator<AppPreferences>().clearCrm();
+        return right(null);
+      } catch (error) {
+        return left(CacheFailure('Logout failed: $error'));
+      }
+    }
+  }
+
+  Future<Either<Failure, ProfileModel>> getProfile() async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        final response = await remoteDataSource.getProfile();
+        return Right(response);
+      } catch (error, stackTrace) {
+        // Логируем ошибку для отладки
+        print('=== GET PROFILE REPOSITORY ERROR ===');
+        print('Error: $error');
+        print('Stack trace: $stackTrace');
+        return Left(ServerFailure(error.toString()));
+      }
+    } else {
+      return Left(ConnectionFailure(AppStrings.noInternet));
     }
   }
 

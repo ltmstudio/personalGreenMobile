@@ -29,14 +29,14 @@ import 'package:hub_dom/presentation/pages/support/object_details_page.dart';
 import 'package:hub_dom/presentation/pages/support/objects_page.dart';
 import 'package:hub_dom/presentation/pages/support/support_page.dart';
 
-const bool isMain = false;
+// Константа оставлена для обратной совместимости, но теперь навигация происходит динамически через splash screen
+bool isMain = false;
 
 final List<StatefulShellBranch> mainBranches = [
   StatefulShellBranch(
     navigatorKey: shellNavKey1,
     routes: [
       GoRoute(
-        // path: AppRoutes.organization,
         path: AppRoutes.profile,
         pageBuilder: (context, state) {
           return const NoTransitionPage(child: ProfilePage());
@@ -47,40 +47,38 @@ final List<StatefulShellBranch> mainBranches = [
 
   StatefulShellBranch(
     navigatorKey: shellNavKey2,
+    initialLocation: AppRoutes.applications,
     routes: [
-      isMain
-          ? GoRoute(
-              //Заявки Для сотдудника
-              path: AppRoutes.organizationDetails,
-              pageBuilder: (context, state) {
-                if (state.extra != null &&
-                    state.extra is Map<String, dynamic>) {
-                  final extra = state.extra as Map<String, dynamic>;
-
-                  final CrmSystemModel model = extra['model'];
-
-                  return NoTransitionPage(
-                    child: OrganizationDetailsPage(model: model),
-                  );
-                }
-
-                return NoTransitionPage(
-                  child: Scaffold(
-                    appBar: AppBar(),
-                    body: Center(child: Text(AppStrings.error)),
-                  ),
-                );
-              },
-            ) //Заявки для руководителей
-          : GoRoute(
-              path: AppRoutes.applications,
-              pageBuilder: (context, state) {
-                return NoTransitionPage(
-                  // child: UserOrderPage(),
-                  child: ApplicationPage(),
-                );
-              },
-            ),
+      // Добавляем оба роута в один branch - GoRouter должен правильно обрабатывать это
+      GoRoute(
+        path: AppRoutes.applications,
+        pageBuilder: (context, state) {
+          return NoTransitionPage(child: ApplicationPage());
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.organizations,
+        pageBuilder: (context, state) {
+          return NoTransitionPage(child: OrganizationPage());
+        },
+        routes: [
+          // Добавляем organizationDetails как дочерний роут, чтобы bottom navigation оставался видимым
+          GoRoute(
+            path: 'organizationDetails',
+            builder: (context, state) {
+              if (state.extra != null && state.extra is Map<String, dynamic>) {
+                final extra = state.extra as Map<String, dynamic>;
+                final CrmSystemModel model = extra['model'];
+                return OrganizationDetailsPage(model: model);
+              }
+              return Scaffold(
+                appBar: AppBar(),
+                body: Center(child: Text(AppStrings.error)),
+              );
+            },
+          ),
+        ],
+      ),
     ],
   ),
 
@@ -108,6 +106,8 @@ final goRouter = GoRouter(
       branches: mainBranches,
     ),
 
+    // organizationDetails теперь находится внутри StatefulShellRoute для сохранения bottom navigation
+    // Удаляем старый роут, так как он теперь внутри branch
     GoRoute(
       path: AppRoutes.splash,
       builder: (context, state) {
@@ -187,14 +187,22 @@ final goRouter = GoRouter(
     GoRoute(
       path: AppRoutes.managerTickets,
       builder: (context, state) {
-        // Получаем initialTab из extra
+        // Получаем initialTab и selectedDate из extra
         int initialTab = 0;
+        DateTimeRange<DateTime>? selectedDate;
         if (state.extra != null && state.extra is Map<String, dynamic>) {
           final extra = state.extra as Map<String, dynamic>;
           initialTab = extra['initialTab'] ?? 0;
+          selectedDate = extra['selectedDate'] as DateTimeRange<DateTime>?;
+          debugPrint(
+            '[AppRouter] ManagerTicketsPage: initialTab=$initialTab, selectedDate=$selectedDate',
+          );
         }
 
-        return ManagerTicketsPage(initialTab: initialTab);
+        return ManagerTicketsPage(
+          initialTab: initialTab,
+          initialSelectedDate: selectedDate,
+        );
       },
     ),
     GoRoute(
@@ -243,41 +251,28 @@ final goRouter = GoRouter(
       },
     ),
 
-    ///part 2
-    //     GoRoute(
-    //       path: '${AppRoutes.organizationDetails}/:title',
-    // CrmSystemModel data
-    //       builder: (context, state) {
-    //         final title = state.pathParameters['title'] ?? '';
-    //
-    //         return OrganizationDetailsPage(title: title);
-    //       },
-    //     ),
-
-    // GoRoute(
-    //   path: AppRoutes.organizationDetails,
-    //   builder: (context, state) {
-    //     if (state.extra != null && state.extra is Map<String, dynamic>) {
-    //       final extra = state.extra as Map<String, dynamic>;
-    //
-    //       final CrmSystemModel model = extra['model'];
-    //
-    //       return OrganizationDetailsPage(model: model);
-    //     }
-    //
-    //     return Scaffold(
-    //       appBar: AppBar(),
-    //       body: Center(child: Text(AppStrings.error)),
-    //     );
-    //   },
-    // ),
     GoRoute(
       path: '${AppRoutes.employeeAppDetails}/:title',
 
       builder: (context, state) {
         final title = state.pathParameters['title'] ?? '';
 
-        return EmployeeAppDetailsPage(title: title);
+        // Получаем ticketId из extra или извлекаем из title
+        int? ticketId;
+        if (state.extra != null && state.extra is Map<String, dynamic>) {
+          final extra = state.extra as Map<String, dynamic>;
+          ticketId = extra['ticketId'] as int?;
+        }
+
+        // Если ticketId не передан через extra, пытаемся извлечь из title
+        if (ticketId == null && title.contains('№')) {
+          final match = RegExp(r'№(\d+)').firstMatch(title);
+          if (match != null) {
+            ticketId = int.tryParse(match.group(1)!);
+          }
+        }
+
+        return EmployeeAppDetailsPage(title: title, ticketId: ticketId);
       },
     ),
 
@@ -310,12 +305,6 @@ final goRouter = GoRouter(
       path: AppRoutes.objectDetails,
       builder: (context, state) {
         return ObjectDetailsPage();
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.organizations,
-      builder: (context, state) {
-        return OrganizationPage();
       },
     ),
   ],

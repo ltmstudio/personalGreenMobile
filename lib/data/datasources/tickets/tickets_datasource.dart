@@ -1,11 +1,14 @@
 import 'dart:developer';
+import 'package:dio/dio.dart';
 
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'package:hub_dom/core/network/api_provider.dart';
+import 'package:hub_dom/core/network/api_provider_impl.dart';
 import 'package:hub_dom/data/models/tickets/collection_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
+import 'package:hub_dom/data/models/tickets/employee_report_request_model.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
@@ -24,6 +27,7 @@ abstract class TicketsRemoteDatasource {
     int? troubleTypeId,
     int? priorityTypeId,
     int? sourceChannelTypeId,
+    int? executorId,
     int? page,
     int? perPage,
   });
@@ -39,6 +43,8 @@ abstract class TicketsRemoteDatasource {
   Future<void> rejectTicket(int ticketId, {String? rejectReason});
 
   Future<void> assignExecutor(int ticketId, int executorId);
+
+  Future<void> submitReport(int ticketId, EmployeeReportRequestModel request);
 }
 
 class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
@@ -90,6 +96,7 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     int? troubleTypeId,
     int? priorityTypeId,
     int? sourceChannelTypeId,
+    int? executorId,
     int? page,
     int? perPage,
   }) async {
@@ -131,6 +138,9 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     }
     if (sourceChannelTypeId != null) {
       queryParams['source_channel_type_id'] = sourceChannelTypeId;
+    }
+    if (executorId != null) {
+      queryParams['executor_id'] = executorId;
     }
 
     log('=== API REQUEST ===', name: 'TicketsDatasource');
@@ -257,6 +267,56 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     );
 
     log('=== ASSIGN EXECUTOR RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
+  }
+
+  @override
+  Future<void> submitReport(int ticketId, EmployeeReportRequestModel request) async {
+    log('=== SUBMIT REPORT REQUEST ===', name: 'TicketsDatasource');
+    final endpoint = ApiEndpoints.reportTicket.replaceAll(
+      ':ticket_id',
+      ticketId.toString(),
+    );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Comment: ${request.comment}', name: 'TicketsDatasource');
+    log('Photos count: ${request.photos?.length ?? 0}', name: 'TicketsDatasource');
+
+    // Формируем FormData вручную для правильной передачи массива файлов
+    final formData = FormData();
+    
+    if (request.comment != null && request.comment!.isNotEmpty) {
+      formData.fields.add(MapEntry('comment', request.comment!));
+    }
+    
+    // Для массива файлов с ключом photos[] добавляем каждый файл
+    if (request.photos != null && request.photos!.isNotEmpty) {
+      for (final photo in request.photos!) {
+        final fileName = photo.path.split('/').last;
+        formData.files.add(
+          MapEntry(
+            'photos[]',
+            await MultipartFile.fromFile(
+              photo.path,
+              filename: fileName,
+            ),
+          ),
+        );
+      }
+    }
+
+    // Используем прямой вызов Dio через ApiProviderImpl
+    // Так как postFormData принимает только Map, а нам нужен готовый FormData
+    final impl = apiProvider as ApiProviderImpl;
+    impl.dio.options.headers.remove('Content-Type');
+    
+    final response = await impl.dio.post(
+      endpoint,
+      data: formData,
+    );
+
+    log('=== SUBMIT REPORT RESPONSE ===', name: 'TicketsDatasource');
     log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
     log('Response data: ${response.data}', name: 'TicketsDatasource');
   }

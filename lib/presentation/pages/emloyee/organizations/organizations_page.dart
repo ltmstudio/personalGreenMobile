@@ -50,7 +50,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
             // });
             locator<SelectedCrmCubit>().setCrmSystem(0);
             context.go(
-              AppRoutes.organizationDetails,
+              '${AppRoutes.organizations}/organizationDetails',
               extra: {'model': state.data.first},
             );
           }
@@ -68,7 +68,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
                   onTap: () {
                     locator<SelectedCrmCubit>().setCrmSystem(index);
                     context.go(
-                      AppRoutes.organizationDetails,
+                      '${AppRoutes.organizations}/organizationDetails',
                       extra: {'model': state.data[index]},
                     );
                   },

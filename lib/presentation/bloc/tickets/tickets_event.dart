@@ -18,6 +18,7 @@ class LoadTicketsEvent extends TicketsEvent {
   final int? troubleTypeId;
   final int? priorityTypeId;
   final int? sourceChannelTypeId;
+  final int? executorId;
   final int? page;
   final int? perPage;
 
@@ -31,6 +32,7 @@ class LoadTicketsEvent extends TicketsEvent {
     this.troubleTypeId,
     this.priorityTypeId,
     this.sourceChannelTypeId,
+    this.executorId,
     this.page,
     this.perPage,
   });
@@ -45,6 +47,7 @@ class LoadTicketsEvent extends TicketsEvent {
     troubleTypeId,
     priorityTypeId,
     sourceChannelTypeId,
+    executorId,
     page,
     perPage,
   ];
@@ -61,6 +64,7 @@ class UpdateTicketsFiltersEvent extends TicketsEvent {
   final int? troubleTypeId;
   final int? priorityTypeId;
   final int? sourceChannelTypeId;
+  final int? executorId;
   final int? page;
   final int? perPage;
 
@@ -74,6 +78,7 @@ class UpdateTicketsFiltersEvent extends TicketsEvent {
     this.troubleTypeId,
     this.priorityTypeId,
     this.sourceChannelTypeId,
+    this.executorId,
     this.page,
     this.perPage,
   });
@@ -89,6 +94,7 @@ class UpdateTicketsFiltersEvent extends TicketsEvent {
     troubleTypeId,
     priorityTypeId,
     sourceChannelTypeId,
+    executorId,
     page,
     perPage,
   ];

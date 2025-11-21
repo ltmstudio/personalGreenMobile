@@ -18,9 +18,14 @@ import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'components/filter_manager_tickets_widget.dart';
 
 class ManagerTicketsPage extends StatefulWidget {
-  const ManagerTicketsPage({super.key, this.initialTab = 0});
+  const ManagerTicketsPage({
+    super.key,
+    this.initialTab = 0,
+    this.initialSelectedDate,
+  });
 
   final int initialTab;
+  final DateTimeRange<DateTime>? initialSelectedDate;
 
   @override
   State<ManagerTicketsPage> createState() => _ManagerTicketsPageState();
@@ -36,6 +41,7 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
 
   // Состояние фильтров
   DateTimeRange<DateTime>? selectedDate;
+  DateTimeRange<DateTime>? _initialDateFromDashboard; // Период, переданный со страницы статистики
   ServiceType? selectedServiceType;
   TroubleType? selectedTroubleType;
   Type? selectedPriorityType;
@@ -48,6 +54,15 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     // Устанавливаем начальный таб
     selectedCategory = widget.initialTab;
 
+    // Сохраняем переданный период со страницы статистики
+    if (widget.initialSelectedDate != null) {
+      selectedDate = widget.initialSelectedDate;
+      _initialDateFromDashboard = widget.initialSelectedDate;
+      debugPrint('[ManagerTicketsPage] Received selectedDate from dashboard: ${selectedDate!.start} - ${selectedDate!.end}');
+    } else {
+      debugPrint('[ManagerTicketsPage] No selectedDate received');
+    }
+
     // Загружаем tickets при инициализации
     _loadTicketsForTab(selectedCategory);
   }
@@ -59,18 +74,38 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     super.dispose();
   }
 
-  /// Загружает заявки для выбранного таба
+  /// Загружает заявки для выбранного таба с учетом всех фильтров
   void _loadTicketsForTab(int tabIndex) {
-    if (tabIndex == 0) {
-      // "Все" - загружаем без фильтров
-      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+    String? startDate;
+    String? endDate;
+
+    // Если есть выбранный период, используем его
+    if (selectedDate != null) {
+      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
+      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
+      debugPrint('[ManagerTicketsPage] Loading tickets with period: $startDate - $endDate, status: ${_getStatusApiValue(tabIndex)}');
     } else {
-      // Фильтруем по конкретному статусу
-      final statusApiValue = _getStatusApiValue(tabIndex);
-      _ticketsBloc.add(
-        LoadTicketsEvent(page: 1, perPage: 1000, status: statusApiValue),
-      );
+      debugPrint('[ManagerTicketsPage] Loading tickets without period, status: ${_getStatusApiValue(tabIndex)}');
     }
+
+    String? statusApiValue;
+    if (tabIndex != 0) {
+      // Фильтруем по конкретному статусу
+      statusApiValue = _getStatusApiValue(tabIndex);
+    }
+
+    _ticketsBloc.add(
+      LoadTicketsEvent(
+        page: 1,
+        perPage: 1000,
+        status: statusApiValue,
+        startDate: startDate,
+        endDate: endDate,
+        serviceTypeId: selectedServiceType?.id,
+        troubleTypeId: selectedTroubleType?.id,
+        priorityTypeId: selectedPriorityType?.id,
+      ),
+    );
   }
 
   @override
@@ -204,8 +239,18 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
                             onTap: () {
                               setState(() {
                                 selectedCategory = index;
+                                // Сбрасываем период только если он был изменен на странице заявок
+                                // (т.е. отличается от переданного со страницы статистики)
+                                if (_initialDateFromDashboard != null && selectedDate != _initialDateFromDashboard) {
+                                  // Период был изменен на странице заявок - сбрасываем
+                                  debugPrint('[ManagerTicketsPage] Resetting date filter (was changed on tickets page)');
+                                  selectedDate = null;
+                                } else if (_initialDateFromDashboard != null) {
+                                  // Период был передан со страницы статистики - сохраняем
+                                  debugPrint('[ManagerTicketsPage] Keeping date filter from dashboard: ${selectedDate!.start} - ${selectedDate!.end}');
+                                }
                               });
-                              _filterByStatus(index);
+                              _loadTicketsForTab(index);
                             },
                           );
                         },
@@ -326,19 +371,6 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   }
 
   /// Фильтрация по статусу
-  void _filterByStatus(int index) {
-    if (index == 0) {
-      // "Все" - загружаем без фильтров
-      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
-    } else {
-      // Фильтруем по конкретному статусу
-      final statusApiValue = _getStatusApiValue(index);
-      _ticketsBloc.add(
-        LoadTicketsEvent(page: 1, perPage: 1000, status: statusApiValue),
-      );
-    }
-  }
-
   /// Получает API значение статуса по индексу
   String _getStatusApiValue(int index) {
     switch (index) {
@@ -371,7 +403,11 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
             selectedServiceType = serviceType;
             selectedTroubleType = troubleType;
             selectedPriorityType = priorityType;
+            // Не сбрасываем _initialDateFromDashboard, чтобы знать,
+            // был ли период передан со страницы статистики
           });
+          // Перезагружаем заявки с учетом нового периода и текущего таба
+          _loadTicketsForTab(selectedCategory);
         },
       ),
     );

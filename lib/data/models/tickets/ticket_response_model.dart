@@ -18,10 +18,10 @@ class TicketResponseModel {
 
   factory TicketResponseModel.fromJson(Map<String, dynamic> json) =>
       TicketResponseModel(
-        tickets: json["tickets"] == null
+        tickets: json["data"] == null
             ? []
             : List<Ticket>.from(
-                json["tickets"]!.map((x) => Ticket.fromJson(x)),
+                json["data"]!.map((x) => Ticket.fromJson(x)),
               ),
         stats: json["stats"] == null
             ? []
@@ -29,7 +29,7 @@ class TicketResponseModel {
       );
 
   Map<String, dynamic> toJson() => {
-    "tickets": tickets == null
+    "data": tickets == null
         ? []
         : List<dynamic>.from(tickets!.map((x) => x.toJson())),
     "stats": stats == null
@@ -42,13 +42,24 @@ class Stat {
   final int? id;
   final int? count;
   final String? name;
+  final String? title;
 
-  Stat({this.id, this.count, this.name});
+  Stat({this.id, this.count, this.name, this.title});
 
   factory Stat.fromJson(Map<String, dynamic> json) =>
-      Stat(id: json["id"], count: json["count"], name: json["name"]);
+      Stat(
+        id: json["id"],
+        count: json["count"],
+        name: json["name"],
+        title: json["title"],
+      );
 
-  Map<String, dynamic> toJson() => {"id": id, "count": count, "name": name};
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "count": count,
+    "name": name,
+    "title": title,
+  };
 }
 
 class Ticket {
@@ -57,9 +68,11 @@ class Ticket {
   final DateTime? visitingAt;
   final TicketType? serviceType;
   final TicketType? troubleType;
+  final int? executorId;
   final Executor? executor;
   final TicketPriorityType? priorityType;
   final String? comment;
+  final int? objectId;
   final String? address;
   final DateTime? createdAt;
   final DateTime? deadlinedAt;
@@ -70,9 +83,11 @@ class Ticket {
     this.visitingAt,
     this.serviceType,
     this.troubleType,
+    this.executorId,
     this.executor,
     this.priorityType,
     this.comment,
+    this.objectId,
     this.address,
     this.createdAt,
     this.deadlinedAt,
@@ -92,6 +107,7 @@ class Ticket {
     troubleType: json["trouble_type"] == null
         ? null
         : TicketType.fromJson(json["trouble_type"]),
+    executorId: json["executor_id"],
     executor: json["executor"] == null
         ? null
         : Executor.fromJson(json["executor"]),
@@ -99,6 +115,7 @@ class Ticket {
         ? null
         : TicketPriorityType.fromJson(json["priority_type"]),
     comment: json["comment"],
+    objectId: json["object_id"],
     address: json["address"],
     createdAt: json["created_at"] == null
         ? null
@@ -114,9 +131,11 @@ class Ticket {
     "visiting_at": visitingAt?.toIso8601String(),
     "service_type": serviceType?.toJson(),
     "trouble_type": troubleType?.toJson(),
+    "executor_id": executorId,
     "executor": executor?.toJson(),
     "priority_type": priorityType?.toJson(),
     "comment": comment,
+    "object_id": objectId,
     "address": address,
     "created_at": createdAt?.toIso8601String(),
     "deadlined_at": deadlinedAt?.toIso8601String(),
@@ -130,6 +149,7 @@ class Executor {
   final String? surname;
   final String? email;
   final dynamic phone;
+  final String? _fullNameFromJson;
 
   Executor({
     this.id,
@@ -138,7 +158,8 @@ class Executor {
     this.surname,
     this.email,
     this.phone,
-  });
+    String? fullName,
+  }) : _fullNameFromJson = fullName;
 
   factory Executor.fromJson(Map<String, dynamic> json) => Executor(
     id: json["id"],
@@ -147,6 +168,7 @@ class Executor {
     surname: json["surname"],
     email: json["email"],
     phone: json["phone"],
+    fullName: json["full_name"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -156,9 +178,16 @@ class Executor {
     "surname": surname,
     "email": email,
     "phone": phone,
+    "full_name": _fullNameFromJson,
   };
 
   String get fullName {
+    // Если есть готовое поле full_name из JSON, используем его
+    final fullNameFromJson = _fullNameFromJson;
+    if (fullNameFromJson != null && fullNameFromJson.isNotEmpty) {
+      return fullNameFromJson;
+    }
+    // Иначе собираем из отдельных полей
     final parts = [
       lastname,
       name,
@@ -209,14 +238,16 @@ class TicketStatus {
   final String? title;
   final String? name;
   final String? color;
+  final String? fontColor;
 
-  TicketStatus({this.id, this.title, this.name, this.color});
+  TicketStatus({this.id, this.title, this.name, this.color, this.fontColor});
 
   factory TicketStatus.fromJson(Map<String, dynamic> json) => TicketStatus(
     id: json["id"],
     title: json["title"],
     name: json["name"],
     color: json["color"],
+    fontColor: json["font_color"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -224,5 +255,6 @@ class TicketStatus {
     "title": title,
     "name": name,
     "color": color,
+    "font_color": fontColor,
   };
 }

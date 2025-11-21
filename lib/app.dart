@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
+import 'package:hub_dom/presentation/bloc/is_responsible/is_responsible_cubit.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
 import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
 import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
@@ -32,6 +33,9 @@ class AppStart extends StatelessWidget {
         ),
         BlocProvider<SelectedCrmCubit>(
           create: (context) => locator<SelectedCrmCubit>(),
+        ),
+        BlocProvider<IsResponsibleCubit>(
+          create: (context) => locator<IsResponsibleCubit>(),
         ),
       ],
       child: MaterialApp.router(

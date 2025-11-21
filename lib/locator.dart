@@ -13,7 +13,9 @@ import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
 import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
+import 'package:hub_dom/presentation/bloc/employee_report/employee_report_bloc.dart';
 import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
+import 'package:hub_dom/presentation/bloc/is_responsible/is_responsible_cubit.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -109,6 +111,7 @@ Future<void> initLocator() async {
   locator.registerSingleton(CrmSystemCubit(locator()));
   locator.registerSingleton(SelectedCrmCubit(locator()));
   locator<SelectedCrmCubit>().checkCrmSystem();
+  locator.registerSingleton(IsResponsibleCubit(locator(), locator()));
 
   locator.registerFactory<TicketsBloc>(() => TicketsBloc(locator(), locator()));
   locator.registerFactory<DictionariesBloc>(() => DictionariesBloc(locator()));
@@ -118,5 +121,8 @@ Future<void> initLocator() async {
   );
   locator.registerFactory<EmployeesBloc>(
     () => EmployeesBloc(locator(), locator()),
+  );
+  locator.registerFactory<EmployeeReportBloc>(
+    () => EmployeeReportBloc(locator()),
   );
 }

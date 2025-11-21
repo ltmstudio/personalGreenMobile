@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/utils/date_time_utils.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
+import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
+import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
@@ -31,6 +33,7 @@ class ApplicationPage extends StatefulWidget {
 
 class _ApplicationPageState extends State<ApplicationPage> {
   late final TicketsBloc _ticketsBloc;
+  late final EmployeesBloc _employeesBloc;
   DateTimeRange<DateTime>? selectedDate;
   String? selectedAddress;
   String? selectedPerformer;
@@ -39,9 +42,19 @@ class _ApplicationPageState extends State<ApplicationPage> {
   void initState() {
     super.initState();
     _ticketsBloc = locator<TicketsBloc>();
+    _employeesBloc = locator<EmployeesBloc>();
     // Загружаем все заявки без фильтров для дашборда
     _loadTickets();
+    // Загружаем сотрудников со статистикой
+    _loadEmployees();
     clear();
+  }
+
+  /// Загружает сотрудников со статистикой
+  void _loadEmployees() {
+    _employeesBloc.add(
+      const LoadEmployeesEvent(page: 1, perPage: 20, withStatistics: true),
+    );
   }
 
   /// Загружает заявки с учетом текущих фильтров
@@ -67,6 +80,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
   @override
   void dispose() {
     _ticketsBloc.close();
+    _employeesBloc.close();
     super.dispose();
   }
 
@@ -180,7 +194,9 @@ class _ApplicationPageState extends State<ApplicationPage> {
         builder: (context, state) {
           // Отображаем индикатор загрузки
           if (state is TicketsInitial || state is TicketsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.gray),
+            );
           }
 
           // Отображаем ошибку
@@ -221,6 +237,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
           return RefreshIndicator(
             onRefresh: () async {
               _loadTickets();
+              _loadEmployees();
             },
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20),
@@ -245,7 +262,10 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               // Переход на страницу с заявками с табом "Все"
                               context.push(
                                 AppRoutes.managerTickets,
-                                extra: {'initialTab': 0},
+                                extra: {
+                                  'initialTab': 0,
+                                  'selectedDate': selectedDate,
+                                },
                               );
                             },
                             child: MainCardWidget(
@@ -323,9 +343,15 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               GestureDetector(
                                 onTap: () {
                                   // Переход на страницу с табом "В работе" (индекс 2)
+                                  debugPrint(
+                                    '[ApplicationPage] Navigating to "В работе" with selectedDate: $selectedDate',
+                                  );
                                   context.push(
                                     AppRoutes.managerTickets,
-                                    extra: {'initialTab': 2},
+                                    extra: {
+                                      'initialTab': 2,
+                                      'selectedDate': selectedDate,
+                                    },
                                   );
                                 },
                                 child: StatCard(
@@ -366,7 +392,10 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               // Переход на страницу с табом "Согласование" (индекс 3)
                               context.push(
                                 AppRoutes.managerTickets,
-                                extra: {'initialTab': 3},
+                                extra: {
+                                  'initialTab': 3,
+                                  'selectedDate': selectedDate,
+                                },
                               );
                             },
                             child: StatCard(
@@ -383,7 +412,10 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               // Переход на страницу с табом "Выполнено" (индекс 4)
                               context.push(
                                 AppRoutes.managerTickets,
-                                extra: {'initialTab': 4},
+                                extra: {
+                                  'initialTab': 4,
+                                  'selectedDate': selectedDate,
+                                },
                               );
                             },
                             child: StatCard(
@@ -398,55 +430,84 @@ class _ApplicationPageState extends State<ApplicationPage> {
                     ),
                   ),
 
-                  ExpansionTile(
-                    title: Text(
-                      "Сотрудники (42)",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
+                  BlocBuilder<EmployeesBloc, EmployeesState>(
+                    bloc: _employeesBloc,
+                    builder: (context, employeesState) {
+                      final employees = employeesState is EmployeesLoaded
+                          ? employeesState.employees
+                          : <Employee>[];
+                      final employeesCount = employees.length;
 
-                    initiallyExpanded: true,
-                    collapsedShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    // optional
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    children: [
-                      SelectBtn(
-                        title: 'Выберите сотрудника',
-                        //value: selectedPerformer,
-                        showBorder: false,
-                        icon: Container(
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.lightGrayBorder,
-                          ),
-                          child: Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 14,
-                            color: AppColors.white,
-                          ),
+                      return ExpansionTile(
+                        title: Text(
+                          "Сотрудники ($employeesCount)",
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                        onTap: _showPerformer,
-                      ),
-                      EmployeeCard(
-                        name: "Иванов Иван Иванович",
-                        role: "Сантехник",
-                        ratio: "12/30",
-                      ),
-                      EmployeeCard(
-                        name: "Иванов Иван Иванович",
-                        role: "Сантехник",
-                        ratio: "12/30",
-                      ),
-                      EmployeeCard(
-                        name: "Иванов Иван Иванович",
-                        role: "Сантехник",
-                        ratio: "12/30",
-                      ),
-                    ],
+                        initiallyExpanded: true,
+                        collapsedShape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        children: [
+                          SelectBtn(
+                            title: 'Выберите сотрудника',
+                            showBorder: false,
+                            icon: Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.lightGrayBorder,
+                              ),
+                              child: Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 14,
+                                color: AppColors.white,
+                              ),
+                            ),
+                            onTap: _showPerformer,
+                          ),
+                          if (employeesState is EmployeesLoading)
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.gray,
+                                ),
+                              ),
+                            )
+                          else if (employeesState is EmployeesError)
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Center(
+                                child: Text(
+                                  'Ошибка загрузки: ${employeesState.message}',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                            )
+                          else if (employees.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Center(
+                                child: Text(
+                                  'Сотрудники не найдены',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                            )
+                          else
+                            ...employees.map((employee) {
+                              return EmployeeCard(
+                                name: employee.fullName ?? 'Не указано',
+                                role: employee.position ?? 'Не указано',
+                                ratio: employee.statistics ?? '0/0',
+                              );
+                            }).toList(),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 12),
@@ -521,6 +582,8 @@ class _ApplicationPageState extends State<ApplicationPage> {
           setState(() {
             selectedDate = date;
           });
+          // Перезагружаем заявки с новым периодом для обновления статистики
+          _loadTickets();
         },
       ),
     );

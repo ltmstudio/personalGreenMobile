@@ -25,7 +25,10 @@ class AppItemCard extends StatelessWidget {
           }
         } else {
           final ticketId = ticket?.id ?? 123;
-          context.push('${AppRoutes.employeeAppDetails}/Заявка №$ticketId');
+          context.push(
+            '${AppRoutes.employeeAppDetails}/Заявка №$ticketId',
+            extra: {'ticketId': ticketId},
+          );
         }
       },
       child: Card(

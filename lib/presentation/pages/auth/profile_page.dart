@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
@@ -6,66 +7,90 @@ import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Загружаем профиль при открытии страницы
+    locator<SetProfileCubit>().getProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Иванов Иван Иванович'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15.0, top: 10),
-            child: AppBarIcon(
-              icon: IconAssets.logout,
-              onTap: () {
-                _logout(context);
-              },
-            ),
-          ),
-        ],
-      ),
-      body: Container(
-        width: double.infinity,
-        margin: EdgeInsets.all(20),
-        child: MainCardWidget(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFieldTitle(
-                title: AppStrings.jobTitle,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5),
-                  child: Text('Инженер - электрик'),
+    return BlocBuilder<SetProfileCubit, SetProfileState>(
+      bloc: locator<SetProfileCubit>(),
+      builder: (context, state) {
+        String userName = 'Иванов Иван Иванович'; // Значение по умолчанию
+
+        if (state is SetProfileLoaded) {
+          userName = state.data.userName;
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(userName),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0, top: 10),
+                child: AppBarIcon(
+                  icon: IconAssets.logout,
+                  onTap: () {
+                    _logout(context);
+                  },
                 ),
               ),
-              SizedBox(height: 12),
-              TextFieldTitle(
-                title: AppStrings.phone,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5),
-                  child: Text('+7 (900) 000-00-00'),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextFieldTitle(
-                title: AppStrings.email,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5),
-                  child: Text('example@mail.ru'),
-                ),
-              ),
-              SizedBox(height: 12),
             ],
           ),
-        ),
-      ),
+          body: Container(
+            width: double.infinity,
+            margin: EdgeInsets.all(20),
+            child: MainCardWidget(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFieldTitle(
+                    title: AppStrings.jobTitle,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text('Инженер - электрик'),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  TextFieldTitle(
+                    title: AppStrings.phone,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text('+7 (900) 000-00-00'),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  TextFieldTitle(
+                    title: AppStrings.email,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text('example@mail.ru'),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -44,6 +44,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
       'sourceChannelTypeId: ${event.sourceChannelTypeId}',
       name: 'TicketsBloc',
     );
+    log('executorId: ${event.executorId}', name: 'TicketsBloc');
     log('page: ${event.page}', name: 'TicketsBloc');
     log('perPage: ${event.perPage}', name: 'TicketsBloc');
 
@@ -57,6 +58,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
       troubleTypeId: event.troubleTypeId,
       priorityTypeId: event.priorityTypeId,
       sourceChannelTypeId: event.sourceChannelTypeId,
+      executorId: event.executorId,
       page: event.page,
       perPage: event.perPage,
     );
@@ -118,7 +120,8 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
                   event.serviceTypeId != null ||
                   event.troubleTypeId != null ||
                   event.priorityTypeId != null ||
-                  event.sourceChannelTypeId != null,
+                  event.sourceChannelTypeId != null ||
+                  event.executorId != null,
             ),
           );
         } else {
@@ -136,6 +139,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
               currentTroubleTypeId: event.troubleTypeId,
               currentPriorityTypeId: event.priorityTypeId,
               currentSourceChannelTypeId: event.sourceChannelTypeId,
+              currentExecutorId: event.executorId,
               currentPage: event.page,
               currentPerPage: event.perPage,
             ),
@@ -160,6 +164,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
     int? troubleTypeId = event.troubleTypeId;
     int? priorityTypeId = event.priorityTypeId;
     int? sourceChannelTypeId = event.sourceChannelTypeId;
+    int? executorId = event.executorId;
     int? page = event.page;
     int? perPage = event.perPage;
 
@@ -174,6 +179,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
       troubleTypeId ??= currentState.currentTroubleTypeId;
       priorityTypeId ??= currentState.currentPriorityTypeId;
       sourceChannelTypeId ??= currentState.currentSourceChannelTypeId;
+      executorId ??= currentState.currentExecutorId;
       page ??= currentState.currentPage;
       perPage ??= currentState.currentPerPage;
     }
@@ -190,6 +196,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
         troubleTypeId: troubleTypeId,
         priorityTypeId: priorityTypeId,
         sourceChannelTypeId: sourceChannelTypeId,
+        executorId: executorId,
         page: page,
         perPage: perPage,
       ),
@@ -224,6 +231,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
           troubleTypeId: currentState.currentTroubleTypeId,
           priorityTypeId: currentState.currentPriorityTypeId,
           sourceChannelTypeId: currentState.currentSourceChannelTypeId,
+          executorId: currentState.currentExecutorId,
           page: currentState.currentPage,
           perPage: currentState.currentPerPage,
         ),
@@ -248,6 +256,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
         'troubleTypeId': currentState.currentTroubleTypeId,
         'priorityTypeId': currentState.currentPriorityTypeId,
         'sourceChannelTypeId': currentState.currentSourceChannelTypeId,
+        'executorId': currentState.currentExecutorId,
         'page': currentState.currentPage,
         'perPage': currentState.currentPerPage,
       };

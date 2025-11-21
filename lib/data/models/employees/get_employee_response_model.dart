@@ -38,6 +38,7 @@ class Employee {
   String? surname;
   String? fullName;
   String? position;
+  String? statistics;
 
   Employee({
     this.id,
@@ -46,6 +47,7 @@ class Employee {
     this.surname,
     this.fullName,
     this.position,
+    this.statistics,
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) => Employee(
@@ -55,6 +57,7 @@ class Employee {
         surname: json["surname"],
         fullName: json["full_name"],
         position: json["position"],
+        statistics: json["statistics"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -64,6 +67,7 @@ class Employee {
         "surname": surname,
         "full_name": fullName,
         "position": position,
+        "statistics": statistics,
       };
 }
 

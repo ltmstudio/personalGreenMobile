@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
-import 'package:hub_dom/core/utils/date_time_utils.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
@@ -307,28 +306,8 @@ class _FilterManagerTicketsWidgetState
   }
 
   void _applyFilters() {
-    // Формируем параметры фильтрации
-    String? startDate;
-    String? endDate;
-
-    if (selectedDate != null) {
-      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
-      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
-    }
-
-    widget.ticketsBloc.add(
-      LoadTicketsEvent(
-        startDate: startDate,
-        endDate: endDate,
-        serviceTypeId: selectedServiceType?.id,
-        troubleTypeId: selectedTroubleType?.id,
-        priorityTypeId: selectedPriorityType?.id,
-        page: 1,
-        perPage: 1000,
-      ),
-    );
-
     // Вызываем callback для сохранения состояния фильтров
+    // Загрузка заявок будет выполнена в родительском виджете
     widget.onFiltersApplied?.call(
       selectedDate,
       selectedServiceType,

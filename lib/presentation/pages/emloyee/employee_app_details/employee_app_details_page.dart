@@ -8,9 +8,14 @@ import 'components/employee_app.dart';
 import 'components/employee_report.dart';
 
 class EmployeeAppDetailsPage extends StatefulWidget {
-  const EmployeeAppDetailsPage({super.key, required this.title});
+  const EmployeeAppDetailsPage({
+    super.key,
+    required this.title,
+    this.ticketId,
+  });
 
   final String title;
+  final int? ticketId;
 
   @override
   State<EmployeeAppDetailsPage> createState() => _EmployeeAppDetailsPageState();
@@ -103,7 +108,7 @@ class _EmployeeAppDetailsPageState extends State<EmployeeAppDetailsPage> {
 
         body: index == 0
             ? EmployeeAppsPage()
-            : EmployeeReportPage(),
+            : EmployeeReportPage(ticketId: widget.ticketId),
       ),
     );
   }

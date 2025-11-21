@@ -30,6 +30,7 @@ class TicketsLoaded extends TicketsState {
   final int? currentTroubleTypeId;
   final int? currentPriorityTypeId;
   final int? currentSourceChannelTypeId;
+  final int? currentExecutorId;
   final int? currentPage;
   final int? currentPerPage;
 
@@ -45,6 +46,7 @@ class TicketsLoaded extends TicketsState {
     this.currentTroubleTypeId,
     this.currentPriorityTypeId,
     this.currentSourceChannelTypeId,
+    this.currentExecutorId,
     this.currentPage,
     this.currentPerPage,
   });
@@ -62,6 +64,7 @@ class TicketsLoaded extends TicketsState {
     currentTroubleTypeId,
     currentPriorityTypeId,
     currentSourceChannelTypeId,
+    currentExecutorId,
     currentPage,
     currentPerPage,
   ];
@@ -79,6 +82,7 @@ class TicketsLoaded extends TicketsState {
     int? currentTroubleTypeId,
     int? currentPriorityTypeId,
     int? currentSourceChannelTypeId,
+    int? currentExecutorId,
     int? currentPage,
     int? currentPerPage,
     bool clearStartDate = false,
@@ -90,6 +94,7 @@ class TicketsLoaded extends TicketsState {
     bool clearTroubleTypeId = false,
     bool clearPriorityTypeId = false,
     bool clearSourceChannelTypeId = false,
+    bool clearExecutorId = false,
     bool clearPage = false,
     bool clearPerPage = false,
   }) {
@@ -121,6 +126,9 @@ class TicketsLoaded extends TicketsState {
       currentSourceChannelTypeId: clearSourceChannelTypeId
           ? null
           : (currentSourceChannelTypeId ?? this.currentSourceChannelTypeId),
+      currentExecutorId: clearExecutorId
+          ? null
+          : (currentExecutorId ?? this.currentExecutorId),
       currentPage: clearPage ? null : (currentPage ?? this.currentPage),
       currentPerPage: clearPerPage
           ? null
@@ -138,7 +146,8 @@ class TicketsLoaded extends TicketsState {
         currentServiceTypeId != null ||
         currentTroubleTypeId != null ||
         currentPriorityTypeId != null ||
-        currentSourceChannelTypeId != null;
+        currentSourceChannelTypeId != null ||
+        currentExecutorId != null;
   }
 
   /// Получение количества активных фильтров
@@ -153,6 +162,7 @@ class TicketsLoaded extends TicketsState {
     if (currentTroubleTypeId != null) count++;
     if (currentPriorityTypeId != null) count++;
     if (currentSourceChannelTypeId != null) count++;
+    if (currentExecutorId != null) count++;
     return count;
   }
 }

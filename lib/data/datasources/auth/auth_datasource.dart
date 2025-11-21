@@ -17,6 +17,10 @@ abstract class AuthenticationRemoteDataSource {
 
   Future<void> login(LoginParams params);
 
+  Future<void> logout();
+
+  Future<ProfileModel> getProfile();
+
   Future<List<CrmSystemModel>> getCrmSystem();
 
   Future<ProfileModel> setProfile(SetProfileParams params);
@@ -70,6 +74,73 @@ class AuthenticationRemoteDataSourceImpl
       await locator<Store>().setRefreshToken(refreshToken);
     } else {
       throw Exception(response.statusCode);
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    log('=== LOGOUT REQUEST ===', name: 'AuthDatasource');
+    log('Endpoint: ${ApiEndpoints.logout}', name: 'AuthDatasource');
+
+    final response = await apiProvider.post(
+      endPoint: ApiEndpoints.logout,
+      data: <String, dynamic>{},
+    );
+
+    log('=== LOGOUT RESPONSE ===', name: 'AuthDatasource');
+    log('Response status: ${response.statusCode}', name: 'AuthDatasource');
+    log('Response data: ${response.data}', name: 'AuthDatasource');
+
+    if (response.statusCode != 200) {
+      throw Exception('Logout failed with status: ${response.statusCode}');
+    }
+  }
+
+  @override
+  Future<ProfileModel> getProfile() async {
+    try {
+      log('=== GET PROFILE REQUEST ===', name: 'AuthDatasource');
+      log('Endpoint: ${ApiEndpoints.profile}', name: 'AuthDatasource');
+
+      final response = await apiProvider.get(
+        endPoint: ApiEndpoints.profile,
+      );
+
+      log('=== GET PROFILE RESPONSE ===', name: 'AuthDatasource');
+      log('Response status: ${response.statusCode}', name: 'AuthDatasource');
+      log('Response data type: ${response.data.runtimeType}', name: 'AuthDatasource');
+      log('Response data: ${response.data}', name: 'AuthDatasource');
+      log('Response data (toString): ${response.data.toString()}', name: 'AuthDatasource');
+      
+      // Детальное логирование структуры данных
+      if (response.data is Map) {
+        final dataMap = response.data as Map;
+        log('Response keys: ${dataMap.keys.toList()}', name: 'AuthDatasource');
+        if (dataMap.containsKey('data')) {
+          log('Data field type: ${dataMap['data'].runtimeType}', name: 'AuthDatasource');
+          log('Data field: ${dataMap['data']}', name: 'AuthDatasource');
+          if (dataMap['data'] is Map) {
+            final dataField = dataMap['data'] as Map;
+            log('Data field keys: ${dataField.keys.toList()}', name: 'AuthDatasource');
+            dataField.forEach((key, value) {
+              log('  - $key: $value (${value.runtimeType})', name: 'AuthDatasource');
+            });
+          }
+        }
+      }
+
+      if (response.statusCode == 200) {
+        final profile = ProfileModel.fromJson(response.data['data']);
+        log('Profile parsed successfully: id=${profile.id}, userName=${profile.userName}', name: 'AuthDatasource');
+        return profile;
+      } else {
+        throw Exception('Get profile failed with status: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      log('=== GET PROFILE ERROR ===', name: 'AuthDatasource');
+      log('Error: $e', name: 'AuthDatasource');
+      log('Stack trace: $stackTrace', name: 'AuthDatasource');
+      rethrow;
     }
   }
 

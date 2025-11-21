@@ -4,8 +4,14 @@ import 'package:image_picker/image_picker.dart';
 import 'full_screen_image_widget.dart';
 
 class MultiImagePickerWidget extends StatefulWidget {
-  const MultiImagePickerWidget({super.key, this.padding});
-final EdgeInsetsGeometry? padding;
+  const MultiImagePickerWidget({
+    super.key,
+    this.padding,
+    this.onImagesChanged,
+  });
+  final EdgeInsetsGeometry? padding;
+  final ValueChanged<List<XFile>>? onImagesChanged;
+
   @override
   State<MultiImagePickerWidget> createState() => _MultiImagePickerWidgetState();
 }
@@ -25,6 +31,7 @@ class _MultiImagePickerWidgetState extends State<MultiImagePickerWidget> {
           _images.addAll(picked.take(remaining));
         }
       });
+      widget.onImagesChanged?.call(_images);
     }
   }
 
@@ -32,6 +39,7 @@ class _MultiImagePickerWidgetState extends State<MultiImagePickerWidget> {
     setState(() {
       _images.removeAt(index);
     });
+    widget.onImagesChanged?.call(_images);
   }
 
   void _openFullScreenViewer(int initialIndex) {

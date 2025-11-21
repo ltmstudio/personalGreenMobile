@@ -11,6 +11,24 @@ class SetProfileCubit extends Cubit<SetProfileState> {
   SetProfileCubit(this.repository) : super(SetProfileInitial());
   final AuthenticationRepository repository;
 
+  Future<void> getProfile() async {
+    emit(SetProfileLoading());
+    final result = await repository.getProfile();
+
+    result.fold(
+      (failure) {
+        if (failure is ConnectionFailure) {
+          emit(SetProfileConnectionError());
+        } else {
+          emit(SetProfileError());
+        }
+      },
+      (data) {
+        emit(SetProfileLoaded(data));
+      },
+    );
+  }
+
   Future<void> setProfile(SetProfileParams params) async {
     emit(SetProfileLoading());
     final result = await repository.setProfile(params);

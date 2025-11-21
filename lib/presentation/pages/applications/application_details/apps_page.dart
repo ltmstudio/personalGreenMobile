@@ -263,7 +263,8 @@ class _AppsPageState extends State<AppsPage> {
 
   void _handleConfirm(BuildContext context, int ticketId) {
     // Проверяем наличие отчета (comment или photos)
-    final hasReport = widget.ticketData?.comment != null &&
+    final hasReport =
+        widget.ticketData?.comment != null &&
             widget.ticketData!.comment.toString().isNotEmpty ||
         (widget.ticketData?.photos != null &&
             widget.ticketData!.photos is List &&
@@ -274,9 +275,7 @@ class _AppsPageState extends State<AppsPage> {
       _confirmAccept(context, ticketId);
     } else {
       // Если отчета нет, сразу отправляем запрос
-      context.read<ApplicationDetailsBloc>().add(
-        AcceptTicketEvent(ticketId),
-      );
+      context.read<ApplicationDetailsBloc>().add(AcceptTicketEvent(ticketId));
     }
   }
 

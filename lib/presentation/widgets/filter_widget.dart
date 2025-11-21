@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hub_dom/core/utils/date_time_utils.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
@@ -36,26 +35,8 @@ class _FilterApplicationsWidgetState extends State<FilterApplicationsWidget> {
   }
 
   void _applyFilters() {
-    // Формируем параметры фильтрации
-    String? startDate;
-    String? endDate;
-
-    if (selectedDate != null) {
-      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
-      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
-    }
-
-    // Отправляем событие в блок
-    widget.ticketsBloc.add(
-      LoadTicketsEvent(
-        startDate: startDate,
-        endDate: endDate,
-        page: 1,
-        perPage: 1000,
-      ),
-    );
-
     // Вызываем callback для сохранения состояния фильтров
+    // Загрузка заявок будет выполнена в родительском виджете
     widget.onFiltersApplied?.call(selectedDate);
 
     context.pop();
