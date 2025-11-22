@@ -32,8 +32,21 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = AppStrings.statuses;
   int selectedCategory = 0;
+
+  // Стандартные статусы из API
+  List<StatusModel> get standardStatuses {
+    return [
+      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
+      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
+      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
+    ];
+  }
+
+  List<String> get statusTitles {
+    return ['Все', ...standardStatuses.map((s) => s.title ?? '').toList()];
+  }
 
   // Состояние фильтров
   DateTimeRange? selectedDate;
@@ -117,16 +130,12 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
 
   /// Получает API-значение статуса по названию категории
   String? _getStatusFromTitle(String title) {
-    switch (title) {
-      case 'В работе':
-        return 'in_progress';
-      case 'Контроль':
-        return 'approval';
-      case 'Выполнена':
-        return 'done';
-      default:
-        return null;
+    for (final status in standardStatuses) {
+      if (status.title == title) {
+        return status.name;
+      }
     }
+    return null;
   }
 
   /// Фильтрует заявки по выбранной категории
@@ -264,10 +273,10 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
                       child: ListView.separated(
                         padding: EdgeInsets.symmetric(horizontal: 20),
                         scrollDirection: Axis.horizontal,
-                        itemCount: statuses.length,
+                        itemCount: statusTitles.length,
                         itemBuilder: (context, index) {
                           return ChipWidget(
-                            title: statuses[index],
+                            title: statusTitles[index],
                             isSelected: index == selectedCategory,
                             onTap: () {
                               setState(() {

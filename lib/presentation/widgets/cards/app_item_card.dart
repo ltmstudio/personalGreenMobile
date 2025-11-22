@@ -86,12 +86,17 @@ class AppItemCard extends StatelessWidget {
     );
   }
 
-  /// Получает цвет статуса из hex строки или красный по умолчанию
+  /// Получает цвет статуса из hex строки или серый по умолчанию
   Color _getStatusColor() {
-    if (ticket?.status?.color != null) {
-      return ColorUtils.hexToColor(ticket!.status!.color!);
+    if (ticket?.status?.color != null && ticket!.status!.color!.isNotEmpty) {
+      try {
+        return ColorUtils.hexToColor(ticket!.status!.color!);
+      } catch (e) {
+        // Если не удалось распарсить цвет, возвращаем серый
+        return AppColors.gray;
+      }
     }
-    return AppColors.red;
+    return AppColors.gray;
   }
 
   /// Получает название типа услуги или по умолчанию

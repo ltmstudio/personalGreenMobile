@@ -14,6 +14,7 @@ import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
 import 'components/filter_performer_widget.dart';
 
@@ -32,9 +33,28 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = AppStrings.statuses;
   int selectedCategory = 0;
   int? executorId; // Сохраняем executor_id для фильтрации
+
+  // Состояние фильтров
+  DateTimeRange? selectedDate;
+  ServiceType? selectedServiceType;
+  TroubleType? selectedTroubleType;
+  Type? selectedPriorityType;
+
+  // Стандартные статусы из API
+  List<StatusModel> get standardStatuses {
+    return [
+      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
+      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
+      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
+    ];
+  }
+
+  List<String> get statusTitles {
+    return ['Все', ...standardStatuses.map((s) => s.title ?? '').toList()];
+  }
 
   @override
   void initState() {
@@ -53,7 +73,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
     super.dispose();
   }
 
-  /// Загружает заявки для выбранного таба
+  /// Загружает заявки для выбранного таба с учетом фильтров
   void _loadTicketsForTab(int tabIndex) {
     String? statusApiValue;
     if (tabIndex != 0) {
@@ -64,32 +84,38 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
     // Используем widget.executorId напрямую, чтобы гарантировать, что он не null
     final currentExecutorId = executorId ?? widget.executorId;
 
-    // Загружаем заявки с фильтром по статусу и executor_id
+    String? startDate;
+    String? endDate;
+
+    // Если есть выбранный период, используем его
+    if (selectedDate != null) {
+      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
+      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
+    }
+
+    // Загружаем заявки с фильтром по статусу, executor_id и другим параметрам
     _ticketsBloc.add(
       LoadTicketsEvent(
         page: 1,
         perPage: 1000,
         status: statusApiValue,
-        executorId:
-            currentExecutorId, // Всегда используем executor_id, если он передан
+        executorId: currentExecutorId,
+        startDate: startDate,
+        endDate: endDate,
+        serviceTypeId: selectedServiceType?.id,
+        troubleTypeId: selectedTroubleType?.id,
+        priorityTypeId: selectedPriorityType?.id,
       ),
     );
   }
 
   /// Получает API значение статуса по индексу
   String? _getStatusApiValue(int index) {
-    switch (index) {
-      case 1:
-        return 'in_progress'; // В работе
-      case 2:
-        // API не поддерживает фильтрацию по просроченным заявкам через статус
-        // Возвращаем null, чтобы загрузить все заявки и фильтровать на клиенте
-        return null; // Просрочена - фильтруем на клиенте
-      case 3:
-        return 'control'; // Контроль
-      default:
-        return null;
+    if (index == 0) return null; // Все
+    if (index > 0 && index <= standardStatuses.length) {
+      return standardStatuses[index - 1].name;
     }
+    return null;
   }
 
   @override
@@ -183,21 +209,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
           }
 
           // Получаем заявки
-          final allTickets = state is TicketsLoaded
-              ? state.tickets
-              : <Ticket>[];
-
-          // Фильтруем заявки по статусу на клиенте (для просроченных)
-          List<Ticket> tickets = allTickets;
-          if (selectedCategory == 2) {
-            // Фильтруем просроченные заявки на клиенте
-            final now = DateTime.now();
-            tickets = allTickets.where((ticket) {
-              if (ticket.deadlinedAt == null) return false;
-              return ticket.deadlinedAt!.isBefore(now) &&
-                  ticket.status?.name != 'done'; // Исключаем выполненные
-            }).toList();
-          }
+          final tickets = state is TicketsLoaded ? state.tickets : <Ticket>[];
 
           final ticketsCount = tickets.length;
 
@@ -245,10 +257,10 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
                   child: ListView.separated(
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     scrollDirection: Axis.horizontal,
-                    itemCount: statuses.length,
+                    itemCount: statusTitles.length,
                     itemBuilder: (context, index) {
                       return ChipWidget(
-                        title: statuses[index],
+                        title: statusTitles[index],
                         isSelected: index == selectedCategory,
                         onTap: () {
                           setState(() {
@@ -313,7 +325,24 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: FilterPerformerWidget(),
+      child: FilterPerformerWidget(
+        initialDate: selectedDate,
+        initialServiceType: selectedServiceType,
+        initialTroubleType: selectedTroubleType,
+        initialPriorityType: selectedPriorityType,
+        onFiltersApplied: (date, serviceType, troubleType, priorityType) {
+          setState(() {
+            selectedDate = date;
+            selectedServiceType = serviceType;
+            selectedTroubleType = troubleType;
+            selectedPriorityType = priorityType;
+          });
+          // Перезагружаем заявки с новыми фильтрами
+          _loadTicketsForTab(selectedCategory);
+          // Закрываем bottom sheet после применения фильтров
+          context.pop();
+        },
+      ),
     );
   }
 }

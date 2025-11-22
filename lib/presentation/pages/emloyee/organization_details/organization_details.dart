@@ -32,8 +32,21 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = AppStrings.ticketStatuses;
   int selectedCategory = 0;
+
+  // Стандартные статусы из API
+  List<StatusModel> get standardStatuses {
+    return [
+      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
+      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
+      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
+    ];
+  }
+
+  List<String> get statusTitles {
+    return ['Все', ...standardStatuses.map((s) => s.title ?? '').toList()];
+  }
 
   // Состояние фильтров
   DateTimeRange<DateTime>? selectedDate;
@@ -182,10 +195,10 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
                       child: ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         scrollDirection: Axis.horizontal,
-                        itemCount: statuses.length,
+                        itemCount: statusTitles.length,
                         itemBuilder: (context, index) {
                           return ChipWidget(
-                            title: statuses[index],
+                            title: statusTitles[index],
                             isSelected: index == selectedCategory,
                             onTap: () {
                               setState(() {
@@ -337,19 +350,12 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
   }
 
   /// Получает API значение статуса по индексу
-  String _getStatusApiValue(int index) {
-    switch (index) {
-      case 1:
-        return 'handle_executor'; // Назначен исполнитель
-      case 2:
-        return 'in_progress'; // В работе
-      case 3:
-        return 'approval'; // Согласование
-      case 4:
-        return 'done'; // Выполнено
-      default:
-        return '';
+  String? _getStatusApiValue(int index) {
+    if (index == 0) return null; // Все
+    if (index > 0 && index <= standardStatuses.length) {
+      return standardStatuses[index - 1].name;
     }
+    return null;
   }
 
   _showFilter() {

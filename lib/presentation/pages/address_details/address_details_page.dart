@@ -9,6 +9,7 @@ import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
 import 'components/filter_address_widget.dart';
 
@@ -25,8 +26,21 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
-  final statuses = AppStrings.statuses;
   int selectedCategory = 0;
+
+  // Стандартные статусы из API
+  List<StatusModel> get standardStatuses {
+    return [
+      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
+      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
+      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
+    ];
+  }
+
+  List<String> get statusTitles {
+    return ['Все', ...standardStatuses.map((s) => s.title ?? '').toList()];
+  }
 
   @override
   void dispose() {
@@ -108,10 +122,10 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
                 padding: EdgeInsets.symmetric(horizontal: 20),
 
                 scrollDirection: Axis.horizontal,
-                itemCount: statuses.length,
+                itemCount: statusTitles.length,
                 itemBuilder: (context, index) {
                   return ChipWidget(
-                    title: statuses[index],
+                    title: statusTitles[index],
                     isSelected: index == selectedCategory,
                     onTap: () {
                       setState(() {
