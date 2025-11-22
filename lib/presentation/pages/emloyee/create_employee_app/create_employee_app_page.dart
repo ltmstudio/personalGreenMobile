@@ -57,7 +57,6 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
   @override
   void initState() {
     super.initState();
-    print('=== CREATE EMPLOYEE APP INIT STATE ===');
     selectedService = null;
     selectedWorkType = null;
     selectedUrgency = null;
@@ -65,7 +64,6 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
     selectedTime = null;
     selectedAddress = null;
     formattedTime = null;
-    print('=== INIT STATE COMPLETED ===');
   }
 
   @override
@@ -97,11 +95,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
         ),
         BlocProvider(
           create: (context) {
-            print('=== CREATING ADDRESSES BLOC ===');
             final bloc = locator<AddressesBloc>();
-            print('AddressesBloc created: $bloc');
             bloc.add(const LoadAddressesEvent());
-            print('LoadAddressesEvent added');
             return bloc;
           },
         ),
@@ -400,19 +395,13 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
   }
 
   _showAddress(BuildContext context) {
-    print('=== DEBUG SHOW ADDRESS CALLED ===');
-
     // Получаем AddressesBloc из контекста
     final addressesBloc = BlocProvider.of<AddressesBloc>(context);
-    print('AddressesBloc: $addressesBloc');
 
     final state = addressesBloc.state;
-    print('Current state: $state');
-    print('State type: ${state.runtimeType}');
 
     if (state is AddressesLoaded) {
       final addresses = state.addresses.data ?? [];
-      print('Addresses loaded: ${addresses.length}');
 
       if (addresses.isEmpty) {
         ScaffoldMessenger.of(
@@ -435,23 +424,19 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
         ),
       );
     } else if (state is AddressesLoading) {
-      print('Addresses are loading...');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
     } else if (state is AddressesError) {
-      print('Addresses error: ${state.message}');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Ошибка: ${state.message}')));
     } else if (state is AddressesInitial) {
-      print('Addresses initial state - triggering load');
       addressesBloc.add(const LoadAddressesEvent());
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
     } else {
-      print('Unknown state: $state');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Неизвестное состояние')));
@@ -464,22 +449,6 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
 
     if (state is DictionariesLoaded) {
       final serviceTypes = state.dictionaries.serviceTypes ?? [];
-
-      // Отладочная информация
-      print('=== DEBUG SERVICE TYPES ===');
-      print('Service types count: ${serviceTypes.length}');
-      for (int i = 0; i < serviceTypes.length; i++) {
-        final service = serviceTypes[i];
-        print('Service $i: ${service.title} (ID: ${service.id})');
-        print('  Trouble types count: ${service.troubleTypes?.length ?? 0}');
-        if (service.troubleTypes != null && service.troubleTypes!.isNotEmpty) {
-          for (int j = 0; j < service.troubleTypes!.length; j++) {
-            print(
-              '    Trouble $j: ${service.troubleTypes![j].title} (ID: ${service.troubleTypes![j].id})',
-            );
-          }
-        }
-      }
 
       bottomSheetWidget(
         context: context,
@@ -522,24 +491,6 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
         troubleTypes = allTroubleTypes
             .where((tt) => tt.serviceTypeId == selectedService!.id)
             .toList();
-      }
-
-      // Отладочная информация
-      print('=== DEBUG WORK TYPE ===');
-      print(
-        'Selected service: ${selectedService!.title} (ID: ${selectedService!.id})',
-      );
-      print(
-        'Service trouble types count: ${selectedService!.troubleTypes?.length ?? 0}',
-      );
-      print(
-        'General trouble types count: ${state.dictionaries.troubleTypes?.length ?? 0}',
-      );
-      print('Filtered trouble types count: ${troubleTypes.length}');
-      for (int i = 0; i < troubleTypes.length; i++) {
-        print(
-          'Trouble type $i: ${troubleTypes[i].title} (ID: ${troubleTypes[i].id}, ServiceTypeId: ${troubleTypes[i].serviceTypeId})',
-        );
       }
 
       if (troubleTypes.isEmpty) {

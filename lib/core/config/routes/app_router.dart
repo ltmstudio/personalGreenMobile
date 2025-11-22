@@ -193,10 +193,19 @@ final goRouter = GoRouter(
         if (state.extra != null && state.extra is Map<String, dynamic>) {
           final extra = state.extra as Map<String, dynamic>;
           initialTab = extra['initialTab'] ?? 0;
-          selectedDate = extra['selectedDate'] as DateTimeRange<DateTime>?;
-          debugPrint(
-            '[AppRouter] ManagerTicketsPage: initialTab=$initialTab, selectedDate=$selectedDate',
-          );
+          final startDateStr = extra['startDate'] as String?;
+          final endDateStr = extra['endDate'] as String?;
+
+          // Восстанавливаем DateTimeRange из строк
+          if (startDateStr != null && endDateStr != null) {
+            try {
+              final startDate = DateTime.parse(startDateStr);
+              final endDate = DateTime.parse(endDateStr);
+              selectedDate = DateTimeRange(start: startDate, end: endDate);
+            } catch (e) {
+              // Игнорируем ошибки парсинга дат
+            }
+          }
         }
 
         return ManagerTicketsPage(
@@ -210,8 +219,14 @@ final goRouter = GoRouter(
 
       builder: (context, state) {
         final title = state.pathParameters['title'] ?? '';
+        int? executorId;
 
-        return PerformerDetailsPage(title: title);
+        if (state.extra != null && state.extra is Map<String, dynamic>) {
+          final extra = state.extra as Map<String, dynamic>;
+          executorId = extra['executorId'] as int?;
+        }
+
+        return PerformerDetailsPage(title: title, executorId: executorId);
       },
     ),
     GoRoute(

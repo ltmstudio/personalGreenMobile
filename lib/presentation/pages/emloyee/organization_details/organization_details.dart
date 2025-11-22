@@ -125,7 +125,9 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
         builder: (context, state) {
           // Начальное состояние и загрузка показывают индикатор
           if (state is TicketsInitial || state is TicketsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.gray),
+            );
           }
 
           if (state is TicketsError) {

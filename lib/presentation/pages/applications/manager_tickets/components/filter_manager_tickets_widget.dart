@@ -104,6 +104,7 @@ class _FilterManagerTicketsWidgetState
                             lastDate: DateTime.now().add(
                               const Duration(days: 365),
                             ),
+                            initialDateRange: selectedDate,
                             onDateRangeSelected: (v) {
                               setState(() {
                                 selectedDate = v;

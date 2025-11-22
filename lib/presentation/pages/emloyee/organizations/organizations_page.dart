@@ -101,7 +101,9 @@ class _OrganizationPageState extends State<OrganizationPage> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
             );
           } else if (state is CrmSystemLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.gray),
+            );
           } else if (state is CrmSystemEmpty) {
             return Center(child: Text(AppStrings.empty));
           } else if (state is CrmSystemConnectionError) {

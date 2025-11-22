@@ -5,15 +5,17 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/utils/time_format.dart';
 import 'package:hub_dom/data/models/addresses/addresses_response_model.dart';
+import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
+import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_event.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_state.dart';
+import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
+import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/select_time_widget.dart';
-import 'package:hub_dom/presentation/pages/applications/main_applications/components/services_widget.dart';
-import 'package:hub_dom/presentation/pages/applications/main_applications/components/urgency_category_widget.dart';
-import 'package:hub_dom/presentation/pages/applications/main_applications/components/work_type_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/k_textfield.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
@@ -35,11 +37,16 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
   TimeOfDay? selectedTime;
 
   String? selectedAddress;
+  AddressData? _selectedAddressData; // Сохраняем объект адреса для получения ID
 
-  String? selectedService;
-  String? selectedWorkType;
+  String? selectedService; // Название услуги для отображения
+  ServiceType? _selectedServiceData; // Объект услуги для получения ID
+  String? selectedWorkType; // Название типа работы для отображения
+  TroubleType? _selectedWorkTypeData; // Объект типа работы для получения ID
   String? selectedPerformer;
-  String? selectedUrgency;
+  Employee? _selectedEmployeeData; // Объект исполнителя для получения ID
+  String? selectedUrgency; // Название приоритета для отображения
+  Type? _selectedUrgencyData; // Объект приоритета для получения ID
 
   String? formattedTime;
 
@@ -56,6 +63,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
     selectedService = null;
     selectedWorkType = null;
     selectedPerformer = null;
+    _selectedEmployeeData = null;
     selectedUrgency = null;
     selectedDate = null;
     selectedTime = null;
@@ -86,6 +94,18 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
             return bloc;
           },
         ),
+        BlocProvider(
+          create: (context) {
+            final bloc = locator<DictionariesBloc>()
+              ..add(const LoadDictionariesEvent());
+            return bloc;
+          },
+        ),
+        BlocProvider(
+          create: (context) {
+            return locator<TicketsBloc>();
+          },
+        ),
       ],
       child: Builder(
         builder: (context) => BlocListener<AddressesBloc, AddressesState>(
@@ -100,219 +120,245 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
               );
             }
           },
-          child: Scaffold(
-            appBar: AppBar(title: Text(AppStrings.createApplication)),
-            body: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Text(
-                      AppStrings.applicationData,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+          child: BlocListener<TicketsBloc, TicketsState>(
+            listener: (context, state) {
+              if (state is TicketCreated) {
+                _showSuccess();
+                // Очищаем форму после успешного создания
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    context.pop();
+                  }
+                });
+              } else if (state is TicketCreationError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Ошибка создания заявки: ${state.message}'),
+                    backgroundColor: Colors.red,
                   ),
-                  SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.address,
-                      child: BlocBuilder<AddressesBloc, AddressesState>(
+                );
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(title: Text(AppStrings.createApplication)),
+              body: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Text(
+                        AppStrings.applicationData,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.address,
+                        child: BlocBuilder<AddressesBloc, AddressesState>(
+                          builder: (context, state) {
+                            final isLoading = state is AddressesLoading;
+                            return SelectBtn(
+                              title: AppStrings.selectAddress,
+                              value: selectedAddress,
+                              icon: isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.gray,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Icon(Icons.keyboard_arrow_down),
+                              showBorder: true,
+                              onTap: isLoading
+                                  ? () {}
+                                  : () => _showAddress(context),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.service,
+                        child: SelectBtn(
+                          title: AppStrings.selectService,
+                          value: selectedService,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                          showBorder: true,
+                          onTap: () => _showService(context),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.workType,
+                        child: SelectBtn(
+                          title: AppStrings.selectWorkType,
+                          value: selectedWorkType,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                          showBorder: true,
+
+                          onTap: () => _showWorkType(context),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.categoryType,
+                        child: SelectBtn(
+                          title: AppStrings.selectCategoryType,
+                          value: selectedUrgency,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                          showBorder: true,
+
+                          onTap: () => _showUrgency(context),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.doUntil,
+                        child: SelectBtn(
+                          title: AppStrings.selectDate,
+                          value: formattedTime,
+                          icon: Icon(Icons.calendar_today_outlined),
+                          showBorder: true,
+
+                          onTap: () => _showTime(context),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.performer,
+                        child: SelectBtn(
+                          title: AppStrings.selectPerformer,
+                          value: selectedPerformer,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                          showBorder: true,
+
+                          onTap: () => _showPerformer(context),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.contactPerson,
+                        child: KTextField(
+                          controller: _nameCtrl,
+                          isSubmitted: false,
+                          hintText: AppStrings.selectContactPerson,
+                          borderColor: AppColors.lightGrayBorder,
+                          filled: true,
+                        ),
+                      ),
+                    ),
+                    // SizedBox(height: 12),
+
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    //   child: TextFieldTitle(
+                    //     title: AppStrings.selectContactPerson,
+                    //     child: KTextField(
+                    //       controller: _phoneCtrl,
+                    //       isSubmitted: false,
+                    //       keyboardType: TextInputType.number,
+                    //       hintText: AppStrings.phoneHintText,
+                    //       borderColor: AppColors.lightGrayBorder,
+                    //       filled: true,
+                    //     ),
+                    //   ),
+                    // ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.additionalPhoneContactPerson,
+                        child: KTextField(
+                          controller: _addPhoneCtrl,
+                          keyboardType: TextInputType.number,
+                          isSubmitted: false,
+                          hintText: AppStrings.phoneHintText,
+                          borderColor: AppColors.lightGrayBorder,
+                          filled: true,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextFieldTitle(
+                        title: AppStrings.comments,
+                        child: KTextField(
+                          controller: _commentCtrl,
+                          isSubmitted: false,
+                          hintText: AppStrings.addComments,
+                          borderColor: AppColors.lightGrayBorder,
+                          filled: true,
+                          maxLines: 3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Text(
+                        AppStrings.photoObject,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Text(
+                        AppStrings.upload10Photo,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    MultiImagePickerWidget(),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: BlocBuilder<TicketsBloc, TicketsState>(
                         builder: (context, state) {
-                          final isLoading = state is AddressesLoading;
-                          return SelectBtn(
-                            title: AppStrings.selectAddress,
-                            value: selectedAddress,
-                            icon: isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Icon(Icons.keyboard_arrow_down),
-                            showBorder: true,
-                            onTap: isLoading
-                                ? () {}
-                                : () => _showAddress(context),
+                          final isLoading = state is TicketsCreating;
+                          return MainButton(
+                            buttonTile: AppStrings.createNewApplication,
+                            onPressed: () => _validateAndCreateTicket(context),
+                            isLoading: isLoading,
                           );
                         },
                       ),
                     ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.service,
-                      child: SelectBtn(
-                        title: AppStrings.selectService,
-                        value: selectedService,
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        showBorder: true,
-                        onTap: _showService,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.workType,
-                      child: SelectBtn(
-                        title: AppStrings.selectWorkType,
-                        value: selectedWorkType,
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        showBorder: true,
-
-                        onTap: _showWorkType,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.categoryType,
-                      child: SelectBtn(
-                        title: AppStrings.selectCategoryType,
-                        value: selectedUrgency,
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        showBorder: true,
-
-                        onTap: _showUrgency,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.doUntil,
-                      child: SelectBtn(
-                        title: AppStrings.selectDate,
-                        value: formattedTime,
-                        icon: Icon(Icons.calendar_today_outlined),
-                        showBorder: true,
-
-                        onTap: _showTime,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.performer,
-                      child: SelectBtn(
-                        title: AppStrings.selectPerformer,
-                        value: selectedPerformer,
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        showBorder: true,
-
-                        onTap: _showPerformer,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.contactPerson,
-                      child: KTextField(
-                        controller: _nameCtrl,
-                        isSubmitted: false,
-                        hintText: AppStrings.selectContactPerson,
-                        borderColor: AppColors.lightGrayBorder,
-                        filled: true,
-                      ),
-                    ),
-                  ),
-                  // SizedBox(height: 12),
-
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  //   child: TextFieldTitle(
-                  //     title: AppStrings.selectContactPerson,
-                  //     child: KTextField(
-                  //       controller: _phoneCtrl,
-                  //       isSubmitted: false,
-                  //       keyboardType: TextInputType.number,
-                  //       hintText: AppStrings.phoneHintText,
-                  //       borderColor: AppColors.lightGrayBorder,
-                  //       filled: true,
-                  //     ),
-                  //   ),
-                  // ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.additionalPhoneContactPerson,
-                      child: KTextField(
-                        controller: _addPhoneCtrl,
-                        keyboardType: TextInputType.number,
-                        isSubmitted: false,
-                        hintText: AppStrings.phoneHintText,
-                        borderColor: AppColors.lightGrayBorder,
-                        filled: true,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: TextFieldTitle(
-                      title: AppStrings.comments,
-                      child: KTextField(
-                        controller: _commentCtrl,
-                        isSubmitted: false,
-                        hintText: AppStrings.addComments,
-                        borderColor: AppColors.lightGrayBorder,
-                        filled: true,
-                        maxLines: 3,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Text(
-                      AppStrings.photoObject,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                  SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Text(
-                      AppStrings.upload10Photo,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  SizedBox(height: 6),
-                  MultiImagePickerWidget(),
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: MainButton(
-                      buttonTile: AppStrings.createNewApplication,
-                      onPressed: _showSuccess,
-                      isLoading: false,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -360,61 +406,145 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       child: _AddressesSelectionWidget(
         addresses: addresses,
         selectedAddress: selectedAddress,
-        onSelect: (address) {
+        onSelect: (address, addressData) {
           setState(() {
             selectedAddress = address;
+            _selectedAddressData = addressData;
           });
         },
       ),
     );
   }
 
-  _showService() {
-    bottomSheetWidget(
-      context: context,
-      isScrollControlled: true,
-      child: ServicesWidget(
-        onSelectItem: (String value) {
-          setState(() {
-            selectedService = value;
-          });
-        },
-        isSelected: true,
-      ),
-    );
+  void _showService(BuildContext context) {
+    final dictionariesBloc = context.read<DictionariesBloc>();
+    final state = dictionariesBloc.state;
+
+    if (state is DictionariesLoaded) {
+      final serviceTypes = state.dictionaries.serviceTypes ?? [];
+
+      if (serviceTypes.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Нет доступных услуг')));
+        return;
+      }
+
+      bottomSheetWidget(
+        context: context,
+        isScrollControlled: true,
+        child: _ServiceTypesSelectionWidget(
+          serviceTypes: serviceTypes,
+          selectedServiceType: _selectedServiceData,
+          onSelect: (serviceType) {
+            setState(() {
+              selectedService = serviceType.title;
+              _selectedServiceData = serviceType;
+              selectedWorkType = null; // Сбрасываем выбранный тип работы
+              _selectedWorkTypeData = null;
+            });
+            Navigator.of(context).pop();
+          },
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+    }
   }
 
-  _showWorkType() {
-    bottomSheetWidget(
-      context: context,
-      isScrollControlled: false,
-      child: WorkTypeWidget(
-        onSelectItem: (String value) {
-          setState(() {
-            selectedWorkType = value;
-          });
-        },
-        isSelected: true,
-      ),
-    );
+  void _showWorkType(BuildContext context) {
+    if (_selectedServiceData == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Сначала выберите услугу')));
+      return;
+    }
+
+    final dictionariesBloc = context.read<DictionariesBloc>();
+    final state = dictionariesBloc.state;
+
+    if (state is DictionariesLoaded) {
+      // Получаем troubleTypes для выбранной услуги
+      var troubleTypes = _selectedServiceData!.troubleTypes ?? [];
+
+      // Если список пустой, фильтруем общий список по service_type_id
+      if (troubleTypes.isEmpty) {
+        final allTroubleTypes = state.dictionaries.troubleTypes ?? [];
+        troubleTypes = allTroubleTypes
+            .where((tt) => tt.serviceTypeId == _selectedServiceData!.id)
+            .toList();
+      }
+
+      if (troubleTypes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Для выбранной услуги нет доступных типов работ'),
+          ),
+        );
+        return;
+      }
+
+      bottomSheetWidget(
+        context: context,
+        isScrollControlled: false,
+        child: _TroubleTypesSelectionWidget(
+          troubleTypes: troubleTypes,
+          selectedTroubleType: _selectedWorkTypeData,
+          onSelect: (troubleType) {
+            setState(() {
+              selectedWorkType = troubleType.title;
+              _selectedWorkTypeData = troubleType;
+            });
+            Navigator.of(context).pop();
+          },
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+    }
   }
 
-  _showUrgency() {
-    bottomSheetWidget(
-      context: context,
-      isScrollControlled: false,
-      child: UrgencyCategoryWidget(
-        onSelectItem: (String value) {
-          setState(() {
-            selectedUrgency = value;
-          });
-        },
-        isSelected: true,
-      ),
-    );
+  void _showUrgency(BuildContext context) {
+    final dictionariesBloc = context.read<DictionariesBloc>();
+    final state = dictionariesBloc.state;
+
+    if (state is DictionariesLoaded) {
+      final priorityTypes = state.dictionaries.priorityTypes ?? [];
+
+      if (priorityTypes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Нет доступных категорий срочности')),
+        );
+        return;
+      }
+
+      bottomSheetWidget(
+        context: context,
+        isScrollControlled: false,
+        child: _PriorityTypesSelectionWidget(
+          priorityTypes: priorityTypes,
+          selectedPriorityType: _selectedUrgencyData,
+          onSelect: (priorityType) {
+            setState(() {
+              selectedUrgency = priorityType.title;
+              _selectedUrgencyData = priorityType;
+            });
+            Navigator.of(context).pop();
+          },
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+    }
   }
 
-  _showTime() {
+  void _showTime(BuildContext context) {
     bottomSheetWidget(
       context: context,
       isScrollControlled: false,
@@ -439,7 +569,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
     );
   }
 
-  _showPerformer() {
+  void _showPerformer(BuildContext context) {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
@@ -449,24 +579,173 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
             selectedPerformer = value;
           });
         },
+        onSelectEmployee: (employee) {
+          setState(() {
+            selectedPerformer = employee.fullName ?? '';
+            _selectedEmployeeData = employee; // Сохраняем объект исполнителя
+          });
+          // PerformerWidget сам закрывает bottom sheet через Navigator.pop()
+        },
         isSelected: true,
       ),
     );
   }
 
+  /// Валидация и создание заявки
+  void _validateAndCreateTicket(BuildContext context) {
+    if (_selectedAddressData == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите адрес')));
+      return;
+    }
+
+    if (selectedService == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите услугу')));
+      return;
+    }
+
+    if (selectedWorkType == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите тип работы')));
+      return;
+    }
+
+    if (selectedUrgency == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите категорию срочности')),
+      );
+      return;
+    }
+
+    if (selectedDate == null || selectedTime == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите дату и время')));
+      return;
+    }
+
+    // Получаем блоки из контекста
+    final dictionariesBloc = context.read<DictionariesBloc>();
+    final ticketsBloc = context.read<TicketsBloc>();
+
+    final dictionariesState = dictionariesBloc.state;
+    if (dictionariesState is! DictionariesLoaded) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+      return;
+    }
+
+    _createTicket(dictionariesState, ticketsBloc);
+  }
+
+  /// Создание заявки через API
+  void _createTicket(
+    DictionariesLoaded dictionariesState,
+    TicketsBloc ticketsBloc,
+  ) {
+    // Используем сохраненные объекты из справочников
+    if (_selectedServiceData == null || _selectedServiceData!.id == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Не выбрана услуга')));
+      return;
+    }
+
+    if (_selectedWorkTypeData == null || _selectedWorkTypeData!.id == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Не выбран тип работы')));
+      return;
+    }
+
+    if (_selectedUrgencyData == null || _selectedUrgencyData!.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не выбрана категория срочности')),
+      );
+      return;
+    }
+
+    final serviceType = _selectedServiceData!;
+    final troubleType = _selectedWorkTypeData!;
+    final priorityType = _selectedUrgencyData!;
+
+    // Формируем дату выполнения
+    final deadlineDate = selectedDate!;
+    final deadlineFormatted =
+        '${deadlineDate.year}-${deadlineDate.month.toString().padLeft(2, '0')}-${deadlineDate.day.toString().padLeft(2, '0')}';
+
+    // Формируем дату и время визита
+    final visitingDateTime = DateTime(
+      selectedDate!.year,
+      selectedDate!.month,
+      selectedDate!.day,
+      selectedTime!.hour,
+      selectedTime!.minute,
+    );
+    final visitingFormatted =
+        '${visitingDateTime.year}-${visitingDateTime.month.toString().padLeft(2, '0')}-${visitingDateTime.day.toString().padLeft(2, '0')} ${visitingDateTime.hour.toString().padLeft(2, '0')}:${visitingDateTime.minute.toString().padLeft(2, '0')}:${visitingDateTime.second.toString().padLeft(2, '0')}';
+
+    // Форматируем телефон
+    final phone = _addPhoneCtrl.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    // Валидация: номер должен содержать минимум 10 цифр (без +7)
+    final formattedPhone = phone.length >= 10 ? '+7$phone' : '';
+
+    // Если номер невалидный, но поле заполнено - показываем ошибку
+    if (_addPhoneCtrl.text.trim().isNotEmpty && formattedPhone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Номер телефона должен содержать минимум 10 цифр'),
+        ),
+      );
+      return;
+    }
+
+    // Создаем запрос
+    final request = CreateTicketRequestModel(
+      objectId: _selectedAddressData!.id!,
+      objectType: _selectedAddressData!.type == AddressType.house
+          ? 'house'
+          : 'space',
+      serviceTypeId: serviceType.id!,
+      troubleTypeId: troubleType.id!,
+      priorityTypeId: priorityType.id!,
+      deadlinedAt: deadlineFormatted,
+      visitingAt: visitingFormatted,
+      additionalContact: formattedPhone,
+      isEmergency: 0,
+      comment: _commentCtrl.text.trim(),
+      photos: null,
+      executorId:
+          _selectedEmployeeData?.id, // Передаем ID исполнителя, если выбран
+    );
+
+    // Отправляем событие создания заявки
+    ticketsBloc.add(CreateTicketEvent(request));
+  }
+
   _showSuccess() {
     bottomSheetWidget(
       context: context,
-      isScrollControlled: false,
+      isScrollControlled: true,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.only(
+          left: 20.0,
+          right: 20.0,
+          top: 20.0,
+          bottom: 20.0 + MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             BottomSheetTitle(title: AppStrings.selectPerformer),
-            SizedBox(height: 80),
+            SizedBox(height: 60),
             SvgPicture.asset(IconAssets.success, height: 140, width: 140),
-            SizedBox(height: 80),
-
+            SizedBox(height: 60),
             Text(
               AppStrings.createdAppSuccess,
               textAlign: TextAlign.center,
@@ -485,7 +764,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
 class _AddressesSelectionWidget extends StatelessWidget {
   final List<AddressData> addresses;
   final String? selectedAddress;
-  final Function(String) onSelect;
+  final Function(String, AddressData) onSelect;
 
   const _AddressesSelectionWidget({
     required this.addresses,
@@ -519,7 +798,7 @@ class _AddressesSelectionWidget extends StatelessWidget {
 
                       return InkWell(
                         onTap: () {
-                          onSelect(addressText);
+                          onSelect(addressText, address);
                           context.pop();
                         },
                         borderRadius: BorderRadius.circular(6),
@@ -547,6 +826,149 @@ class _AddressesSelectionWidget extends StatelessWidget {
                     },
                     separatorBuilder: (context, index) => const Divider(),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Виджет выбора типов услуг из справочников
+class _ServiceTypesSelectionWidget extends StatelessWidget {
+  final List<ServiceType> serviceTypes;
+  final ServiceType? selectedServiceType;
+  final Function(ServiceType) onSelect;
+
+  const _ServiceTypesSelectionWidget({
+    required this.serviceTypes,
+    required this.selectedServiceType,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          BottomSheetTitle(title: AppStrings.selectService),
+          const SizedBox(height: 20),
+          Flexible(
+            child: ListView.builder(
+              itemCount: serviceTypes.length,
+              itemBuilder: (context, index) {
+                final serviceType = serviceTypes[index];
+                final isSelected = selectedServiceType?.id == serviceType.id;
+
+                return ListTile(
+                  title: Text(serviceType.title ?? ''),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    onSelect(serviceType);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Виджет выбора типов проблем из справочников
+class _TroubleTypesSelectionWidget extends StatelessWidget {
+  final List<TroubleType> troubleTypes;
+  final TroubleType? selectedTroubleType;
+  final Function(TroubleType) onSelect;
+
+  const _TroubleTypesSelectionWidget({
+    required this.troubleTypes,
+    required this.selectedTroubleType,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          BottomSheetTitle(title: AppStrings.selectWorkType),
+          const SizedBox(height: 20),
+          Flexible(
+            child: troubleTypes.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('Нет доступных типов работ'),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: troubleTypes.length,
+                    itemBuilder: (context, index) {
+                      final troubleType = troubleTypes[index];
+                      final isSelected =
+                          selectedTroubleType?.id == troubleType.id;
+
+                      return ListTile(
+                        title: Text(troubleType.title ?? ''),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          onSelect(troubleType);
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Виджет выбора типов приоритета из справочников
+class _PriorityTypesSelectionWidget extends StatelessWidget {
+  final List<Type> priorityTypes;
+  final Type? selectedPriorityType;
+  final Function(Type) onSelect;
+
+  const _PriorityTypesSelectionWidget({
+    required this.priorityTypes,
+    required this.selectedPriorityType,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          BottomSheetTitle(title: AppStrings.categoryType),
+          const SizedBox(height: 20),
+          Flexible(
+            child: ListView.builder(
+              itemCount: priorityTypes.length,
+              itemBuilder: (context, index) {
+                final priorityType = priorityTypes[index];
+                final isSelected = selectedPriorityType?.id == priorityType.id;
+
+                return ListTile(
+                  title: Text(priorityType.title ?? ''),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    onSelect(priorityType);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

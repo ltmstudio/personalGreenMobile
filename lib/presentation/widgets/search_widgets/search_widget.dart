@@ -101,7 +101,8 @@ class _HomePageSearchWidgetState extends State<HomePageSearchWidget> {
           child: const SizedBox(
             height: 22,
             width: 22,
-            child: CircularProgressIndicator.adaptive(
+            child: CircularProgressIndicator(
+              color: AppColors.gray,
               strokeWidth: 2,
             ),
           ),

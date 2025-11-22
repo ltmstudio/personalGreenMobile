@@ -49,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen> {
           isMain = state.isResponsible;
 
           // Для руководителя и сотрудника открываем средний таб (branch 1) с дашбордом ApplicationPage
-          debugPrint('[SplashScreen] Navigating to applications, isMain: $isMain');
           context.go(AppRoutes.applications);
         } else if (state is IsResponsibleError) {
           // При ошибке используем значение по умолчанию (false - для сотрудника)

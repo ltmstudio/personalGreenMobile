@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -155,7 +154,6 @@ class _VerificationPageState extends State<VerificationPage> {
                                 const SizedBox(width: 12),
                             hapticFeedbackType: HapticFeedbackType.lightImpact,
                             onCompleted: (pin) {
-                              debugPrint('onCompleted: $pin');
                             },
                             validator: (s) {
                               return s == code
@@ -163,7 +161,6 @@ class _VerificationPageState extends State<VerificationPage> {
                                   : AppStrings.wrongVerification;
                             },
                             onChanged: (value) {
-                              debugPrint('onChanged: $value');
                               setState(() {});
                               disableButton();
                             },
@@ -323,7 +320,6 @@ class _VerificationPageState extends State<VerificationPage> {
                                 code: pinNumber,
                                 phoneNumber: phoneNumber,
                               );
-                              log(params.toString(), name: 'login');
                               if (validate()) {
                                 context.read<UserAuthBloc>().add(
                                   LogInEvent(params),

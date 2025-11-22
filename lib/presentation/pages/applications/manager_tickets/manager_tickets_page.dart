@@ -41,7 +41,8 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
 
   // Состояние фильтров
   DateTimeRange<DateTime>? selectedDate;
-  DateTimeRange<DateTime>? _initialDateFromDashboard; // Период, переданный со страницы статистики
+  DateTimeRange<DateTime>?
+  _initialDateFromDashboard; // Период, переданный со страницы статистики
   ServiceType? selectedServiceType;
   TroubleType? selectedTroubleType;
   Type? selectedPriorityType;
@@ -58,9 +59,6 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     if (widget.initialSelectedDate != null) {
       selectedDate = widget.initialSelectedDate;
       _initialDateFromDashboard = widget.initialSelectedDate;
-      debugPrint('[ManagerTicketsPage] Received selectedDate from dashboard: ${selectedDate!.start} - ${selectedDate!.end}');
-    } else {
-      debugPrint('[ManagerTicketsPage] No selectedDate received');
     }
 
     // Загружаем tickets при инициализации
@@ -83,9 +81,6 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     if (selectedDate != null) {
       startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
       endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
-      debugPrint('[ManagerTicketsPage] Loading tickets with period: $startDate - $endDate, status: ${_getStatusApiValue(tabIndex)}');
-    } else {
-      debugPrint('[ManagerTicketsPage] Loading tickets without period, status: ${_getStatusApiValue(tabIndex)}');
     }
 
     String? statusApiValue;
@@ -176,7 +171,9 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
         builder: (context, state) {
           // Начальное состояние и загрузка показывают индикатор
           if (state is TicketsInitial || state is TicketsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.gray),
+            );
           }
 
           if (state is TicketsError) {
@@ -241,13 +238,10 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
                                 selectedCategory = index;
                                 // Сбрасываем период только если он был изменен на странице заявок
                                 // (т.е. отличается от переданного со страницы статистики)
-                                if (_initialDateFromDashboard != null && selectedDate != _initialDateFromDashboard) {
+                                if (_initialDateFromDashboard != null &&
+                                    selectedDate != _initialDateFromDashboard) {
                                   // Период был изменен на странице заявок - сбрасываем
-                                  debugPrint('[ManagerTicketsPage] Resetting date filter (was changed on tickets page)');
                                   selectedDate = null;
-                                } else if (_initialDateFromDashboard != null) {
-                                  // Период был передан со страницы статистики - сохраняем
-                                  debugPrint('[ManagerTicketsPage] Keeping date filter from dashboard: ${selectedDate!.start} - ${selectedDate!.end}');
                                 }
                               });
                               _loadTicketsForTab(index);

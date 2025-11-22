@@ -30,24 +30,6 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
   ) async {
     emit(const TicketsLoading());
 
-    // Логируем параметры запроса
-    log('=== TICKETS REQUEST ===', name: 'TicketsBloc');
-    log('startDate: ${event.startDate}', name: 'TicketsBloc');
-    log('endDate: ${event.endDate}', name: 'TicketsBloc');
-    log('status: ${event.status}', name: 'TicketsBloc');
-    log('isEmergency: ${event.isEmergency}', name: 'TicketsBloc');
-    log('taxTypeId: ${event.taxTypeId}', name: 'TicketsBloc');
-    log('serviceTypeId: ${event.serviceTypeId}', name: 'TicketsBloc');
-    log('troubleTypeId: ${event.troubleTypeId}', name: 'TicketsBloc');
-    log('priorityTypeId: ${event.priorityTypeId}', name: 'TicketsBloc');
-    log(
-      'sourceChannelTypeId: ${event.sourceChannelTypeId}',
-      name: 'TicketsBloc',
-    );
-    log('executorId: ${event.executorId}', name: 'TicketsBloc');
-    log('page: ${event.page}', name: 'TicketsBloc');
-    log('perPage: ${event.perPage}', name: 'TicketsBloc');
-
     final result = await _repository.getTickets(
       startDate: event.startDate,
       endDate: event.endDate,
@@ -65,50 +47,14 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
 
     result.fold(
       (failure) {
-        log('=== TICKETS ERROR ===', name: 'TicketsBloc');
-        log('Error: ${failure.message}', name: 'TicketsBloc');
+        log('TicketsBloc Error: ${failure.message}', name: 'TicketsBloc');
         emit(TicketsError(failure.message));
       },
       (data) {
-        log('=== TICKETS RESPONSE ===', name: 'TicketsBloc');
-        log('Response data: $data', name: 'TicketsBloc');
-
         final tickets = data.tickets ?? [];
         final stats = data.stats ?? [];
 
-        log('Tickets count: ${tickets.length}', name: 'TicketsBloc');
-        log('Stats count: ${stats.length}', name: 'TicketsBloc');
-
-        // Логируем каждый ticket
-        for (int i = 0; i < tickets.length; i++) {
-          final ticket = tickets[i];
-          log('Ticket $i:', name: 'TicketsBloc');
-          log('  - ID: ${ticket.id}', name: 'TicketsBloc');
-          log(
-            '  - Status: ${ticket.status?.title ?? ticket.status?.name}',
-            name: 'TicketsBloc',
-          );
-          log('  - Status Color: ${ticket.status?.color}', name: 'TicketsBloc');
-          log(
-            '  - Service Type: ${ticket.serviceType?.title}',
-            name: 'TicketsBloc',
-          );
-          log('  - Address: ${ticket.address}', name: 'TicketsBloc');
-          log('  - Created At: ${ticket.createdAt}', name: 'TicketsBloc');
-          log(
-            '  - Executor: ${ticket.executor?.fullName}',
-            name: 'TicketsBloc',
-          );
-        }
-
-        // Логируем статистику
-        for (int i = 0; i < stats.length; i++) {
-          final stat = stats[i];
-          log('Stat $i: ${stat.name} = ${stat.count}', name: 'TicketsBloc');
-        }
-
         if (tickets.isEmpty) {
-          log('=== TICKETS EMPTY ===', name: 'TicketsBloc');
           emit(
             TicketsEmpty(
               hasFilters:
@@ -125,7 +71,6 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
             ),
           );
         } else {
-          log('=== TICKETS LOADED ===', name: 'TicketsBloc');
           emit(
             TicketsLoaded(
               tickets: tickets,
@@ -279,24 +224,14 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
   ) async {
     emit(const TicketsCreating());
 
-    log('=== CREATE TICKET REQUEST ===', name: 'TicketsBloc');
-    log('Request data: ${event.request.toFormData()}', name: 'TicketsBloc');
-
     final result = await _createTicketUseCase.execute(event.request);
 
     result.fold(
       (failure) {
-        log('=== CREATE TICKET ERROR ===', name: 'TicketsBloc');
-        log('Error: ${failure.message}', name: 'TicketsBloc');
+        log('CreateTicket Error: ${failure.message}', name: 'TicketsBloc');
         emit(TicketCreationError(failure.message));
       },
       (data) {
-        log('=== CREATE TICKET SUCCESS ===', name: 'TicketsBloc');
-        log('Created ticket ID: ${data.data?.id}', name: 'TicketsBloc');
-        log(
-          'Created ticket status: ${data.data?.status?.title}',
-          name: 'TicketsBloc',
-        );
         emit(TicketCreated(data));
       },
     );

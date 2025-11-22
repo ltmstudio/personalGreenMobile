@@ -35,7 +35,6 @@ class TokenInterceptor extends Interceptor {
       // login/otp/profile/logout use main token and hub URL
       // token = await store.getToken();
       options.baseUrl = ApiEndpoints.baseUrl;
-      debugPrint('[TokenInterceptor] Using hub URL: ${options.baseUrl}${options.path}');
     } else {
       // after login, use crm engineerToken + crm baseUrl
       engineerToken = await prefs.getCrmToken();
@@ -43,10 +42,8 @@ class TokenInterceptor extends Interceptor {
       if (crmHost != null) {
         // Убеждаемся, что в конце есть слеш
         options.baseUrl = crmHost.endsWith('/') ? crmHost : '$crmHost/';
-        debugPrint('[TokenInterceptor] Using CRM URL: ${options.baseUrl}${options.path}');
       } else {
         options.baseUrl = ApiEndpoints.baseUrl;
-        debugPrint('[TokenInterceptor] CRM host not found, using hub URL: ${options.baseUrl}${options.path}');
       }
 
       if (engineerToken != null) {

@@ -89,10 +89,6 @@ class AuthenticationRepository {
         final response = await remoteDataSource.getProfile();
         return Right(response);
       } catch (error, stackTrace) {
-        // Логируем ошибку для отладки
-        print('=== GET PROFILE REPOSITORY ERROR ===');
-        print('Error: $error');
-        print('Stack trace: $stackTrace');
         return Left(ServerFailure(error.toString()));
       }
     } else {

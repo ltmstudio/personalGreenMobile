@@ -12,6 +12,7 @@ class CreateTicketRequestModel {
   final int isEmergency;
   final String comment;
   final List<File>? photos;
+  final int? executorId;
 
   CreateTicketRequestModel({
     required this.objectId,
@@ -25,6 +26,7 @@ class CreateTicketRequestModel {
     required this.isEmergency,
     required this.comment,
     this.photos,
+    this.executorId,
   });
 
   Map<String, dynamic> toJson() {
@@ -39,6 +41,7 @@ class CreateTicketRequestModel {
       'additional_contact': additionalContact,
       'is_emergency': isEmergency,
       'comment': comment,
+      if (executorId != null) 'executor_id': executorId,
     };
 
     return data;
@@ -53,10 +56,15 @@ class CreateTicketRequestModel {
       'priority_type_id': priorityTypeId,
       'deadlined_at': deadlinedAt,
       'visiting_at': visitingAt,
-      'additional_contact': additionalContact,
       'is_emergency': isEmergency,
       'comment': comment,
+      if (executorId != null) 'executor_id': executorId,
     };
+
+    // Добавляем additional_contact только если он не пустой
+    if (additionalContact.isNotEmpty) {
+      formData['additional_contact'] = additionalContact;
+    }
 
     // Добавляем фотографии если они есть
     if (photos != null && photos!.isNotEmpty) {

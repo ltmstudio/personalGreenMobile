@@ -29,9 +29,6 @@ class ApplicationDetailsBloc
   ) async {
     emit(const ApplicationDetailsLoading());
 
-    log('=== LOAD TICKET DETAILS ===', name: 'ApplicationDetailsBloc');
-    log('Ticket ID: ${event.ticketId}', name: 'ApplicationDetailsBloc');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(const ApplicationDetailsError('Нет подключения к интернету'));
@@ -42,13 +39,10 @@ class ApplicationDetailsBloc
 
     result.fold(
       (failure) {
-        log('=== TICKET DETAILS ERROR ===', name: 'ApplicationDetailsBloc');
-        log('Error: ${failure.message}', name: 'ApplicationDetailsBloc');
+        log('TicketDetails Error: ${failure.message}', name: 'ApplicationDetailsBloc');
         emit(ApplicationDetailsError(failure.message));
       },
       (data) {
-        log('=== TICKET DETAILS LOADED ===', name: 'ApplicationDetailsBloc');
-        log('Ticket data: ${data.data?.id}', name: 'ApplicationDetailsBloc');
         final loadedState = ApplicationDetailsLoaded(data);
         _lastLoadedState = loadedState;
         emit(loadedState);
@@ -63,9 +57,6 @@ class ApplicationDetailsBloc
   ) async {
     emit(const ApplicationDetailsAccepting());
 
-    log('=== ACCEPT TICKET ===', name: 'ApplicationDetailsBloc');
-    log('Ticket ID: ${event.ticketId}', name: 'ApplicationDetailsBloc');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(const ApplicationDetailsError('Нет подключения к интернету'));
@@ -76,8 +67,7 @@ class ApplicationDetailsBloc
 
     result.fold(
       (failure) {
-        log('=== ACCEPT TICKET ERROR ===', name: 'ApplicationDetailsBloc');
-        log('Error: ${failure.message}', name: 'ApplicationDetailsBloc');
+        log('AcceptTicket Error: ${failure.message}', name: 'ApplicationDetailsBloc');
         // Эмитим ошибку для показа Toast в listener
         emit(ApplicationDetailsError(failure.message));
         // Сразу возвращаем предыдущее состояние, чтобы не менять UI
@@ -87,7 +77,6 @@ class ApplicationDetailsBloc
         }
       },
       (_) {
-        log('=== TICKET ACCEPTED ===', name: 'ApplicationDetailsBloc');
         emit(const ApplicationDetailsAccepted());
         // Перезагружаем детали тикета после успешного принятия
         add(LoadTicketDetailsEvent(event.ticketId));
@@ -102,9 +91,6 @@ class ApplicationDetailsBloc
   ) async {
     emit(const ApplicationDetailsRejecting());
 
-    log('=== REJECT TICKET ===', name: 'ApplicationDetailsBloc');
-    log('Ticket ID: ${event.ticketId}', name: 'ApplicationDetailsBloc');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(const ApplicationDetailsError('Нет подключения к интернету'));
@@ -118,8 +104,7 @@ class ApplicationDetailsBloc
 
     result.fold(
       (failure) {
-        log('=== REJECT TICKET ERROR ===', name: 'ApplicationDetailsBloc');
-        log('Error: ${failure.message}', name: 'ApplicationDetailsBloc');
+        log('RejectTicket Error: ${failure.message}', name: 'ApplicationDetailsBloc');
         // Эмитим ошибку для показа Toast в listener
         emit(ApplicationDetailsError(failure.message));
         // Сразу возвращаем предыдущее состояние, чтобы не менять UI
@@ -129,7 +114,6 @@ class ApplicationDetailsBloc
         }
       },
       (_) {
-        log('=== TICKET REJECTED ===', name: 'ApplicationDetailsBloc');
         emit(const ApplicationDetailsRejected());
         // Перезагружаем детали тикета после успешного отклонения
         add(LoadTicketDetailsEvent(event.ticketId));
@@ -144,10 +128,6 @@ class ApplicationDetailsBloc
   ) async {
     emit(const ApplicationDetailsAssigningExecutor());
 
-    log('=== ASSIGN EXECUTOR ===', name: 'ApplicationDetailsBloc');
-    log('Ticket ID: ${event.ticketId}', name: 'ApplicationDetailsBloc');
-    log('Executor ID: ${event.executorId}', name: 'ApplicationDetailsBloc');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(const ApplicationDetailsError('Нет подключения к интернету'));
@@ -161,8 +141,7 @@ class ApplicationDetailsBloc
 
     result.fold(
       (failure) {
-        log('=== ASSIGN EXECUTOR ERROR ===', name: 'ApplicationDetailsBloc');
-        log('Error: ${failure.message}', name: 'ApplicationDetailsBloc');
+        log('AssignExecutor Error: ${failure.message}', name: 'ApplicationDetailsBloc');
         // Эмитим ошибку для показа Toast в listener
         emit(ApplicationDetailsError(failure.message));
         // Сразу возвращаем предыдущее состояние, чтобы не менять UI
@@ -172,7 +151,6 @@ class ApplicationDetailsBloc
         }
       },
       (_) {
-        log('=== EXECUTOR ASSIGNED ===', name: 'ApplicationDetailsBloc');
         emit(const ApplicationDetailsExecutorAssigned());
         // Перезагружаем детали тикета после успешного назначения
         add(LoadTicketDetailsEvent(event.ticketId));

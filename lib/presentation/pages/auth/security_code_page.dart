@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -119,7 +118,6 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                         separatorBuilder: (index) => const SizedBox(width: 12),
                         hapticFeedbackType: HapticFeedbackType.lightImpact,
                         onCompleted: (pin) {
-                          debugPrint('onCompleted: $pin');
                         },
                         validator: (s) {
                           //   showChangeButton = s != code;
@@ -128,7 +126,6 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                               : AppStrings.wrongVerification;
                         },
                         onChanged: (value) {
-                          debugPrint('onChanged: $value');
                           setState(() {});
                           disableButton();
                         },
@@ -214,7 +211,6 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                             securityCode: pinNumber,
                             securityCodeConfirm: pinNumber,
                           );
-                          log(params.toString(), name: 'login');
 
                           if (validate()) {
                             context.read<SetProfileCubit>().setProfile(params);

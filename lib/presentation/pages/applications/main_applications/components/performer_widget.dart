@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
@@ -89,7 +90,9 @@ class _PerformerWidgetState extends State<PerformerWidget> {
               child: BlocBuilder<EmployeesBloc, EmployeesState>(
                 builder: (context, state) {
                   if (state is EmployeesLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: CircularProgressIndicator(color: AppColors.gray),
+                    );
                   }
 
                   if (state is EmployeesError) {

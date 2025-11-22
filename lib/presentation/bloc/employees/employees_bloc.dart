@@ -25,9 +25,6 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
   ) async {
     emit(const EmployeesLoading());
 
-    log('=== LOAD EMPLOYEES ===', name: 'EmployeesBloc');
-    log('Page: ${event.page}, PerPage: ${event.perPage}', name: 'EmployeesBloc');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(const EmployeesError('Нет подключения к интернету'));
@@ -42,13 +39,10 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
 
     result.fold(
       (failure) {
-        log('=== EMPLOYEES ERROR ===', name: 'EmployeesBloc');
-        log('Error: ${failure.message}', name: 'EmployeesBloc');
+        log('Employees Error: ${failure.message}', name: 'EmployeesBloc');
         emit(EmployeesError(failure.message));
       },
       (data) {
-        log('=== EMPLOYEES LOADED ===', name: 'EmployeesBloc');
-        log('Employees count: ${data.data?.length ?? 0}', name: 'EmployeesBloc');
         emit(EmployeesLoaded(data.data ?? []));
       },
     );
@@ -60,9 +54,6 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     Emitter<EmployeesState> emit,
   ) async {
     emit(const EmployeesLoading());
-
-    log('=== SEARCH EMPLOYEES ===', name: 'EmployeesBloc');
-    log('Search: ${event.fullName}', name: 'EmployeesBloc');
 
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
@@ -79,15 +70,11 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
 
     result.fold(
       (failure) {
-        log('=== EMPLOYEES SEARCH ERROR ===', name: 'EmployeesBloc');
-        log('Error: ${failure.message}', name: 'EmployeesBloc');
         // При ошибке поиска (например, 422) показываем пустой список
         // вместо экрана ошибки, так как это не критично
         emit(EmployeesLoaded([]));
       },
       (data) {
-        log('=== EMPLOYEES SEARCH RESULT ===', name: 'EmployeesBloc');
-        log('Employees count: ${data.data?.length ?? 0}', name: 'EmployeesBloc');
         emit(EmployeesLoaded(data.data ?? []));
       },
     );

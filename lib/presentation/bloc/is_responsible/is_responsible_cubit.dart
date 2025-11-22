@@ -16,8 +16,6 @@ class IsResponsibleCubit extends Cubit<IsResponsibleState> {
   Future<void> checkIsResponsible() async {
     emit(IsResponsibleLoading());
 
-    log('=== CHECK IS RESPONSIBLE ===', name: 'IsResponsibleCubit');
-
     final bool isConnected = await _networkInfo.isConnected;
     if (!isConnected) {
       emit(IsResponsibleError('Нет подключения к интернету'));
@@ -28,8 +26,7 @@ class IsResponsibleCubit extends Cubit<IsResponsibleState> {
 
     result.fold(
       (failure) {
-        log('=== IS RESPONSIBLE ERROR ===', name: 'IsResponsibleCubit');
-        log('Error: ${failure.message}', name: 'IsResponsibleCubit');
+        log('IsResponsible Error: ${failure.message}', name: 'IsResponsibleCubit');
         if (failure is ConnectionFailure) {
           emit(IsResponsibleError('Нет подключения к интернету'));
         } else {
@@ -37,9 +34,6 @@ class IsResponsibleCubit extends Cubit<IsResponsibleState> {
         }
       },
       (data) {
-        log('=== IS RESPONSIBLE LOADED ===', name: 'IsResponsibleCubit');
-        log('Is Responsible: ${data.data?.isResponsible ?? false}',
-            name: 'IsResponsibleCubit');
         final isResponsible = data.data?.isResponsible ?? false;
         emit(IsResponsibleLoaded(isResponsible));
       },

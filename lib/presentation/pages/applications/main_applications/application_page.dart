@@ -102,8 +102,8 @@ class _ApplicationPageState extends State<ApplicationPage> {
     int handleExecutor = 0;
     int inProgress = 0;
     int approval = 0;
+    int control = 0;
     int done = 0;
-    int overdue = 0;
 
     for (final stat in apiStats) {
       switch (stat.name) {
@@ -116,14 +116,11 @@ class _ApplicationPageState extends State<ApplicationPage> {
         case 'approval':
           approval = stat.count ?? 0;
           break;
+        case 'control':
+          control = stat.count ?? 0;
+          break;
         case 'done':
           done = stat.count ?? 0;
-          break;
-        case 'overdue':
-        case 'expired':
-        case 'delayed':
-          // API может возвращать просроченные под разными названиями
-          overdue = stat.count ?? 0;
           break;
       }
     }
@@ -133,8 +130,8 @@ class _ApplicationPageState extends State<ApplicationPage> {
       'handleExecutor': handleExecutor,
       'inProgress': inProgress,
       'approval': approval,
+      'control': control,
       'done': done,
-      'overdue': overdue,
       'handleExecutorPercent': total > 0
           ? ((handleExecutor / total) * 100).toStringAsFixed(0)
           : '0',
@@ -144,11 +141,11 @@ class _ApplicationPageState extends State<ApplicationPage> {
       'approvalPercent': total > 0
           ? ((approval / total) * 100).toStringAsFixed(0)
           : '0',
+      'controlPercent': total > 0
+          ? ((control / total) * 100).toStringAsFixed(0)
+          : '0',
       'donePercent': total > 0
           ? ((done / total) * 100).toStringAsFixed(0)
-          : '0',
-      'overduePercent': total > 0
-          ? ((overdue / total) * 100).toStringAsFixed(0)
           : '0',
     };
   }
@@ -264,7 +261,16 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                 AppRoutes.managerTickets,
                                 extra: {
                                   'initialTab': 0,
-                                  'selectedDate': selectedDate,
+                                  'startDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.start,
+                                        )
+                                      : null,
+                                  'endDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.end,
+                                        )
+                                      : null,
                                 },
                               );
                             },
@@ -293,14 +299,6 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                     child: PieChart(
                                       PieChartData(
                                         sections: [
-                                          if (stats['overdue'] > 0)
-                                            PieChartSectionData(
-                                              color: AppColors.lightRed,
-                                              value: stats['overdue']
-                                                  .toDouble(),
-                                              title: '',
-                                              radius: 20,
-                                            ),
                                           if (stats['inProgress'] > 0)
                                             PieChartSectionData(
                                               color: AppColors.lightBlue,
@@ -311,8 +309,16 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                             ),
                                           if (stats['approval'] > 0)
                                             PieChartSectionData(
-                                              color: AppColors.yellow,
+                                              color: AppColors.lightRed,
                                               value: stats['approval']
+                                                  .toDouble(),
+                                              title: '',
+                                              radius: 20,
+                                            ),
+                                          if (stats['control'] > 0)
+                                            PieChartSectionData(
+                                              color: AppColors.yellow,
+                                              value: stats['control']
                                                   .toDouble(),
                                               title: '',
                                               radius: 20,
@@ -343,14 +349,20 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               GestureDetector(
                                 onTap: () {
                                   // Переход на страницу с табом "В работе" (индекс 2)
-                                  debugPrint(
-                                    '[ApplicationPage] Navigating to "В работе" with selectedDate: $selectedDate',
-                                  );
                                   context.push(
                                     AppRoutes.managerTickets,
                                     extra: {
                                       'initialTab': 2,
-                                      'selectedDate': selectedDate,
+                                      'startDate': selectedDate != null
+                                          ? DateTimeUtils.formatDateForApi(
+                                              selectedDate!.start,
+                                            )
+                                          : null,
+                                      'endDate': selectedDate != null
+                                          ? DateTimeUtils.formatDateForApi(
+                                              selectedDate!.end,
+                                            )
+                                          : null,
                                     },
                                   );
                                 },
@@ -364,14 +376,27 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               GestureDetector(
                                 onTap: () {
                                   context.push(
-                                    '${AppRoutes.appCategory}/Просрочено',
+                                    AppRoutes.managerTickets,
+                                    extra: {
+                                      'initialTab': 3,
+                                      'startDate': selectedDate != null
+                                          ? DateTimeUtils.formatDateForApi(
+                                              selectedDate!.start,
+                                            )
+                                          : null,
+                                      'endDate': selectedDate != null
+                                          ? DateTimeUtils.formatDateForApi(
+                                              selectedDate!.end,
+                                            )
+                                          : null,
+                                    },
                                   );
                                 },
                                 child: StatCard(
-                                  title: "Просрочено",
-                                  value: "${stats['overdue']}",
-                                  percent: "${stats['overduePercent']}%",
-                                  color: Colors.red,
+                                  title: "Согласование",
+                                  value: "${stats['approval']}",
+                                  percent: "${stats['approvalPercent']}%",
+                                  color: Color(0xffEB7B36),
                                 ),
                               ),
                             ],
@@ -394,14 +419,23 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                 AppRoutes.managerTickets,
                                 extra: {
                                   'initialTab': 3,
-                                  'selectedDate': selectedDate,
+                                  'startDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.start,
+                                        )
+                                      : null,
+                                  'endDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.end,
+                                        )
+                                      : null,
                                 },
                               );
                             },
                             child: StatCard(
                               title: "Контроль",
-                              value: "${stats['approval']}",
-                              percent: "${stats['approvalPercent']}%",
+                              value: "${stats['control']}",
+                              percent: "${stats['controlPercent']}%",
                               color: Colors.orange,
                             ),
                           ),
@@ -414,7 +448,16 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                 AppRoutes.managerTickets,
                                 extra: {
                                   'initialTab': 4,
-                                  'selectedDate': selectedDate,
+                                  'startDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.start,
+                                        )
+                                      : null,
+                                  'endDate': selectedDate != null
+                                      ? DateTimeUtils.formatDateForApi(
+                                          selectedDate!.end,
+                                        )
+                                      : null,
                                 },
                               );
                             },
@@ -595,10 +638,16 @@ class _ApplicationPageState extends State<ApplicationPage> {
       isScrollControlled: true,
       child: PerformerWidget(
         onSelectItem: (String value) {
-          // setState(() {
           selectedPerformer = value;
-          // });
-          context.push('${AppRoutes.performerDetails}/$selectedPerformer');
+        },
+        onSelectEmployee: (employee) {
+          // Закрываем bottom sheet перед переходом
+          Navigator.of(context).pop();
+          // Передаем executor_id при переходе
+          context.push(
+            '${AppRoutes.performerDetails}/${employee.fullName ?? selectedPerformer}',
+            extra: {'executorId': employee.id},
+          );
         },
         isSelected: false,
       ),

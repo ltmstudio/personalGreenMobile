@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/utils/date_time_utils.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
@@ -34,6 +35,13 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
   final statuses = AppStrings.statuses;
   int selectedCategory = 0;
 
+  // Состояние фильтров
+  DateTimeRange? selectedDate;
+  ServiceType? selectedServiceType;
+  TroubleType? selectedTroubleType;
+  Type? selectedPriorityType;
+  int? selectedExecutorId;
+
   @override
   void initState() {
     super.initState();
@@ -48,31 +56,62 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
     super.dispose();
   }
 
-  /// Загружает заявки в зависимости от категории (title)
+  /// Загружает заявки в зависимости от категории (title) с учетом фильтров
   void _loadTicketsForCategory() {
     final String? status = _getStatusFromTitle(widget.title);
 
+    String? startDate;
+    String? endDate;
+
+    // Если есть выбранный период, используем его
+    if (selectedDate != null) {
+      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
+      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
+    }
+
     if (widget.title == 'Все') {
       // Загружаем все заявки
-      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
-    } else if (widget.title == 'Просрочено' || widget.title == 'Просрочена') {
-      // Для просроченных передаем специальный статус (если API поддерживает)
-      // Если API не поддерживает - будет пустой список
       _ticketsBloc.add(
-        const LoadTicketsEvent(
+        LoadTicketsEvent(
           page: 1,
           perPage: 1000,
-          status: 'overdue', // или 'expired', 'delayed' - зависит от API
+          startDate: startDate,
+          endDate: endDate,
+          serviceTypeId: selectedServiceType?.id,
+          troubleTypeId: selectedTroubleType?.id,
+          priorityTypeId: selectedPriorityType?.id,
+          executorId: selectedExecutorId,
         ),
       );
     } else if (status != null) {
       // Загружаем заявки по конкретному статусу
       _ticketsBloc.add(
-        LoadTicketsEvent(page: 1, perPage: 1000, status: status),
+        LoadTicketsEvent(
+          page: 1,
+          perPage: 1000,
+          status: status,
+          startDate: startDate,
+          endDate: endDate,
+          serviceTypeId: selectedServiceType?.id,
+          troubleTypeId: selectedTroubleType?.id,
+          priorityTypeId: selectedPriorityType?.id,
+          executorId: selectedExecutorId,
+        ),
       );
     } else {
       // По умолчанию загружаем все заявки
-      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 1000));
+      _ticketsBloc.add(
+        LoadTicketsEvent(
+          page: 1,
+          perPage: 1000,
+          startDate: startDate,
+          endDate: endDate,
+          serviceTypeId: selectedServiceType?.id,
+          troubleTypeId: selectedTroubleType?.id,
+          priorityTypeId: selectedPriorityType?.id,
+          executorId: selectedExecutorId,
+        ),
+      );
     }
   }
 
@@ -165,7 +204,9 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
         builder: (context, state) {
           // Отображаем индикатор загрузки
           if (state is TicketsInitial || state is TicketsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.gray),
+            );
           }
 
           // Отображаем ошибку
@@ -343,7 +384,27 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: FilterCategoryWidget(),
+      child: FilterCategoryWidget(
+        initialDate: selectedDate,
+        initialServiceType: selectedServiceType,
+        initialTroubleType: selectedTroubleType,
+        initialPriorityType: selectedPriorityType,
+        initialExecutorId: selectedExecutorId,
+        onFiltersApplied:
+            (date, serviceType, troubleType, priorityType, executorId) {
+              setState(() {
+                selectedDate = date;
+                selectedServiceType = serviceType;
+                selectedTroubleType = troubleType;
+                selectedPriorityType = priorityType;
+                selectedExecutorId = executorId;
+              });
+              // Перезагружаем заявки с новыми фильтрами
+              _loadTicketsForCategory();
+              // Закрываем bottom sheet после применения фильтров
+              context.pop();
+            },
+      ),
     );
   }
 }

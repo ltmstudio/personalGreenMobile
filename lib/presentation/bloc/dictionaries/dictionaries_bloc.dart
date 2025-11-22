@@ -22,45 +22,14 @@ class DictionariesBloc extends Bloc<DictionariesEvent, DictionariesState> {
   ) async {
     emit(const DictionariesLoading());
 
-    log('=== DICTIONARIES REQUEST ===', name: 'DictionariesBloc');
-
     final result = await _repository.getDictionaries();
 
     result.fold(
       (failure) {
-        log('=== DICTIONARIES ERROR ===', name: 'DictionariesBloc');
-        log('Error: ${failure.message}', name: 'DictionariesBloc');
+        log('Dictionaries Error: ${failure.message}', name: 'DictionariesBloc');
         emit(DictionariesError(failure.message));
       },
       (data) {
-        log('=== DICTIONARIES RESPONSE ===', name: 'DictionariesBloc');
-
-        final statuses = data.statuses ?? [];
-        final taxTypes = data.taxTypes ?? [];
-        final serviceTypes = data.serviceTypes ?? [];
-        final troubleTypes = data.troubleTypes ?? [];
-        final priorityTypes = data.priorityTypes ?? [];
-        final sourceChannelTypes = data.sourceChannelTypes ?? [];
-
-        log('Statuses count: ${statuses.length}', name: 'DictionariesBloc');
-        log('Tax Types count: ${taxTypes.length}', name: 'DictionariesBloc');
-        log(
-          'Service Types count: ${serviceTypes.length}',
-          name: 'DictionariesBloc',
-        );
-        log(
-          'Trouble Types count: ${troubleTypes.length}',
-          name: 'DictionariesBloc',
-        );
-        log(
-          'Priority Types count: ${priorityTypes.length}',
-          name: 'DictionariesBloc',
-        );
-        log(
-          'Source Channel Types count: ${sourceChannelTypes.length}',
-          name: 'DictionariesBloc',
-        );
-
         emit(DictionariesLoaded(dictionaries: data));
       },
     );

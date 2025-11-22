@@ -65,11 +65,12 @@ class _SelectDateRangeWidgetState extends State<SelectDateRangeWidget> {
   }
 
   Future<void> _pickDateRange() async {
-    final now = DateTime.now();
+    // Используем переданный firstDate или дату с 2020 года, чтобы можно было выбирать прошлые даты
+    final firstDate = widget.firstDate ?? DateTime(2020, 1, 1);
 
     final pickedRange = await showDateRangePicker(
       context: context,
-      firstDate: widget.firstDate ?? now,
+      firstDate: firstDate,
       lastDate: widget.lastDate ?? DateTime(2100),
       initialDateRange: selectedDateRange != null
           ? DateTimeRange(

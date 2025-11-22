@@ -16,28 +16,12 @@ class AddressesRemoteDatasourceImpl implements AddressesRemoteDatasource {
 
   @override
   Future<AddressesResponseModel> getAddresses() async {
-    print('=== ADDRESSES DATASOURCE: START ===');
-    log.info('=== ADDRESSES REQUEST ===');
-    log.info('Endpoint: ${ApiEndpoints.addresses}');
-    print('Endpoint: ${ApiEndpoints.addresses}');
-
     try {
       final response = await apiProvider.get(endPoint: ApiEndpoints.addresses);
-      print('=== ADDRESSES DATASOURCE: RESPONSE RECEIVED ===');
-      print('Status: ${response.statusCode}');
-
-      log.info('=== ADDRESSES RESPONSE ===');
-      log.info('Response status: ${response.statusCode}');
-      log.info('Response data: ${response.data}');
-
       final result = AddressesResponseModel.fromJson(response.data);
-      print('=== ADDRESSES DATASOURCE: MODEL CREATED ===');
-      print('Addresses count: ${result.data?.length ?? 0}');
-      
       return result;
     } catch (e) {
-      print('=== ADDRESSES DATASOURCE: ERROR ===');
-      print('Error: $e');
+      log.severe('GetAddresses Error: $e');
       rethrow;
     }
   }

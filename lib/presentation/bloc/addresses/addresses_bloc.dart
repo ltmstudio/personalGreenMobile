@@ -19,36 +19,22 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
     LoadAddressesEvent event,
     Emitter<AddressesState> emit,
   ) async {
-    print('=== ADDRESSES BLOC: LOAD ADDRESSES START ===');
     emit(const AddressesLoading());
-    print('=== ADDRESSES BLOC: EMITTED LOADING STATE ===');
-
-    log.info('=== LOAD ADDRESSES REQUEST ===');
 
     try {
       final result = await _getAddressesUseCase.execute(NoParams());
-      print('=== ADDRESSES BLOC: USE CASE RESULT RECEIVED ===');
 
       result.fold(
         (failure) {
-          print('=== ADDRESSES BLOC: FAILURE ===');
-          print('Error: ${failure.message}');
-          log.severe('=== LOAD ADDRESSES ERROR ===');
-          log.severe('Error: ${failure.message}');
+          log.severe('LoadAddresses Error: ${failure.message}');
           emit(AddressesError(failure.message));
         },
         (data) {
-          print('=== ADDRESSES BLOC: SUCCESS ===');
-          print('Addresses count: ${data.data?.length ?? 0}');
-          log.info('=== LOAD ADDRESSES SUCCESS ===');
-          log.info('Addresses count: ${data.data?.length ?? 0}');
           emit(AddressesLoaded(data));
-          print('=== ADDRESSES BLOC: EMITTED LOADED STATE ===');
         },
       );
     } catch (e) {
-      print('=== ADDRESSES BLOC: EXCEPTION ===');
-      print('Exception: $e');
+      log.severe('LoadAddresses Exception: $e');
       emit(AddressesError('Exception: $e'));
     }
   }

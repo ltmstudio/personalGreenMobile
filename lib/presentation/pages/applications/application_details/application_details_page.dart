@@ -169,7 +169,9 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
   Widget _buildBody(BuildContext context, ApplicationDetailsState state) {
     if (state is ApplicationDetailsLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.gray),
+      );
     }
 
     // Показываем экран ошибки только при ошибке загрузки данных
@@ -234,9 +236,6 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             });
           },
           onSelectEmployee: (Employee employee) {
-            print('=== EMPLOYEE SELECTED ===');
-            print('Employee ID: ${employee.id}');
-            print('Employee Name: ${employee.fullName}');
             // PerformerWidget уже закрывает bottom sheet при isSelected == true
             // Показываем диалог подтверждения после небольшой задержки
             // чтобы bottom sheet успел закрыться
@@ -257,10 +256,6 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     ApplicationDetailsBloc bloc,
     Employee employee,
   ) {
-    print('=== SHOWING ASSIGN EXECUTOR DIALOG ===');
-    print('Ticket ID: ${widget.ticketId}');
-    print('Executor ID: ${employee.id}');
-
     bottomSheetWidget(
       context: context,
       isScrollControlled: false,
@@ -272,7 +267,6 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           confirmButtonText: AppStrings.assign,
           cancelButtonText: 'Закрыть',
           onTap: () {
-            print('=== CONFIRM BUTTON TAPPED ===');
             // Сохраняем выбранного исполнителя во временную переменную
             // Применим его только после успешного ответа
             setState(() {
@@ -280,19 +274,12 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             });
             // Вызываем assignExecutor после подтверждения
             if (widget.ticketId != null && employee.id != null) {
-              print('=== CALLING ASSIGN EXECUTOR ===');
-              print('Ticket ID: ${widget.ticketId}');
-              print('Executor ID: ${employee.id}');
               bloc.add(
                 AssignExecutorEvent(
                   ticketId: widget.ticketId!,
                   executorId: employee.id!,
                 ),
               );
-            } else {
-              print('=== ASSIGN EXECUTOR SKIPPED ===');
-              print('Ticket ID: ${widget.ticketId}');
-              print('Executor ID: ${employee.id}');
             }
           },
         ),
