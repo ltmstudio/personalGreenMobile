@@ -112,10 +112,10 @@ class RefreshTicketsEvent extends TicketsEvent {
 
 /// Событие для создания нового тикета
 class CreateTicketEvent extends TicketsEvent {
-  final CreateTicketRequestModel request;
+  final CreateTicketParams params;
 
-  const CreateTicketEvent(this.request);
+  const CreateTicketEvent(this.params);
 
   @override
-  List<Object?> get props => [request];
+  List<Object?> get props => [params];
 }

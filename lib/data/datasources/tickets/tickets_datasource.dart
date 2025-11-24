@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:dio/dio.dart';
 
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
@@ -165,18 +166,95 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   ) async {
     log('=== CREATE TICKET REQUEST ===', name: 'TicketsDatasource');
     log('Endpoint: ${ApiEndpoints.createTicket}', name: 'TicketsDatasource');
-    log('Request data: ${request.toFormData()}', name: 'TicketsDatasource');
 
-    final response = await apiProvider.postFormData(
-      endPoint: ApiEndpoints.createTicket,
-      data: request.toFormData(),
-    );
+    // Формируем FormData вручную для правильной передачи массива файлов
+    final formData = FormData();
+    
+    // Добавляем текстовые поля
+    formData.fields.add(MapEntry('object_id', request.objectId.toString()));
+    formData.fields.add(MapEntry('object_type', request.objectType));
+    formData.fields.add(MapEntry('service_type_id', request.serviceTypeId.toString()));
+    formData.fields.add(MapEntry('trouble_type_id', request.troubleTypeId.toString()));
+    formData.fields.add(MapEntry('priority_type_id', request.priorityTypeId.toString()));
+    formData.fields.add(MapEntry('deadlined_at', request.deadlinedAt));
+    formData.fields.add(MapEntry('visiting_at', request.visitingAt));
+    formData.fields.add(MapEntry('is_emergency', request.isEmergency.toString()));
+    formData.fields.add(MapEntry('comment', request.comment));
+    
+    // Добавляем additional_contact только если он не пустой
+    if (request.additionalContact.isNotEmpty) {
+      formData.fields.add(MapEntry('additional_contact', request.additionalContact));
+    }
+    
+    // Добавляем executor_id только если он указан
+    if (request.executorId != null) {
+      formData.fields.add(MapEntry('executor_id', request.executorId.toString()));
+    }
+    
+    // Для массива файлов с ключом photos[] добавляем каждый файл
+    if (request.photos != null && request.photos!.isNotEmpty) {
+      log('Adding ${request.photos!.length} photos', name: 'TicketsDatasource');
+      for (final photo in request.photos!) {
+        final fileName = photo.path.split(Platform.pathSeparator).last;
+        log('Adding photo: $fileName', name: 'TicketsDatasource');
+        formData.files.add(
+          MapEntry(
+            'photos[]',
+            await MultipartFile.fromFile(
+              photo.path,
+              filename: fileName,
+            ),
+          ),
+        );
+      }
+    }
 
-    log('=== CREATE TICKET RESPONSE ===', name: 'TicketsDatasource');
-    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
-    log('Response data: ${response.data}', name: 'TicketsDatasource');
+    // Логируем реальные поля FormData
+    log('FormData fields:', name: 'TicketsDatasource');
+    for (final field in formData.fields) {
+      log('  ${field.key}: ${field.value}', name: 'TicketsDatasource');
+    }
+    log('FormData files count: ${formData.files.length}', name: 'TicketsDatasource');
+    for (final file in formData.files) {
+      log('  ${file.key}: ${file.value.filename}', name: 'TicketsDatasource');
+    }
 
-    return CreateTicketResponseModel.fromJson(response.data);
+    // Используем прямой вызов Dio через ApiProviderImpl
+    // Так как postFormData принимает только Map, а нам нужен готовый FormData
+    final impl = apiProvider as ApiProviderImpl;
+    impl.dio.options.headers.remove('Content-Type');
+    
+    try {
+      final response = await impl.dio.post(
+        ApiEndpoints.createTicket,
+        data: formData,
+      );
+
+      log('=== CREATE TICKET RESPONSE ===', name: 'TicketsDatasource');
+      log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+      log('Response data: ${response.data}', name: 'TicketsDatasource');
+
+      return CreateTicketResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      log('=== CREATE TICKET ERROR ===', name: 'TicketsDatasource');
+      log('Error type: ${e.type}', name: 'TicketsDatasource');
+      log('Status code: ${e.response?.statusCode}', name: 'TicketsDatasource');
+      log('Error message: ${e.message}', name: 'TicketsDatasource');
+      if (e.response != null) {
+        log('Error response data: ${e.response?.data}', name: 'TicketsDatasource');
+        // Пытаемся извлечь детали ошибки валидации
+        if (e.response?.data is Map) {
+          final errorData = e.response!.data as Map;
+          if (errorData.containsKey('errors')) {
+            log('Validation errors: ${errorData['errors']}', name: 'TicketsDatasource');
+          }
+          if (errorData.containsKey('message')) {
+            log('Error message: ${errorData['message']}', name: 'TicketsDatasource');
+          }
+        }
+      }
+      rethrow;
+    }
   }
 
   @override

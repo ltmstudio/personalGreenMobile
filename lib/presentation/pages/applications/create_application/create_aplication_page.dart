@@ -6,7 +6,8 @@ import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/utils/time_format.dart';
 import 'package:hub_dom/data/models/addresses/addresses_response_model.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
-import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
+import 'package:hub_dom/core/usecase/tickets/create_ticket_params.dart';
+import 'package:hub_dom/core/utils/formatters/ticket_formatter.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
@@ -23,8 +24,10 @@ import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/image_picker_widget.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'dart:io';
 
 class CreateApplicationPage extends StatefulWidget {
@@ -56,6 +59,17 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
   final TextEditingController _phoneCtrl = TextEditingController();
   final TextEditingController _addPhoneCtrl = TextEditingController();
   final TextEditingController _commentCtrl = TextEditingController();
+
+  // Маска для российского номера телефона: +7 (999) 999-99-99
+  final _phoneMaskFormatter = MaskTextInputFormatter(
+    mask: '+7 (###) ###-##-##',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+
+  // Состояние ошибок валидации
+  bool _hasCommentError = false;
+  bool _hasPhoneError = false;
 
   bool _shouldOpenAddressList = false;
   List<File> _selectedPhotos = []; // Список выбранных фотографий
@@ -134,6 +148,8 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                   }
                 });
               } else if (state is TicketCreationError) {
+                // Обрабатываем ошибки валидации от сервера
+                _handleValidationErrors(state.message);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Ошибка создания заявки: ${state.message}'),
@@ -168,14 +184,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                               title: AppStrings.selectAddress,
                               value: selectedAddress,
                               icon: isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.gray,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
+                                  ? const GrayLoadingIndicator(size: 20)
                                   : Icon(Icons.keyboard_arrow_down),
                               showBorder: true,
                               onTap: isLoading
@@ -304,11 +313,21 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                         title: AppStrings.additionalPhoneContactPerson,
                         child: KTextField(
                           controller: _addPhoneCtrl,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.phone,
                           isSubmitted: false,
-                          hintText: AppStrings.phoneHintText,
-                          borderColor: AppColors.lightGrayBorder,
+                          hintText: '+7 (___) ___-__-__',
+                          borderColor: _hasPhoneError
+                              ? AppColors.red
+                              : AppColors.lightGrayBorder,
                           filled: true,
+                          inputFormatters: [_phoneMaskFormatter],
+                          onChange: (value) {
+                            if (_hasPhoneError) {
+                              setState(() {
+                                _hasPhoneError = false;
+                              });
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -322,9 +341,18 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                           controller: _commentCtrl,
                           isSubmitted: false,
                           hintText: AppStrings.addComments,
-                          borderColor: AppColors.lightGrayBorder,
+                          borderColor: _hasCommentError
+                              ? AppColors.red
+                              : AppColors.lightGrayBorder,
                           filled: true,
                           maxLines: 3,
+                          onChange: (value) {
+                            if (_hasCommentError) {
+                              setState(() {
+                                _hasCommentError = false;
+                              });
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -602,8 +630,40 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
     );
   }
 
+  /// Обработка ошибок валидации от сервера
+  void _handleValidationErrors(String errorMessage) {
+    setState(() {
+      _hasCommentError = false;
+      _hasPhoneError = false;
+    });
+
+    // Проверяем наличие ошибок в сообщении (регистронезависимый поиск)
+    final lowerMessage = errorMessage.toLowerCase();
+    if (lowerMessage.contains('comment') ||
+        lowerMessage.contains('комментарий') ||
+        lowerMessage.contains('поле comment обязательно')) {
+      setState(() {
+        _hasCommentError = true;
+      });
+    }
+    if (lowerMessage.contains('phone') ||
+        lowerMessage.contains('телефон') ||
+        lowerMessage.contains('additional_contact') ||
+        lowerMessage.contains('phone field format')) {
+      setState(() {
+        _hasPhoneError = true;
+      });
+    }
+  }
+
   /// Валидация и создание заявки
   void _validateAndCreateTicket(BuildContext context) {
+    // Сбрасываем ошибки
+    setState(() {
+      _hasCommentError = false;
+      _hasPhoneError = false;
+    });
+
     if (_selectedAddressData == null) {
       ScaffoldMessenger.of(
         context,
@@ -639,6 +699,29 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       return;
     }
 
+    // Валидация комментария (обязательное поле)
+    if (_commentCtrl.text.trim().isEmpty) {
+      setState(() {
+        _hasCommentError = true;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Введите комментарий')));
+      return;
+    }
+
+    // Валидация телефона
+    final unmaskedPhone = _phoneMaskFormatter.getUnmaskedText();
+    if (unmaskedPhone.length < 10) {
+      setState(() {
+        _hasPhoneError = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите полный номер телефона')),
+      );
+      return;
+    }
+
     // Получаем блоки из контекста
     final dictionariesBloc = context.read<DictionariesBloc>();
     final ticketsBloc = context.read<TicketsBloc>();
@@ -651,13 +734,14 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       return;
     }
 
-    _createTicket(dictionariesState, ticketsBloc);
+    _createTicket(dictionariesState, ticketsBloc, context);
   }
 
   /// Создание заявки через API
   void _createTicket(
     DictionariesLoaded dictionariesState,
     TicketsBloc ticketsBloc,
+    BuildContext context,
   ) {
     // Используем сохраненные объекты из справочников
     if (_selectedServiceData == null || _selectedServiceData!.id == null) {
@@ -687,8 +771,6 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
 
     // Формируем дату выполнения
     final deadlineDate = selectedDate!;
-    final deadlineFormatted =
-        '${deadlineDate.year}-${deadlineDate.month.toString().padLeft(2, '0')}-${deadlineDate.day.toString().padLeft(2, '0')}';
 
     // Формируем дату и время визита
     final visitingDateTime = DateTime(
@@ -698,26 +780,15 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       selectedTime!.hour,
       selectedTime!.minute,
     );
-    final visitingFormatted =
-        '${visitingDateTime.year}-${visitingDateTime.month.toString().padLeft(2, '0')}-${visitingDateTime.day.toString().padLeft(2, '0')} ${visitingDateTime.hour.toString().padLeft(2, '0')}:${visitingDateTime.minute.toString().padLeft(2, '0')}:${visitingDateTime.second.toString().padLeft(2, '0')}';
 
-    // Форматируем телефон
-    final phone = _addPhoneCtrl.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    // Валидация: номер должен содержать минимум 10 цифр (без +7)
-    final formattedPhone = phone.length >= 10 ? '+7$phone' : '';
+    // Форматируем телефон - получаем только цифры из маски
+    final formattedPhone = TicketFormatter.formatPhone(
+      _addPhoneCtrl.text,
+      _phoneMaskFormatter,
+    );
 
-    // Если номер невалидный, но поле заполнено - показываем ошибку
-    if (_addPhoneCtrl.text.trim().isNotEmpty && formattedPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Номер телефона должен содержать минимум 10 цифр'),
-        ),
-      );
-      return;
-    }
-
-    // Создаем запрос
-    final request = CreateTicketRequestModel(
+    // Создаем параметры для UseCase
+    final params = CreateTicketParams(
       objectId: _selectedAddressData!.id!,
       objectType: _selectedAddressData!.type == AddressType.house
           ? 'house'
@@ -725,18 +796,17 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       serviceTypeId: serviceType.id!,
       troubleTypeId: troubleType.id!,
       priorityTypeId: priorityType.id!,
-      deadlinedAt: deadlineFormatted,
-      visitingAt: visitingFormatted,
-      additionalContact: formattedPhone,
-      isEmergency: 0,
+      deadlineDate: deadlineDate,
+      visitingDateTime: visitingDateTime,
       comment: _commentCtrl.text.trim(),
+      additionalContact: formattedPhone.isNotEmpty ? formattedPhone : null,
+      isEmergency: 0,
       photos: _selectedPhotos.isNotEmpty ? _selectedPhotos : null,
-      executorId:
-          _selectedEmployeeData?.id, // Передаем ID исполнителя, если выбран
+      executorId: _selectedEmployeeData?.id,
     );
 
     // Отправляем событие создания заявки
-    ticketsBloc.add(CreateTicketEvent(request));
+    ticketsBloc.add(CreateTicketEvent(params));
   }
 
   _showSuccess() {

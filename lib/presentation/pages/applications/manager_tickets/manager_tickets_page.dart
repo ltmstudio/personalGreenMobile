@@ -12,6 +12,7 @@ import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
@@ -42,7 +43,7 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   List<StatusModel> get standardStatuses {
     return [
       StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
-      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'done', title: 'Выполнено', color: '#93CD64'),
       StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
       StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
     ];
@@ -69,9 +70,14 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     selectedCategory = widget.initialTab;
 
     // Сохраняем переданный период со страницы статистики
+    print('[ManagerTicketsPage] initState:');
+    print('  widget.initialSelectedDate=${widget.initialSelectedDate}');
     if (widget.initialSelectedDate != null) {
       selectedDate = widget.initialSelectedDate;
       _initialDateFromDashboard = widget.initialSelectedDate;
+      print('  Период установлен: selectedDate=$selectedDate');
+    } else {
+      print('  Период не передан через конструктор');
     }
 
     // Загружаем tickets при инициализации
@@ -90,10 +96,23 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     String? startDate;
     String? endDate;
 
+    // Используем период из _initialDateFromDashboard, если он есть, иначе из selectedDate
+    final dateToUse = _initialDateFromDashboard ?? selectedDate;
+
+    print('[ManagerTicketsPage] _loadTicketsForTab:');
+    print('  tabIndex=$tabIndex');
+    print('  selectedDate=$selectedDate');
+    print('  _initialDateFromDashboard=$_initialDateFromDashboard');
+    print('  dateToUse=$dateToUse');
+
     // Если есть выбранный период, используем его
-    if (selectedDate != null) {
-      startDate = DateTimeUtils.formatDateForApi(selectedDate!.start);
-      endDate = DateTimeUtils.formatDateForApi(selectedDate!.end);
+    if (dateToUse != null) {
+      startDate = DateTimeUtils.formatDateForApi(dateToUse.start);
+      endDate = DateTimeUtils.formatDateForApi(dateToUse.end);
+      print('  startDate для API: $startDate');
+      print('  endDate для API: $endDate');
+    } else {
+      print('  Период не установлен - запрос будет без дат');
     }
 
     String? statusApiValue;
@@ -101,7 +120,7 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
       // Фильтруем по конкретному статусу
       statusApiValue = _getStatusApiValue(tabIndex);
       print(
-        '_loadTicketsForTab: tabIndex=$tabIndex, statusApiValue=$statusApiValue, tabTitle=${statusTitles[tabIndex]}',
+        '  statusApiValue=$statusApiValue, tabTitle=${statusTitles[tabIndex]}',
       );
     }
 
@@ -187,9 +206,7 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
         builder: (context, state) {
           // Начальное состояние и загрузка показывают индикатор
           if (state is TicketsInitial || state is TicketsLoading) {
-            return Center(
-              child: CircularProgressIndicator(color: AppColors.gray),
-            );
+            return const Center(child: GrayLoadingIndicator());
           }
 
           if (state is TicketsError) {
@@ -223,6 +240,34 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
 
           // Для состояний TicketsEmpty и TicketsLoaded показываем табы
           if (state is TicketsEmpty || state is TicketsLoaded) {
+            // Синхронизируем локальное состояние с состоянием BLoC
+            if (state is TicketsLoaded) {
+              // Обновляем период из BLoC, если он изменился
+              if (state.currentStartDate != null &&
+                  state.currentEndDate != null) {
+                try {
+                  final startDate = DateTime.parse(state.currentStartDate!);
+                  final endDate = DateTime.parse(state.currentEndDate!);
+                  final blocDate = DateTimeRange(
+                    start: startDate,
+                    end: endDate,
+                  );
+                  if (selectedDate != blocDate) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          selectedDate = blocDate;
+                          _initialDateFromDashboard = blocDate;
+                        });
+                      }
+                    });
+                  }
+                } catch (e) {
+                  // Игнорируем ошибки парсинга
+                }
+              }
+            }
+
             final ticketsCount = state is TicketsLoaded
                 ? state.tickets.length
                 : 0;
@@ -382,8 +427,8 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
 
   /// Получает API значение статуса по индексу
   /// ВАЖНО: Маппинг индексов табов на статусы API
-  /// statusTitles: ['Все', 'В работе', 'Выполнена', 'Согласование', 'Контроль']
-  /// Индексы: 0=Все, 1=В работе, 2=Выполнена, 3=Согласование, 4=Контроль
+  /// statusTitles: ['Все', 'В работе', 'Выполнено', 'Согласование', 'Контроль']
+  /// Индексы: 0=Все, 1=В работе, 2=Выполнено, 3=Согласование, 4=Контроль
   String? _getStatusApiValue(int index) {
     if (index == 0) return null; // Все
     // Явный маппинг индексов табов на статусы API
@@ -391,7 +436,7 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
       case 1:
         return 'in_progress'; // В работе
       case 2:
-        return 'done'; // Выполнена
+        return 'done'; // Выполнено
       case 3:
         return 'approval'; // Согласование
       case 4:
@@ -405,26 +450,75 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   }
 
   _showFilter() {
+    // Получаем период из состояния BLoC, если он есть
+    DateTimeRange<DateTime>? dateFromBloc;
+    final currentState = _ticketsBloc.state;
+    if (currentState is TicketsLoaded) {
+      if (currentState.currentStartDate != null &&
+          currentState.currentEndDate != null) {
+        try {
+          final startDate = DateTime.parse(currentState.currentStartDate!);
+          final endDate = DateTime.parse(currentState.currentEndDate!);
+          dateFromBloc = DateTimeRange(start: startDate, end: endDate);
+        } catch (e) {
+          // Игнорируем ошибки парсинга
+        }
+      }
+    }
+
+    // Используем период из BLoC, если он есть, иначе из переданного через конструктор
+    final dateToPass = dateFromBloc ?? _initialDateFromDashboard;
+
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
       child: FilterManagerTicketsWidget(
         ticketsBloc: _ticketsBloc,
-        initialDate: selectedDate,
+        initialDate: dateToPass,
         initialServiceType: selectedServiceType,
         initialTroubleType: selectedTroubleType,
         initialPriorityType: selectedPriorityType,
         onFiltersApplied: (date, serviceType, troubleType, priorityType) {
+          // Обновляем фильтры через BLoC
+          String? startDate;
+          String? endDate;
+          if (date != null) {
+            startDate = DateTimeUtils.formatDateForApi(date.start);
+            endDate = DateTimeUtils.formatDateForApi(date.end);
+          }
+
+          // Получаем статус для текущего таба
+          String? statusApiValue;
+          if (selectedCategory != 0) {
+            statusApiValue = _getStatusApiValue(selectedCategory);
+          }
+
+          // Обновляем фильтры через BLoC
+          _ticketsBloc.add(
+            UpdateTicketsFiltersEvent(
+              startDate: startDate,
+              endDate: endDate,
+              status: statusApiValue,
+              serviceTypeId: serviceType?.id,
+              troubleTypeId: troubleType?.id,
+              priorityTypeId: priorityType?.id,
+              page: 1,
+              perPage: 1000,
+            ),
+          );
+
+          // Обновляем локальное состояние для отображения в UI
           setState(() {
             selectedDate = date;
             selectedServiceType = serviceType;
             selectedTroubleType = troubleType;
             selectedPriorityType = priorityType;
-            // Не сбрасываем _initialDateFromDashboard, чтобы знать,
-            // был ли период передан со страницы статистики
+            if (date != null) {
+              _initialDateFromDashboard = date;
+            } else {
+              _initialDateFromDashboard = null;
+            }
           });
-          // Перезагружаем заявки с учетом нового периода и текущего таба
-          _loadTicketsForTab(selectedCategory);
         },
       ),
     );

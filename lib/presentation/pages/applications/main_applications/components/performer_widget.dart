@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 
 class PerformerWidget extends StatefulWidget {
@@ -91,7 +91,7 @@ class _PerformerWidgetState extends State<PerformerWidget> {
                 builder: (context, state) {
                   if (state is EmployeesLoading) {
                     return Center(
-                      child: CircularProgressIndicator(color: AppColors.gray),
+                      child: const GrayLoadingIndicator(),
                     );
                   }
 

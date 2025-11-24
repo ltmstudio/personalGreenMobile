@@ -345,7 +345,7 @@ class _FilterCategoryWidgetState extends State<FilterCategoryWidget> {
 
   void _applyFilters() {
     // Вызываем callback для сохранения состояния фильтров
-    // Загрузка заявок будет выполнена в родительском виджете
+    // Загрузка заявок будет Выполнено в родительском виджете
     widget.onFiltersApplied?.call(
       selectedDate,
       selectedServiceType,

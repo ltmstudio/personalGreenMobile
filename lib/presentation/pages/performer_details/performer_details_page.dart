@@ -12,6 +12,7 @@ import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
@@ -46,7 +47,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
   List<StatusModel> get standardStatuses {
     return [
       StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
-      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'done', title: 'Выполнено', color: '#93CD64'),
       StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
       StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
     ];
@@ -187,7 +188,7 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
           // Отображаем индикатор загрузки
           if (state is TicketsInitial || state is TicketsLoading) {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.gray),
+              child: const GrayLoadingIndicator(),
             );
           }
 

@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/utils/time_format.dart';
+import 'package:hub_dom/core/usecase/tickets/create_ticket_params.dart';
+import 'package:hub_dom/core/utils/formatters/ticket_formatter.dart';
 import 'package:hub_dom/data/models/addresses/addresses_response_model.dart';
-import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
@@ -338,10 +339,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
   void _createTicket() {
     if (_ticketsBloc == null) return;
 
-    // Формируем дату выполнения в нужном формате
+    // Формируем дату выполнения
     final deadlineDate = selectedDate!;
-    final deadlineFormatted =
-        '${deadlineDate.year}-${deadlineDate.month.toString().padLeft(2, '0')}-${deadlineDate.day.toString().padLeft(2, '0')}';
 
     // Формируем дату и время визита
     final visitingDateTime = DateTime(
@@ -351,16 +350,15 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
       selectedTime!.hour,
       selectedTime!.minute,
     );
-    final visitingFormatted =
-        '${visitingDateTime.year}-${visitingDateTime.month.toString().padLeft(2, '0')}-${visitingDateTime.day.toString().padLeft(2, '0')} ${visitingDateTime.hour.toString().padLeft(2, '0')}:${visitingDateTime.minute.toString().padLeft(2, '0')}:${visitingDateTime.second.toString().padLeft(2, '0')}';
 
-    // Получаем номер телефона без форматирования
-    // Удаляем все символы кроме цифр и префикса +7
-    final unmaskedPhone = _phoneMaskFormatter.getUnmaskedText();
-    final formattedPhone = '+7$unmaskedPhone';
+    // Форматируем телефон - получаем только цифры из маски
+    final formattedPhone = TicketFormatter.formatPhone(
+      _phoneCtrl.text,
+      _phoneMaskFormatter,
+    );
 
-    // Создаем запрос
-    final request = CreateTicketRequestModel(
+    // Создаем параметры для UseCase
+    final params = CreateTicketParams(
       objectId: selectedAddress!.id!,
       objectType: selectedAddress!.type == AddressType.house
           ? 'house'
@@ -368,16 +366,17 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
       serviceTypeId: selectedService!.id!,
       troubleTypeId: selectedWorkType!.id!,
       priorityTypeId: selectedUrgency!.id!,
-      deadlinedAt: deadlineFormatted,
-      visitingAt: visitingFormatted,
-      additionalContact: formattedPhone,
-      isEmergency: 0, // Обычная заявка
+      deadlineDate: deadlineDate,
+      visitingDateTime: visitingDateTime,
       comment: _commentCtrl.text.trim(),
+      additionalContact: formattedPhone.isNotEmpty ? formattedPhone : null,
+      isEmergency: 0,
       photos: null, // Пока без фотографий
+      executorId: null,
     );
 
     // Отправляем событие создания тикета
-    _ticketsBloc!.add(CreateTicketEvent(request));
+    _ticketsBloc!.add(CreateTicketEvent(params));
   }
 
   /// Показать ошибку

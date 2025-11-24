@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hub_dom/core/usecase/tickets/create_ticket_params.dart';
 import 'package:hub_dom/core/usecase/tickets/create_ticket_usecase.dart';
-import 'package:hub_dom/data/models/tickets/create_ticket_request_model.dart';
 import 'package:hub_dom/data/models/tickets/create_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 import 'package:hub_dom/data/repositories/tickets/tickets_repository.dart';
@@ -224,7 +224,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
   ) async {
     emit(const TicketsCreating());
 
-    final result = await _createTicketUseCase.execute(event.request);
+    final result = await _createTicketUseCase.execute(event.params);
 
     result.fold(
       (failure) {

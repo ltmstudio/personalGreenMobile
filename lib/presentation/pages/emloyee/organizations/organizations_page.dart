@@ -9,6 +9,7 @@ import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 
 class OrganizationPage extends StatefulWidget {
@@ -102,7 +103,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
             );
           } else if (state is CrmSystemLoading) {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.gray),
+              child: const GrayLoadingIndicator(),
             );
           } else if (state is CrmSystemEmpty) {
             return Center(child: Text(AppStrings.empty));

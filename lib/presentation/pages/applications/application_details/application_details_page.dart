@@ -11,6 +11,7 @@ import 'package:hub_dom/presentation/pages/applications/main_applications/compon
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/selectable_btn.dart';
 import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
 import 'apps_page.dart';
@@ -170,7 +171,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   Widget _buildBody(BuildContext context, ApplicationDetailsState state) {
     if (state is ApplicationDetailsLoading) {
       return Center(
-        child: CircularProgressIndicator(color: AppColors.gray),
+        child: const GrayLoadingIndicator(),
       );
     }
 

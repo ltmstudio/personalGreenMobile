@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 
 class HomePageSearchWidget extends StatefulWidget {
   final TextEditingController searchCtrl;
@@ -101,9 +102,8 @@ class _HomePageSearchWidgetState extends State<HomePageSearchWidget> {
           child: const SizedBox(
             height: 22,
             width: 22,
-            child: CircularProgressIndicator(
-              color: AppColors.gray,
-              strokeWidth: 2,
+            child: const GrayLoadingIndicator(
+              size: 22,
             ),
           ),
         )

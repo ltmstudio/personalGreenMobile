@@ -20,6 +20,7 @@ import 'package:hub_dom/presentation/widgets/cards/employee_card.dart';
 import 'package:hub_dom/presentation/widgets/cards/object_card.dart';
 import 'package:hub_dom/presentation/widgets/cards/stat_card.dart';
 import 'package:hub_dom/presentation/widgets/filter_widget.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 
 import 'components/address_widget.dart';
 import 'components/performer_widget.dart';
@@ -191,8 +192,8 @@ class _ApplicationPageState extends State<ApplicationPage> {
         builder: (context, state) {
           // Отображаем индикатор загрузки
           if (state is TicketsInitial || state is TicketsLoading) {
-            return Center(
-              child: CircularProgressIndicator(color: AppColors.gray),
+            return const Center(
+              child: GrayLoadingIndicator(),
             );
           }
 
@@ -462,7 +463,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
                               );
                             },
                             child: StatCard(
-                              title: "Выполнена",
+                              title: "Выполнено",
                               value: "${stats['done']}",
                               percent: "${stats['donePercent']}%",
                               color: Colors.green,
@@ -515,9 +516,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
                             Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.gray,
-                                ),
+                                child: const GrayLoadingIndicator(),
                               ),
                             )
                           else if (employeesState is EmployeesError)

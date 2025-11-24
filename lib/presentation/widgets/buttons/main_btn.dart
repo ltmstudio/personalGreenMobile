@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 
 class MainButton extends StatelessWidget {
   const MainButton({
@@ -57,9 +58,8 @@ class MainButton extends StatelessWidget {
             ? const SizedBox(
                 height: 23,
                 width: 23,
-                child: CircularProgressIndicator.adaptive(
-                  backgroundColor: AppColors.white,
-                  strokeWidth: 2,
+                child: GrayLoadingIndicator(
+                  size: 23,
                 ),
               )
             : Row(

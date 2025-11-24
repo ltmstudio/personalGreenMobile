@@ -9,6 +9,7 @@ import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
 import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 
@@ -49,7 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-            body: const Center(child: CircularProgressIndicator()),
+            body: const Center(child: GrayLoadingIndicator()),
           );
         }
 
@@ -168,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: const Center(child: GrayLoadingIndicator()),
         );
       },
     );

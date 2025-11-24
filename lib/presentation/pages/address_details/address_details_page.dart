@@ -32,7 +32,7 @@ class _AddressDetailsPageState extends State<AddressDetailsPage> {
   List<StatusModel> get standardStatuses {
     return [
       StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
-      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64'),
+      StatusModel(name: 'done', title: 'Выполнено', color: '#93CD64'),
       StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
       StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
     ];
