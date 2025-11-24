@@ -100,6 +100,9 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     if (tabIndex != 0) {
       // Фильтруем по конкретному статусу
       statusApiValue = _getStatusApiValue(tabIndex);
+      print(
+        '_loadTicketsForTab: tabIndex=$tabIndex, statusApiValue=$statusApiValue, tabTitle=${statusTitles[tabIndex]}',
+      );
     }
 
     _ticketsBloc.add(
@@ -378,12 +381,27 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   }
 
   /// Получает API значение статуса по индексу
+  /// ВАЖНО: Маппинг индексов табов на статусы API
+  /// statusTitles: ['Все', 'В работе', 'Выполнена', 'Согласование', 'Контроль']
+  /// Индексы: 0=Все, 1=В работе, 2=Выполнена, 3=Согласование, 4=Контроль
   String? _getStatusApiValue(int index) {
     if (index == 0) return null; // Все
-    if (index > 0 && index <= standardStatuses.length) {
-      return standardStatuses[index - 1].name;
+    // Явный маппинг индексов табов на статусы API
+    switch (index) {
+      case 1:
+        return 'in_progress'; // В работе
+      case 2:
+        return 'done'; // Выполнена
+      case 3:
+        return 'approval'; // Согласование
+      case 4:
+        return 'control'; // Контроль
+      default:
+        if (index > 0 && index <= standardStatuses.length) {
+          return standardStatuses[index - 1].name;
+        }
+        return null;
     }
-    return null;
   }
 
   _showFilter() {

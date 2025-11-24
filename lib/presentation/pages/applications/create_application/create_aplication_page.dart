@@ -24,6 +24,8 @@ import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
 import 'package:hub_dom/presentation/widgets/image_picker_widget.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class CreateApplicationPage extends StatefulWidget {
   const CreateApplicationPage({super.key});
@@ -56,6 +58,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
   final TextEditingController _commentCtrl = TextEditingController();
 
   bool _shouldOpenAddressList = false;
+  List<File> _selectedPhotos = []; // Список выбранных фотографий
 
   @override
   void initState() {
@@ -342,7 +345,15 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                       ),
                     ),
                     SizedBox(height: 6),
-                    MultiImagePickerWidget(),
+                    MultiImagePickerWidget(
+                      onImagesChanged: (List<XFile> images) {
+                        setState(() {
+                          _selectedPhotos = images
+                              .map((xFile) => File(xFile.path))
+                              .toList();
+                        });
+                      },
+                    ),
                     SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -719,7 +730,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       additionalContact: formattedPhone,
       isEmergency: 0,
       comment: _commentCtrl.text.trim(),
-      photos: null,
+      photos: _selectedPhotos.isNotEmpty ? _selectedPhotos : null,
       executorId:
           _selectedEmployeeData?.id, // Передаем ID исполнителя, если выбран
     );

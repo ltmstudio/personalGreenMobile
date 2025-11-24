@@ -201,62 +201,65 @@ class _AppsPageState extends State<AppsPage> {
             ),
           ),
         ),
-        Container(
-          height: 80,
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(20),
-              topLeft: Radius.circular(20),
+        // Показываем кнопки только если статус тикета "контроль"
+        if (widget.ticketData?.status?.name == 'control')
+          Container(
+            height: 80,
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(20),
+                topLeft: Radius.circular(20),
+              ),
             ),
-          ),
-          child: BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
-            listener: (context, state) {
-              if (state is ApplicationDetailsAccepted) {
-                Toast.show(context, 'Заявка принята');
-                Navigator.of(context).pop();
-              } else if (state is ApplicationDetailsRejected) {
-                Toast.show(context, 'Заявка отклонена');
-                Navigator.of(context).pop();
-              } else if (state is ApplicationDetailsError) {
-                Toast.show(context, state.message);
-              }
-            },
-            builder: (context, state) {
-              final isProcessing =
-                  state is ApplicationDetailsAccepting ||
-                  state is ApplicationDetailsRejecting;
-              final ticketId = widget.ticketData?.id;
+            child:
+                BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
+                  listener: (context, state) {
+                    if (state is ApplicationDetailsAccepted) {
+                      Toast.show(context, 'Заявка принята');
+                      Navigator.of(context).pop();
+                    } else if (state is ApplicationDetailsRejected) {
+                      Toast.show(context, 'Заявка отклонена');
+                      Navigator.of(context).pop();
+                    } else if (state is ApplicationDetailsError) {
+                      Toast.show(context, state.message);
+                    }
+                  },
+                  builder: (context, state) {
+                    final isProcessing =
+                        state is ApplicationDetailsAccepting ||
+                        state is ApplicationDetailsRejecting;
+                    final ticketId = widget.ticketData?.id;
 
-              return Row(
-                children: [
-                  Expanded(
-                    child: MainButton(
-                      buttonTile: AppStrings.reject,
-                      onPressed: ticketId != null && !isProcessing
-                          ? () => _confirmReject(context, ticketId)
-                          : null,
-                      isLoading: state is ApplicationDetailsRejecting,
-                      btnColor: AppColors.red,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: MainButton(
-                      buttonTile: AppStrings.confirm,
-                      onPressed: ticketId != null && !isProcessing
-                          ? () => _handleConfirm(context, ticketId)
-                          : null,
-                      isLoading: state is ApplicationDetailsAccepting,
-                      btnColor: AppColors.green,
-                    ),
-                  ),
-                ],
-              );
-            },
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: MainButton(
+                            buttonTile: AppStrings.reject,
+                            onPressed: ticketId != null && !isProcessing
+                                ? () => _confirmReject(context, ticketId)
+                                : null,
+                            isLoading: state is ApplicationDetailsRejecting,
+                            btnColor: AppColors.red,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: MainButton(
+                            buttonTile: AppStrings.confirm,
+                            onPressed: ticketId != null && !isProcessing
+                                ? () => _handleConfirm(context, ticketId)
+                                : null,
+                            isLoading: state is ApplicationDetailsAccepting,
+                            btnColor: AppColors.green,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
           ),
-        ),
       ],
     );
   }

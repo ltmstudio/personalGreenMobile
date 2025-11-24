@@ -36,10 +36,14 @@ class AuthenticationRemoteDataSourceImpl
 
   @override
   Future<OtpModel> sendOtp(int phoneNumber) async {
+    log(phoneNumber.toString(), name: 'phone');
+
     final response = await apiProvider.post(
       endPoint: ApiEndpoints.sendOtp,
       data: {"phone": '+7${phoneNumber.toString()}'},
     );
+
+    log(response.toString(), name: 'response');
     switch (response.statusCode) {
       case 200:
         return OtpModel.fromJson(response.data);
@@ -75,10 +79,17 @@ class AuthenticationRemoteDataSourceImpl
 
   @override
   Future<void> logout() async {
+    log('=== LOGOUT REQUEST ===', name: 'AuthDatasource');
+    log('Endpoint: ${ApiEndpoints.logout}', name: 'AuthDatasource');
+
     final response = await apiProvider.post(
       endPoint: ApiEndpoints.logout,
       data: <String, dynamic>{},
     );
+
+    log('=== LOGOUT RESPONSE ===', name: 'AuthDatasource');
+    log('Response status: ${response.statusCode}', name: 'AuthDatasource');
+    log('Response data: ${response.data}', name: 'AuthDatasource');
 
     if (response.statusCode != 200) {
       throw Exception('Logout failed with status: ${response.statusCode}');
@@ -88,18 +99,47 @@ class AuthenticationRemoteDataSourceImpl
   @override
   Future<ProfileModel> getProfile() async {
     try {
+      log('=== GET PROFILE REQUEST ===', name: 'AuthDatasource');
+      log('Endpoint: ${ApiEndpoints.profile}', name: 'AuthDatasource');
+
       final response = await apiProvider.get(
         endPoint: ApiEndpoints.profile,
       );
 
+      log('=== GET PROFILE RESPONSE ===', name: 'AuthDatasource');
+      log('Response status: ${response.statusCode}', name: 'AuthDatasource');
+      log('Response data type: ${response.data.runtimeType}', name: 'AuthDatasource');
+      log('Response data: ${response.data}', name: 'AuthDatasource');
+      log('Response data (toString): ${response.data.toString()}', name: 'AuthDatasource');
+      
+      // Детальное логирование структуры данных
+      if (response.data is Map) {
+        final dataMap = response.data as Map;
+        log('Response keys: ${dataMap.keys.toList()}', name: 'AuthDatasource');
+        if (dataMap.containsKey('data')) {
+          log('Data field type: ${dataMap['data'].runtimeType}', name: 'AuthDatasource');
+          log('Data field: ${dataMap['data']}', name: 'AuthDatasource');
+          if (dataMap['data'] is Map) {
+            final dataField = dataMap['data'] as Map;
+            log('Data field keys: ${dataField.keys.toList()}', name: 'AuthDatasource');
+            dataField.forEach((key, value) {
+              log('  - $key: $value (${value.runtimeType})', name: 'AuthDatasource');
+            });
+          }
+        }
+      }
+
       if (response.statusCode == 200) {
         final profile = ProfileModel.fromJson(response.data['data']);
+        log('Profile parsed successfully: id=${profile.id}, userName=${profile.userName}', name: 'AuthDatasource');
         return profile;
       } else {
         throw Exception('Get profile failed with status: ${response.statusCode}');
       }
-    } catch (e) {
-      log('GetProfile Error: $e', name: 'AuthDatasource');
+    } catch (e, stackTrace) {
+      log('=== GET PROFILE ERROR ===', name: 'AuthDatasource');
+      log('Error: $e', name: 'AuthDatasource');
+      log('Stack trace: $stackTrace', name: 'AuthDatasource');
       rethrow;
     }
   }
@@ -108,6 +148,7 @@ class AuthenticationRemoteDataSourceImpl
   Future<List<CrmSystemModel>> getCrmSystem() async {
     final response = await apiProvider.get(endPoint: ApiEndpoints.crmAvailable);
 
+    log(response.toString(), name: 'response');
     final responseBody = response.data['data'] as List;
     final result = responseBody.map((e) => CrmSystemModel.fromJson(e)).toList();
 

@@ -32,15 +32,130 @@ class _ProfilePageState extends State<ProfilePage> {
     return BlocBuilder<SetProfileCubit, SetProfileState>(
       bloc: locator<SetProfileCubit>(),
       builder: (context, state) {
-        String userName = 'Иванов Иван Иванович'; // Значение по умолчанию
-
-        if (state is SetProfileLoaded) {
-          userName = state.data.userName;
+        // Показываем индикатор загрузки, пока данные не загружены
+        if (state is SetProfileLoading || state is SetProfileInitial) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Профиль'),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.logout,
+                    onTap: () {
+                      _logout(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
         }
 
+        // Показываем ошибку, если загрузка не удалась
+        if (state is SetProfileError || state is SetProfileConnectionError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Профиль'),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.logout,
+                    onTap: () {
+                      _logout(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Ошибка загрузки профиля',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      locator<SetProfileCubit>().getProfile();
+                    },
+                    child: Text(AppStrings.repeat),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Показываем данные только когда они загружены
+        if (state is SetProfileLoaded) {
+          final userName = state.data.fullName ?? state.data.userName;
+          final jobTitle = state.data.position;
+          final phone = state.data.phone;
+          final email = state.data.email;
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(userName),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, top: 10),
+                  child: AppBarIcon(
+                    icon: IconAssets.logout,
+                    onTap: () {
+                      _logout(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            body: Container(
+              width: double.infinity,
+              margin: EdgeInsets.all(20),
+              child: MainCardWidget(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFieldTitle(
+                      title: AppStrings.jobTitle,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Text(jobTitle ?? 'Не указано'),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    TextFieldTitle(
+                      title: AppStrings.phone,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Text(phone ?? 'Не указано'),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    TextFieldTitle(
+                      title: AppStrings.email,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Text(email ?? 'Не указано'),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Fallback на случай, если состояние не распознано
         return Scaffold(
           appBar: AppBar(
-            title: Text(userName),
+            title: const Text('Профиль'),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 15.0, top: 10),
@@ -53,42 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
-          body: Container(
-            width: double.infinity,
-            margin: EdgeInsets.all(20),
-            child: MainCardWidget(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFieldTitle(
-                    title: AppStrings.jobTitle,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5),
-                      child: Text('Инженер - электрик'),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  TextFieldTitle(
-                    title: AppStrings.phone,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5),
-                      child: Text('+7 (900) 000-00-00'),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  TextFieldTitle(
-                    title: AppStrings.email,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 5),
-                      child: Text('example@mail.ru'),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
+          body: const Center(child: CircularProgressIndicator()),
         );
       },
     );

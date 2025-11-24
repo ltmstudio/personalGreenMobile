@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:dio/dio.dart';
 
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
@@ -55,6 +56,8 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   Future<List<CollectionModel>> getCollections() async {
     final response = await apiProvider.get(endPoint: ApiEndpoints.collections);
 
+    log(response.toString(), name: 'response');
+
     final responseBody = response.data['data'] as List;
     final responseData = responseBody
         .map((e) => CollectionModel.fromJson(e))
@@ -66,6 +69,18 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   @override
   Future<DictionaryModel> getDictionaries() async {
     final response = await apiProvider.get(endPoint: ApiEndpoints.dictionaries);
+
+    log('=== DICTIONARIES API RESPONSE ===', name: 'TicketsDatasource');
+    log(response.data.toString(), name: 'TicketsDatasource');
+
+    // Проверяем структуру service_types
+    if (response.data != null && response.data['service_types'] != null) {
+      log('=== SERVICE TYPES RAW DATA ===', name: 'TicketsDatasource');
+      final serviceTypes = response.data['service_types'] as List;
+      for (int i = 0; i < serviceTypes.length && i < 3; i++) {
+        log('Service $i: ${serviceTypes[i]}', name: 'TicketsDatasource');
+      }
+    }
 
     return DictionaryModel.fromJson(response.data);
   }
@@ -128,10 +143,18 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
       queryParams['executor_id'] = executorId;
     }
 
+    log('=== API REQUEST ===', name: 'TicketsDatasource');
+    log('Endpoint: ${ApiEndpoints.collections}', name: 'TicketsDatasource');
+    log('Query params: $queryParams', name: 'TicketsDatasource');
+
     final response = await apiProvider.get(
       endPoint: ApiEndpoints.collections,
       query: queryParams,
     );
+
+    log('=== API RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
 
     return TicketResponseModel.fromJson(response.data);
   }
@@ -140,75 +163,125 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   Future<CreateTicketResponseModel> createTicket(
     CreateTicketRequestModel request,
   ) async {
+    log('=== CREATE TICKET REQUEST ===', name: 'TicketsDatasource');
+    log('Endpoint: ${ApiEndpoints.createTicket}', name: 'TicketsDatasource');
+    log('Request data: ${request.toFormData()}', name: 'TicketsDatasource');
+
     final response = await apiProvider.postFormData(
       endPoint: ApiEndpoints.createTicket,
       data: request.toFormData(),
     );
+
+    log('=== CREATE TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
 
     return CreateTicketResponseModel.fromJson(response.data);
   }
 
   @override
   Future<GetTicketResponseModel> getTicket(int ticketId) async {
+    log('=== GET TICKET REQUEST ===', name: 'TicketsDatasource');
+    log(
+      'Endpoint: ${ApiEndpoints.getTicket}/$ticketId',
+      name: 'TicketsDatasource',
+    );
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+
     final response = await apiProvider.get(
       endPoint: '${ApiEndpoints.getTicket}/$ticketId',
     );
+
+    log('=== GET TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
 
     return GetTicketResponseModel.fromJson(response.data);
   }
 
   @override
   Future<void> acceptTicket(int ticketId) async {
+    log('=== ACCEPT TICKET REQUEST ===', name: 'TicketsDatasource');
     final endpoint = ApiEndpoints.acceptTicket.replaceAll(
       ':ticket_id',
       ticketId.toString(),
     );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
 
-    await apiProvider.post(
+    final response = await apiProvider.post(
       endPoint: endpoint,
       data: <String, dynamic>{},
     );
+
+    log('=== ACCEPT TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
   }
 
   @override
   Future<void> rejectTicket(int ticketId, {String? rejectReason}) async {
+    log('=== REJECT TICKET REQUEST ===', name: 'TicketsDatasource');
     final endpoint = ApiEndpoints.rejectTicket.replaceAll(
       ':ticket_id',
       ticketId.toString(),
     );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Reject Reason: $rejectReason', name: 'TicketsDatasource');
 
     final requestBody = <String, dynamic>{};
     if (rejectReason != null && rejectReason.isNotEmpty) {
       requestBody['reject_reason'] = rejectReason;
     }
 
-    await apiProvider.post(
+    log('Request body: $requestBody', name: 'TicketsDatasource');
+
+    final response = await apiProvider.post(
       endPoint: endpoint,
       data: requestBody,
     );
+
+    log('=== REJECT TICKET RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
   }
 
   @override
   Future<void> assignExecutor(int ticketId, int executorId) async {
+    log('=== ASSIGN EXECUTOR REQUEST ===', name: 'TicketsDatasource');
     final endpoint = ApiEndpoints.assignExecutor.replaceAll(
       ':ticket_id',
       ticketId.toString(),
     );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Executor ID: $executorId', name: 'TicketsDatasource');
 
     final requestBody = {'executor_id': executorId};
+    log('Request body: $requestBody', name: 'TicketsDatasource');
 
-    await apiProvider.post(
+    final response = await apiProvider.post(
       endPoint: endpoint,
       data: requestBody,
     );
+
+    log('=== ASSIGN EXECUTOR RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
   }
 
   @override
   Future<void> submitReport(int ticketId, EmployeeReportRequestModel request) async {
+    log('=== SUBMIT REPORT REQUEST ===', name: 'TicketsDatasource');
     final endpoint = ApiEndpoints.reportTicket.replaceAll(
       ':ticket_id',
       ticketId.toString(),
     );
+    log('Endpoint: $endpoint', name: 'TicketsDatasource');
+    log('Ticket ID: $ticketId', name: 'TicketsDatasource');
+    log('Comment: ${request.comment}', name: 'TicketsDatasource');
+    log('Photos count: ${request.photos?.length ?? 0}', name: 'TicketsDatasource');
 
     // Формируем FormData вручную для правильной передачи массива файлов
     final formData = FormData();
@@ -238,9 +311,13 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     final impl = apiProvider as ApiProviderImpl;
     impl.dio.options.headers.remove('Content-Type');
     
-    await impl.dio.post(
+    final response = await impl.dio.post(
       endpoint,
       data: formData,
     );
+
+    log('=== SUBMIT REPORT RESPONSE ===', name: 'TicketsDatasource');
+    log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
+    log('Response data: ${response.data}', name: 'TicketsDatasource');
   }
 }
