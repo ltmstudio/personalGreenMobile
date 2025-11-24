@@ -37,6 +37,8 @@ class Data {
   dynamic sourceChannelType;
   Type? serviceType;
   bool? executorByManual;
+  int? executorId;
+  Executor? executor;
   dynamic comment;
   dynamic photos;
   DateTime? createdAt;
@@ -55,6 +57,8 @@ class Data {
     this.sourceChannelType,
     this.serviceType,
     this.executorByManual,
+    this.executorId,
+    this.executor,
     this.comment,
     this.photos,
     this.createdAt,
@@ -82,6 +86,10 @@ class Data {
         ? null
         : Type.fromJson(json["service_type"]),
     executorByManual: json["executor_by_manual"],
+    executorId: json["executor_id"],
+    executor: json["executor"] == null
+        ? null
+        : Executor.fromJson(json["executor"]),
     comment: json["comment"],
     photos: json["photos"],
     createdAt: json["created_at"] == null
@@ -103,6 +111,8 @@ class Data {
     "source_channel_type": sourceChannelType,
     "service_type": serviceType?.toJson(),
     "executor_by_manual": executorByManual,
+    "executor_id": executorId,
+    "executor": executor?.toJson(),
     "comment": comment,
     "photos": photos,
     "created_at": createdAt?.toIso8601String(),
@@ -304,4 +314,59 @@ class Type {
       Type(id: json["id"], title: json["title"]);
 
   Map<String, dynamic> toJson() => {"id": id, "title": title};
+}
+
+class Executor {
+  final int? id;
+  final String? name;
+  final String? lastname;
+  final String? surname;
+  final String? email;
+  final dynamic phone;
+  final String? _fullNameFromJson;
+
+  Executor({
+    this.id,
+    this.name,
+    this.lastname,
+    this.surname,
+    this.email,
+    this.phone,
+    String? fullName,
+  }) : _fullNameFromJson = fullName;
+
+  factory Executor.fromJson(Map<String, dynamic> json) => Executor(
+    id: json["id"],
+    name: json["name"],
+    lastname: json["lastname"],
+    surname: json["surname"],
+    email: json["email"],
+    phone: json["phone"],
+    fullName: json["full_name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "lastname": lastname,
+    "surname": surname,
+    "email": email,
+    "phone": phone,
+    "full_name": _fullNameFromJson,
+  };
+
+  String get fullName {
+    // Если есть готовое поле full_name из JSON, используем его
+    final fullNameFromJson = _fullNameFromJson;
+    if (fullNameFromJson != null && fullNameFromJson.isNotEmpty) {
+      return fullNameFromJson;
+    }
+    // Иначе собираем из отдельных полей
+    final parts = [
+      lastname,
+      name,
+      surname,
+    ].where((part) => part != null && part.isNotEmpty).toList();
+    return parts.isEmpty ? 'Не указано' : parts.join(' ');
+  }
 }

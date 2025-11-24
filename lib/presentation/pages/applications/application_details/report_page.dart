@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
@@ -70,42 +71,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 ),
                 SizedBox(height: 14),
 
-                widget.ticketData?.photos != null &&
-                        (widget.ticketData!.photos is List) &&
-                        (widget.ticketData!.photos as List).isNotEmpty
-                    ? SizedBox(
-                        height: 70,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: (widget.ticketData!.photos as List).length,
-                          itemBuilder: (context, index) {
-                            final photo =
-                                (widget.ticketData!.photos as List)[index];
-                            final photoUrl = photo is String
-                                ? photo
-                                : photo.toString();
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: ImageWithShimmer(
-                                imageUrl: photoUrl,
-                                width: 70,
-                                height: 70,
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context, index) =>
-                              SizedBox(width: 6),
-                        ),
-                      )
-                    : Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'Данных нет',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.gray),
-                        ),
-                      ),
+                _buildPhotosSection(context),
                 SizedBox(height: 20),
               ],
             ),
@@ -217,5 +183,73 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
         },
       ),
     );
+  }
+
+  Widget _buildPhotosSection(BuildContext context) {
+    final photos = widget.ticketData?.photos;
+    
+    // Логируем для отладки
+    if (photos != null) {
+      debugPrint('Photos data type: ${photos.runtimeType}');
+      debugPrint('Photos data: $photos');
+    }
+
+    // Проверяем разные форматы данных photos
+    List<String> photoUrls = [];
+    
+    if (photos != null) {
+      if (photos is List) {
+        for (final photo in photos) {
+          String? url;
+          if (photo is String) {
+            // Если это строка - используем как URL
+            url = photo;
+          } else if (photo is Map) {
+            // Если это объект - пытаемся извлечь URL из разных полей
+            url = photo['link'] ?? 
+                  photo['url'] ?? 
+                  photo['path'] ?? 
+                  photo['image_url'] ?? 
+                  photo['photo_url'] ??
+                  photo['src'];
+          }
+          
+          if (url != null && url.isNotEmpty) {
+            photoUrls.add(url);
+          }
+        }
+      }
+    }
+
+    if (photoUrls.isNotEmpty) {
+      return SizedBox(
+        height: 70,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          itemCount: photoUrls.length,
+          itemBuilder: (context, index) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: ImageWithShimmer(
+                imageUrl: photoUrls[index],
+                width: 70,
+                height: 70,
+              ),
+            );
+          },
+          separatorBuilder: (context, index) => SizedBox(width: 6),
+        ),
+      );
+    } else {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Text(
+          'Нет данных',
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: AppColors.gray),
+        ),
+      );
+    }
   }
 }

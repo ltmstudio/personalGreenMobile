@@ -39,14 +39,12 @@ class ContactFaceCardWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          if (phone != 'Данных нет') ...[
-            SizedBox(height: 12),
-            _contactNumberWidget(
-              context,
-              AppStrings.mainPhone,
-              phone,
-            ),
-          ],
+          SizedBox(height: 12),
+          _contactNumberWidget(
+            context,
+            AppStrings.mainPhone,
+            phone,
+          ),
         ],
       ),
     );

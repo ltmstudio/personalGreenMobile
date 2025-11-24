@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
@@ -16,6 +17,7 @@ import 'components/address_card_widget.dart';
 import 'components/application_detail_data_card.dart';
 import 'components/check_list_widget.dart';
 import 'components/contact_face_widget.dart';
+import 'components/performer_card_widget.dart';
 import 'package:hub_dom/presentation/widgets/reject_bottom_sheet.dart';
 
 class AppsPage extends StatefulWidget {
@@ -62,25 +64,38 @@ class _AppsPageState extends State<AppsPage> {
                 ),
 
                 SizedBox(height: 14),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: SelectBtn(
-                    title: AppStrings.selectPerformer,
-                    value: widget.selectedPerformer,
-                    showBorder: false,
-                    icon: Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.lightGrayBorder,
+                // Показываем выбор исполнителя только если исполнитель не выбран
+                if (widget.selectedPerformer == null && 
+                    widget.selectedExecutorId == null && 
+                    widget.ticketData?.executor == null)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: SelectBtn(
+                      title: AppStrings.selectPerformer,
+                      value: widget.selectedPerformer,
+                      showBorder: false,
+                      icon: Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.lightGrayBorder,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_ios_outlined,
+                          size: 14,
+                          color: AppColors.white,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.arrow_forward_ios_outlined,
-                        size: 14,
-                        color: AppColors.white,
-                      ),
+                      onTap: widget.onShowPerformer,
                     ),
-                    onTap: widget.onShowPerformer,
+                  ),
+                // Всегда показываем карточку исполнителя
+                SizedBox(height: 6),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: PerformerCardWidget(
+                    ticketData: widget.ticketData,
+                    selectedPerformer: widget.selectedPerformer,
                   ),
                 ),
                 SizedBox(height: 6),
@@ -91,27 +106,29 @@ class _AppsPageState extends State<AppsPage> {
                   ),
                 ),
                 SizedBox(height: 12),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: SelectBtn(
-                    title: AppStrings.selectContactPerson,
-                    value: widget.selectedContact,
-                    showBorder: false,
-                    icon: Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.lightGrayBorder,
+                // Показываем выбор контактного лица только если контактное лицо не выбрано
+                if (widget.selectedContact == null && widget.ticketData?.resident == null)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: SelectBtn(
+                      title: AppStrings.selectContactPerson,
+                      value: widget.selectedContact,
+                      showBorder: false,
+                      icon: Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.lightGrayBorder,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_ios_outlined,
+                          size: 14,
+                          color: AppColors.white,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.arrow_forward_ios_outlined,
-                        size: 14,
-                        color: AppColors.white,
-                      ),
+                      onTap: widget.onShowContact,
                     ),
-                    onTap: widget.onShowContact,
                   ),
-                ),
                 SizedBox(height: 6),
 
                 Padding(
@@ -120,6 +137,7 @@ class _AppsPageState extends State<AppsPage> {
                 ),
                 SizedBox(height: 12),
 
+                // Всегда показываем карточку контактного лица
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: ContactFaceCardWidget(ticketData: widget.ticketData),
@@ -160,42 +178,7 @@ class _AppsPageState extends State<AppsPage> {
                 ),
                 SizedBox(height: 14),
 
-                widget.ticketData?.photos != null &&
-                        (widget.ticketData!.photos is List) &&
-                        (widget.ticketData!.photos as List).isNotEmpty
-                    ? SizedBox(
-                        height: 70,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: (widget.ticketData!.photos as List).length,
-                          itemBuilder: (context, index) {
-                            final photo =
-                                (widget.ticketData!.photos as List)[index];
-                            final photoUrl = photo is String
-                                ? photo
-                                : photo.toString();
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: ImageWithShimmer(
-                                imageUrl: photoUrl,
-                                width: 70,
-                                height: 70,
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context, index) =>
-                              SizedBox(width: 6),
-                        ),
-                      )
-                    : Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'Данных нет',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.gray),
-                        ),
-                      ),
+                _buildPhotosSection(context),
                 SizedBox(height: 20),
               ],
             ),
@@ -311,5 +294,73 @@ class _AppsPageState extends State<AppsPage> {
         },
       ),
     );
+  }
+
+  Widget _buildPhotosSection(BuildContext context) {
+    final photos = widget.ticketData?.photos;
+    
+    // Логируем для отладки
+    if (photos != null) {
+      debugPrint('Photos data type: ${photos.runtimeType}');
+      debugPrint('Photos data: $photos');
+    }
+
+    // Проверяем разные форматы данных photos
+    List<String> photoUrls = [];
+    
+    if (photos != null) {
+      if (photos is List) {
+        for (final photo in photos) {
+          String? url;
+          if (photo is String) {
+            // Если это строка - используем как URL
+            url = photo;
+          } else if (photo is Map) {
+            // Если это объект - пытаемся извлечь URL из разных полей
+            url = photo['link'] ?? 
+                  photo['url'] ?? 
+                  photo['path'] ?? 
+                  photo['image_url'] ?? 
+                  photo['photo_url'] ??
+                  photo['src'];
+          }
+          
+          if (url != null && url.isNotEmpty) {
+            photoUrls.add(url);
+          }
+        }
+      }
+    }
+
+    if (photoUrls.isNotEmpty) {
+      return SizedBox(
+        height: 70,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          itemCount: photoUrls.length,
+          itemBuilder: (context, index) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: ImageWithShimmer(
+                imageUrl: photoUrls[index],
+                width: 70,
+                height: 70,
+              ),
+            );
+          },
+          separatorBuilder: (context, index) => SizedBox(width: 6),
+        ),
+      );
+    } else {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Text(
+          'Нет данных',
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: AppColors.gray),
+        ),
+      );
+    }
   }
 }

@@ -57,7 +57,41 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       },
       child: BlocListener<ApplicationDetailsBloc, ApplicationDetailsState>(
         listener: (context, state) {
-          if (state is ApplicationDetailsExecutorAssigned) {
+          if (state is ApplicationDetailsLoaded) {
+            // При загрузке заявки устанавливаем данные исполнителя и контактного лица
+            final ticketData = state.ticket.data;
+            setState(() {
+              // Устанавливаем исполнителя из данных заявки
+              if (ticketData?.executor != null) {
+                selectedExecutorId = ticketData!.executor!.id;
+                selectedPerformer = ticketData.executor!.fullName;
+              } else if (ticketData?.executorId != null) {
+                selectedExecutorId = ticketData!.executorId;
+                selectedPerformer =
+                    null; // Если нет объекта executor, но есть ID
+              } else {
+                selectedExecutorId = null;
+                selectedPerformer = null;
+              }
+
+              // Устанавливаем контактное лицо из данных заявки
+              if (ticketData?.resident != null) {
+                // Если resident - это строка
+                if (ticketData!.resident is String) {
+                  selectedContact = ticketData.resident as String;
+                } else if (ticketData.resident is Map) {
+                  // Если resident - это объект, пытаемся извлечь имя
+                  final residentMap = ticketData.resident as Map;
+                  selectedContact =
+                      residentMap['full_name'] ??
+                      residentMap['name'] ??
+                      residentMap.toString();
+                }
+              } else {
+                selectedContact = null;
+              }
+            });
+          } else if (state is ApplicationDetailsExecutorAssigned) {
             // Закрываем bottom sheet после успешного назначения исполнителя
             Navigator.of(context).pop();
             Toast.show(context, 'Исполнитель назначен');
@@ -74,12 +108,21 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             // Показываем понятное сообщение об ошибке
             Toast.show(context, state.message);
             // Сбрасываем выбранного исполнителя и текстовое поле при ошибке
-            setState(() {
-              selectedExecutorId = null;
-              selectedPerformer = null;
-              selectedContact = null;
+            // только если это не ошибка загрузки (чтобы не сбросить уже загруженные данные)
+            if (state.message.contains('загрузк') ||
+                state.message.contains('load') ||
+                state.message.contains('404') ||
+                state.message.contains('500')) {
+              setState(() {
+                selectedExecutorId = null;
+                selectedPerformer = null;
+                selectedContact = null;
+                _pendingEmployee = null;
+              });
+            } else {
+              // Для других ошибок сбрасываем только pending
               _pendingEmployee = null;
-            });
+            }
           }
         },
         child: BlocBuilder<ApplicationDetailsBloc, ApplicationDetailsState>(
@@ -170,9 +213,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
   Widget _buildBody(BuildContext context, ApplicationDetailsState state) {
     if (state is ApplicationDetailsLoading) {
-      return Center(
-        child: const GrayLoadingIndicator(),
-      );
+      return Center(child: const GrayLoadingIndicator());
     }
 
     // Показываем экран ошибки только при ошибке загрузки данных

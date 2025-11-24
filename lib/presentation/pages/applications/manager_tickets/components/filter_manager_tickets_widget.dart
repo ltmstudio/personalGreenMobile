@@ -52,7 +52,9 @@ class _FilterManagerTicketsWidgetState
     selectedServiceType = widget.initialServiceType;
     selectedTroubleType = widget.initialTroubleType;
     selectedPriorityType = widget.initialPriorityType;
-    print('[FilterManagerTicketsWidget] initState: widget.initialDate=${widget.initialDate}');
+    print(
+      '[FilterManagerTicketsWidget] initState: widget.initialDate=${widget.initialDate}',
+    );
     print('[FilterManagerTicketsWidget] initState: selectedDate=$selectedDate');
   }
 
@@ -62,7 +64,9 @@ class _FilterManagerTicketsWidgetState
     // Обновляем selectedDate, если initialDate изменился извне
     // (например, если период был установлен на главном экране)
     if (widget.initialDate != oldWidget.initialDate) {
-      print('[FilterManagerTicketsWidget] didUpdateWidget: widget.initialDate changed from ${oldWidget.initialDate} to ${widget.initialDate}');
+      print(
+        '[FilterManagerTicketsWidget] didUpdateWidget: widget.initialDate changed from ${oldWidget.initialDate} to ${widget.initialDate}',
+      );
       setState(() {
         selectedDate = widget.initialDate;
       });
@@ -115,12 +119,15 @@ class _FilterManagerTicketsWidgetState
                         TextFieldTitle(
                           title: AppStrings.period,
                           child: SelectDateRangeWidget(
-                            key: ValueKey(selectedDate?.start.toString() ?? 'null'), // Ключ для обновления виджета
+                            key: ValueKey(
+                              selectedDate?.start.toString() ?? 'null',
+                            ), // Ключ для обновления виджета
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now().add(
                               const Duration(days: 365),
                             ),
-                            initialDateRange: selectedDate ?? widget.initialDate,
+                            initialDateRange:
+                                selectedDate ?? widget.initialDate,
                             onDateRangeSelected: (v) {
                               setState(() {
                                 selectedDate = v;
