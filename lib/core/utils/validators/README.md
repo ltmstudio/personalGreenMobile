@@ -62,3 +62,6 @@ String? errorMessage = TicketFieldValidationConfig.getFieldInfo('comment')?.erro
 - `TicketFieldValidationConfig` - предоставляет детальную информацию о валидации каждого поля
 - `FieldValidationInfo` - содержит информацию о валидации конкретного поля
 
+
+
+

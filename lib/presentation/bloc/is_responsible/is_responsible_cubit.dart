@@ -40,4 +40,3 @@ class IsResponsibleCubit extends Cubit<IsResponsibleState> {
     );
   }
 }
-

@@ -58,4 +58,3 @@ class EmployeesRemoteDatasourceImpl implements EmployeesRemoteDatasource {
     return IsResponsibleResponseModel.fromJson(response.data);
   }
 }
-

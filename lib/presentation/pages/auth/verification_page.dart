@@ -261,7 +261,7 @@ class _VerificationPageState extends State<VerificationPage> {
                               // Add tap gesture if needed
                               recognizer: TapGestureRecognizer()..onTap = () {},
                             ),
-                            const TextSpan(text: " и с "),
+                            const TextSpan(text: " и "),
                             TextSpan(
                               text: "политикой конфиденциальности",
                               style: Theme.of(context).textTheme.bodySmall

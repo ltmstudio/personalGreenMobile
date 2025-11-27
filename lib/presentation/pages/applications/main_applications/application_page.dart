@@ -192,9 +192,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
         builder: (context, state) {
           // Отображаем индикатор загрузки
           if (state is TicketsInitial || state is TicketsLoading) {
-            return const Center(
-              child: GrayLoadingIndicator(),
-            );
+            return const Center(child: GrayLoadingIndicator());
           }
 
           // Отображаем ошибку

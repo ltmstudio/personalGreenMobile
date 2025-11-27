@@ -94,14 +94,28 @@ class _ProfilePageState extends State<ProfilePage> {
 
         // Показываем данные только когда они загружены
         if (state is SetProfileLoaded) {
-          final userName = state.data.fullName ?? state.data.userName;
-          final jobTitle = state.data.position;
-          final phone = state.data.phone;
-          final email = state.data.email;
+          // Формируем отображаемое имя с fallback значениями
+          final displayName = state.data.fullName?.isNotEmpty == true
+              ? state.data.fullName!
+              : (state.data.userName.isNotEmpty
+                    ? state.data.userName
+                    : (state.data.name?.isNotEmpty == true
+                          ? state.data.name!
+                          : 'Пользователь'));
+
+          final jobTitle = state.data.position?.isNotEmpty == true
+              ? state.data.position!
+              : null;
+          final phone = state.data.phone?.isNotEmpty == true
+              ? state.data.phone!
+              : null;
+          final email = state.data.email?.isNotEmpty == true
+              ? state.data.email!
+              : null;
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(userName),
+              title: Text(displayName),
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 15.0, top: 10),
