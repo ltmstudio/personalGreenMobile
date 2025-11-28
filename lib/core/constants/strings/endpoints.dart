@@ -4,7 +4,7 @@ class ApiEndpoints {
   // static const crmBaseUrl = 'https://staging.hub.dom-connect.ru';
   static const sendOtp = 'auth/attempt';
   static const login = 'auth/confirm';
-  static const profile = 'auth/profile';
+  static const profile = 'engineer_api/profile';
   static const refresh = 'auth/refresh';
 
   static const logout = 'auth/logout';

@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
-import 'package:hub_dom/data/models/auth/auth_params.dart';
 import 'package:hub_dom/data/models/auth/set_profile_params.dart';
 import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
+import 'package:hub_dom/presentation/bloc/is_responsible/is_responsible_cubit.dart';
+import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
+import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
+import 'package:hub_dom/locator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pinput/pinput.dart';
 
 class SecurityCodePage extends StatefulWidget {
@@ -28,6 +32,7 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
 
   //String? code;
   bool showChangeButton = false;
+  bool _hasNavigated = false; // Флаг для предотвращения повторной навигации
 
   bool validate() {
     // Run form validators first
@@ -184,21 +189,75 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                     ),
                   SizedBox(height: 40),
 
-                  // BlocListener<CrmSystemCubit, CrmSystemState>(
-                  //   listener: (context, state) {
-                  //     if (state is CrmSystemLoaded) {
-                  //       // context.go(AppRoutes.applications);
-                  //       context.go(AppRoutes.organizations);
-                  //     }
-                  //   },
-                  //   child: const SizedBox.shrink(),
-                  // ),
+                  // Слушаем загрузку CRM систем и устанавливаем токен, затем проверяем isResponsible
+                  BlocListener<CrmSystemCubit, CrmSystemState>(
+                    listener: (context, state) async {
+                      if (state is CrmSystemLoaded && state.data.isNotEmpty) {
+                        // Если есть CRM системы, устанавливаем первую (индекс 0)
+                        final selectedCrmCubit = locator<SelectedCrmCubit>();
+                        await selectedCrmCubit.setCrmSystem(0);
+                      }
+                    },
+                    child: const SizedBox.shrink(),
+                  ),
+                  // Слушаем установку CRM токена и проверяем isResponsible
+                  BlocListener<SelectedCrmCubit, SelectedCrmState>(
+                    listener: (context, state) async {
+                      if (state is SelectedCrmLoaded && !_hasNavigated) {
+                        _hasNavigated = true; // Предотвращаем повторную навигацию
+                        
+                        // После установки CRM токена проверяем isResponsible
+                        final isResponsibleCubit = locator<IsResponsibleCubit>();
+                        await isResponsibleCubit.checkIsResponsible();
+                        
+                        if (!mounted) return;
+                        
+                        // Получаем результат и переходим на правильную страницу
+                        final currentState = isResponsibleCubit.state;
+                        bool isResponsible = false;
+                        
+                        debugPrint('[SecurityCodePage] Current state type: ${currentState.runtimeType}');
+                        
+                        if (currentState is IsResponsibleLoaded) {
+                          isResponsible = currentState.isResponsible;
+                          debugPrint('[SecurityCodePage] isResponsible from state: $isResponsible');
+                        } else if (currentState is IsResponsibleError) {
+                          // При ошибке (например, 404) считаем, что пользователь не ответственный
+                          isResponsible = false;
+                          debugPrint('[SecurityCodePage] Error state, defaulting to false');
+                        } else {
+                          debugPrint('[SecurityCodePage] Unexpected state, defaulting to false');
+                        }
+                        
+                        debugPrint('[SecurityCodePage] Final isResponsible: $isResponsible (after CRM token set)');
+                        
+                        // Переходим на правильную страницу после завершения текущего кадра
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          
+                          // Переходим на правильную страницу
+                          // isResponsible = true → руководитель → applications (страница со статистикой)
+                          // isResponsible = false → обычный сотрудник → organizations
+                          if (isResponsible) {
+                            debugPrint('[SecurityCodePage] → Navigating to applications (руководитель)');
+                            context.go(AppRoutes.applications);
+                          } else {
+                            debugPrint('[SecurityCodePage] → Navigating to organizations (обычный сотрудник)');
+                            context.go(AppRoutes.organizations);
+                          }
+                        });
+                      }
+                    },
+                    child: const SizedBox.shrink(),
+                  ),
 
                   //todo change bloc
                   BlocConsumer<SetProfileCubit, SetProfileState>(
-                    listener: (context, state) {
+                    listener: (context, state) async {
                       if (state is SetProfileLoaded) {
-                        context.go(AppRoutes.organizations);
+                        // После успешного SetProfile загружаем CRM системы
+                        final crmSystemCubit = locator<CrmSystemCubit>();
+                        await crmSystemCubit.getCrmSystems();
                       }
                     },
                     builder: (context, state) {

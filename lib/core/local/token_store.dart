@@ -9,7 +9,7 @@ class Store {
 
   final  String _tokenKey = 'token';
   final String _refreshTokenKey = 'refreshToken';
-
+  final String _isResponsibleKey = 'isResponsible';
 
   Future<void> setToken(String token) async {
     await _secureStorage.write(key: _tokenKey,value:  token,);
@@ -27,9 +27,20 @@ class Store {
     return _secureStorage.read(key: _refreshTokenKey);
   }
 
+  Future<void> setIsResponsible(bool isResponsible) async {
+    await _secureStorage.write(key: _isResponsibleKey, value: isResponsible.toString());
+  }
+
+  Future<bool?> getIsResponsible() async {
+    final value = await _secureStorage.read(key: _isResponsibleKey);
+    if (value == null) return null;
+    return value == 'true';
+  }
+
   Future<void> clear() async {
     await _secureStorage.delete(key: _tokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
+    await _secureStorage.delete(key: _isResponsibleKey);
   }
   Future<bool> isTokenAvailable() async {
     String? token = await _secureStorage.read( key: _tokenKey);

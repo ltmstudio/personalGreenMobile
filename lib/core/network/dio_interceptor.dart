@@ -30,9 +30,8 @@ class TokenInterceptor extends Interceptor {
         options.path.contains(ApiEndpoints.sendOtp) ||
         options.path.contains(ApiEndpoints.refresh) ||
         options.path.contains(ApiEndpoints.crmAvailable) ||
-        options.path.contains(ApiEndpoints.profile) ||
         options.path.contains(ApiEndpoints.logout)) {
-      // login/otp/profile/logout use main token and hub URL
+      // login/otp/refresh/crmAvailable/logout use main token and hub URL
       // token = await store.getToken();
       options.baseUrl = ApiEndpoints.baseUrl;
     } else {

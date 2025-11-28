@@ -47,7 +47,6 @@ final List<StatefulShellBranch> mainBranches = [
 
   StatefulShellBranch(
     navigatorKey: shellNavKey2,
-    initialLocation: AppRoutes.applications,
     routes: [
       // Добавляем оба роута в один branch - GoRouter должен правильно обрабатывать это
       GoRoute(

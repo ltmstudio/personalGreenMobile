@@ -57,6 +57,7 @@ class UserAuthBloc extends Bloc<UserAuthEvent, UserAuthState> {
               emit(UserAuthFailure(failure.message)),
             },
         (data) => {
+              // Store уже очищен в repository.logout()
               emit(UserAuthInitial()),
             });
   }

@@ -130,8 +130,16 @@ class AuthenticationRemoteDataSourceImpl
       }
 
       if (response.statusCode == 200) {
-        final profile = ProfileModel.fromJson(response.data['data']);
-        log('Profile parsed successfully: id=${profile.id}, userName=${profile.userName}', name: 'AuthDatasource');
+        // Поддерживаем оба формата: с оберткой data и без
+        Map<String, dynamic> profileData;
+        if (response.data is Map && response.data.containsKey('data')) {
+          profileData = response.data['data'];
+        } else {
+          profileData = response.data;
+        }
+        
+        final profile = ProfileModel.fromJson(profileData);
+        log('Profile parsed successfully: id=${profile.id}, userName=${profile.userName}, email=${profile.email}', name: 'AuthDatasource');
         return profile;
       } else {
         throw Exception('Get profile failed with status: ${response.statusCode}');
