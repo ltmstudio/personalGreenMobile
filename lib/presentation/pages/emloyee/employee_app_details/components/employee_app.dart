@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
+import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
+import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/address_card_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/application_detail_data_card.dart';
-import 'package:hub_dom/presentation/pages/applications/application_details/components/check_list_widget.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/components/contact_face_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
+import 'package:get_it/get_it.dart';
 
 import 'create_performer_widget.dart';
+import 'work_units_widget.dart';
 
 class EmployeeAppsPage extends StatefulWidget {
-  const EmployeeAppsPage({super.key});
+  final Data? ticketData;
+
+  const EmployeeAppsPage({super.key, this.ticketData});
 
   @override
   State<EmployeeAppsPage> createState() => _EmployeeAppsPageState();
@@ -126,24 +133,62 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
 
           SizedBox(height: 16),
 
-          ExpansionTile(
-            title: Text(
-              AppStrings.action,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+          BlocProvider(
+            create: (context) {
+              final bloc = GetIt.instance<DictionariesBloc>();
+              bloc.add(const LoadDictionariesEvent());
+              return bloc;
+            },
+            child: BlocBuilder<DictionariesBloc, DictionariesState>(
+              builder: (context, dictionariesState) {
+                List<WorkUnit> workUnits = [];
 
-            initiallyExpanded: true,
-            collapsedShape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
+                if (dictionariesState is DictionariesLoaded &&
+                    widget.ticketData?.troubleType?.id != null) {
+                  final troubleTypeId = widget.ticketData!.troubleType!.id;
+
+                  // Ищем trouble_type в словарях
+                  final allTroubleTypes =
+                      dictionariesState.dictionaries.troubleTypes ?? [];
+                  final troubleType = allTroubleTypes.firstWhere(
+                    (tt) => tt.id == troubleTypeId,
+                    orElse: () => TroubleType(),
+                  );
+
+                  workUnits = troubleType.workUnits ?? [];
+                }
+
+                return ExpansionTile(
+                  title: Text(
+                    AppStrings.action,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  initiallyExpanded: true,
+                  collapsedShape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: MainCardWidget(
+                        child: workUnits.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Нет доступных работ',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: AppColors.gray),
+                                ),
+                              )
+                            : WorkUnitsWidget(workUnits: workUnits),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            // optional
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: MainCardWidget(child: ChecklistWidget()),
-              ),
-            ],
           ),
           SizedBox(height: 16),
 

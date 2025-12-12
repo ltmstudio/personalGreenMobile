@@ -286,14 +286,16 @@ class PriorityType {
   String? title;
   String? name;
   String? color;
+  String? fontColor;
 
-  PriorityType({this.id, this.title, this.name, this.color});
+  PriorityType({this.id, this.title, this.name, this.color, this.fontColor});
 
   factory PriorityType.fromJson(Map<String, dynamic> json) => PriorityType(
     id: json["id"],
     title: json["title"],
     name: json["name"],
     color: json["color"],
+    fontColor: json["font_color"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -301,6 +303,7 @@ class PriorityType {
     "title": title,
     "name": name,
     "color": color,
+    "font_color": fontColor,
   };
 }
 

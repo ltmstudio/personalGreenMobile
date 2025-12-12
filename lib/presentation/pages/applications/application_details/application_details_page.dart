@@ -130,12 +130,18 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             String title = 'Заявка';
             String? statusTitle;
             Color statusColor = AppColors.yellow;
+            Color statusFontColor = Colors.white;
             if (state is ApplicationDetailsLoaded) {
               title = 'Заявка №${state.ticket.data?.id ?? ''}';
               statusTitle = state.ticket.data?.status?.title;
               if (state.ticket.data?.status?.color != null) {
                 statusColor = ColorUtils.hexToColor(
                   state.ticket.data!.status!.color!,
+                );
+              }
+              if (state.ticket.data?.status?.fontColor != null) {
+                statusFontColor = ColorUtils.hexToColor(
+                  state.ticket.data!.status!.fontColor!,
                 );
               }
             } else if (widget.ticketId != null) {
@@ -162,10 +168,15 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                         children: [
                           Text(
                             statusTitle ?? AppStrings.control,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: statusFontColor),
                           ),
                           SizedBox(width: 5),
-                          Icon(Icons.check_circle_outline_sharp, size: 18),
+                          Icon(
+                            Icons.check_circle_outline_sharp,
+                            size: 18,
+                            color: statusFontColor,
+                          ),
                         ],
                       ),
                     ),

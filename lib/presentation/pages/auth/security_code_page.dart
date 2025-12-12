@@ -11,7 +11,6 @@ import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/locator.dart';
-import 'package:flutter/foundation.dart';
 import 'package:pinput/pinput.dart';
 
 class SecurityCodePage extends StatefulWidget {
@@ -122,8 +121,7 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                         defaultPinTheme: defaultPinTheme,
                         separatorBuilder: (index) => const SizedBox(width: 12),
                         hapticFeedbackType: HapticFeedbackType.lightImpact,
-                        onCompleted: (pin) {
-                        },
+                        onCompleted: (pin) {},
                         validator: (s) {
                           //   showChangeButton = s != code;
                           return s != null && s.isNotEmpty
@@ -204,45 +202,36 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                   BlocListener<SelectedCrmCubit, SelectedCrmState>(
                     listener: (context, state) async {
                       if (state is SelectedCrmLoaded && !_hasNavigated) {
-                        _hasNavigated = true; // Предотвращаем повторную навигацию
-                        
+                        _hasNavigated =
+                            true; // Предотвращаем повторную навигацию
+
                         // После установки CRM токена проверяем isResponsible
-                        final isResponsibleCubit = locator<IsResponsibleCubit>();
+                        final isResponsibleCubit =
+                            locator<IsResponsibleCubit>();
                         await isResponsibleCubit.checkIsResponsible();
-                        
+
                         if (!mounted) return;
-                        
-                        // Получаем результат и переходим на правильную страницу
+
+                        // Получаем результат из состояния (значение уже сохранено в Store в IsResponsibleCubit)
                         final currentState = isResponsibleCubit.state;
                         bool isResponsible = false;
-                        
-                        debugPrint('[SecurityCodePage] Current state type: ${currentState.runtimeType}');
-                        
+
                         if (currentState is IsResponsibleLoaded) {
                           isResponsible = currentState.isResponsible;
-                          debugPrint('[SecurityCodePage] isResponsible from state: $isResponsible');
                         } else if (currentState is IsResponsibleError) {
-                          // При ошибке (например, 404) считаем, что пользователь не ответственный
+                          // При ошибке считаем, что пользователь не ответственный (уже сохранено в Store)
                           isResponsible = false;
-                          debugPrint('[SecurityCodePage] Error state, defaulting to false');
-                        } else {
-                          debugPrint('[SecurityCodePage] Unexpected state, defaulting to false');
                         }
-                        
-                        debugPrint('[SecurityCodePage] Final isResponsible: $isResponsible (after CRM token set)');
-                        
-                        // Переходим на правильную страницу после завершения текущего кадра
+
+                        // Переходим на правильную страницу
+                        // isResponsible = true → руководитель → applications (страница со статистикой)
+                        // isResponsible = false → обычный сотрудник → organizations
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (!mounted) return;
-                          
-                          // Переходим на правильную страницу
-                          // isResponsible = true → руководитель → applications (страница со статистикой)
-                          // isResponsible = false → обычный сотрудник → organizations
+
                           if (isResponsible) {
-                            debugPrint('[SecurityCodePage] → Navigating to applications (руководитель)');
                             context.go(AppRoutes.applications);
                           } else {
-                            debugPrint('[SecurityCodePage] → Navigating to organizations (обычный сотрудник)');
                             context.go(AppRoutes.organizations);
                           }
                         });
@@ -251,11 +240,13 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                     child: const SizedBox.shrink(),
                   ),
 
-                  //todo change bloc
+                  // Загружаем CRM системы после подтверждения кода (или при ошибке setProfile)
                   BlocConsumer<SetProfileCubit, SetProfileState>(
                     listener: (context, state) async {
-                      if (state is SetProfileLoaded) {
-                        // После успешного SetProfile загружаем CRM системы
+                      if (state is SetProfileLoaded ||
+                          state is SetProfileError ||
+                          state is SetProfileConnectionError) {
+                        // Загружаем CRM системы в любом случае (даже если setProfile не удался)
                         final crmSystemCubit = locator<CrmSystemCubit>();
                         await crmSystemCubit.getCrmSystems();
                       }
@@ -272,6 +263,10 @@ class _SecurityCodePageState extends State<SecurityCodePage> {
                           );
 
                           if (validate()) {
+                            // Параллельно запускаем сохранение профиля и загрузку CRM-систем,
+                            // чтобы навигация сработала уже при первом нажатии
+                            final crmSystemCubit = locator<CrmSystemCubit>();
+                            crmSystemCubit.getCrmSystems();
                             context.read<SetProfileCubit>().setProfile(params);
                           }
                         },

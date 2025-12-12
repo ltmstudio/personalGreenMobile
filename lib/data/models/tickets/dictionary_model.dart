@@ -141,8 +141,15 @@ class TroubleType {
   final String? title;
   final int? serviceTypeId;
   final TroubleTypeOptions? options;
+  final List<WorkUnit>? workUnits;
 
-  TroubleType({this.id, this.title, this.serviceTypeId, this.options});
+  TroubleType({
+    this.id,
+    this.title,
+    this.serviceTypeId,
+    this.options,
+    this.workUnits,
+  });
 
   factory TroubleType.fromJson(Map<String, dynamic> json) => TroubleType(
     id: json["id"],
@@ -151,6 +158,11 @@ class TroubleType {
     options: json["options"] == null
         ? null
         : TroubleTypeOptions.fromJson(json["options"]),
+    workUnits: json["work_units"] == null
+        ? []
+        : List<WorkUnit>.from(
+            json["work_units"]!.map((x) => WorkUnit.fromJson(x)),
+          ),
   );
 
   Map<String, dynamic> toJson() => {
@@ -158,6 +170,9 @@ class TroubleType {
     "title": title,
     "service_type_id": serviceTypeId,
     "options": options?.toJson(),
+    "work_units": workUnits == null
+        ? []
+        : List<dynamic>.from(workUnits!.map((x) => x.toJson())),
   };
 }
 
@@ -231,19 +246,39 @@ class StatusModel {
   final String? name;
   final String? title;
   final String? color;
+  final String? fontColor;
 
-  StatusModel({this.name, this.title, this.color});
+  StatusModel({this.name, this.title, this.color, this.fontColor});
 
   factory StatusModel.fromJson(Map<String, dynamic> json) => StatusModel(
     name: json["name"],
     title: json["title"],
     color: json["color"],
+    fontColor: json["font_color"],
   );
 
   Map<String, dynamic> toJson() => {
     "name": name,
     "title": title,
     "color": color,
+    "font_color": fontColor,
+  };
+}
+
+class WorkUnit {
+  final int? id;
+  final String? title;
+
+  WorkUnit({this.id, this.title});
+
+  factory WorkUnit.fromJson(Map<String, dynamic> json) => WorkUnit(
+    id: json["id"],
+    title: json["title"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
   };
 }
 

@@ -38,10 +38,10 @@ class _AppCategoryPageState extends State<AppCategoryPage> {
   // Стандартные статусы из API
   List<StatusModel> get standardStatuses {
     return [
-      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8'),
-      StatusModel(name: 'done', title: 'Выполнено', color: '#93CD64'),
-      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36'),
-      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675'),
+      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8', fontColor: '#127BF6'),
+      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64', fontColor: '#3DAE3B'),
+      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36', fontColor: '#CF5104'),
+      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675', fontColor: '#D18800'),
     ];
   }
 
