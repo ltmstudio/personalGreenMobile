@@ -9,6 +9,7 @@ abstract class TicketsEvent extends Equatable {
 
 /// Событие для загрузки tickets
 class LoadTicketsEvent extends TicketsEvent {
+  final String? searchText;
   final String? startDate;
   final String? endDate;
   final String? status;
@@ -23,6 +24,7 @@ class LoadTicketsEvent extends TicketsEvent {
   final int? perPage;
 
   const LoadTicketsEvent({
+    this.searchText,
     this.startDate,
     this.endDate,
     this.status,
@@ -38,7 +40,13 @@ class LoadTicketsEvent extends TicketsEvent {
   });
 
   @override
+  String toString() {
+    return 'LoadTicketsEvent{startDate: $startDate, endDate: $endDate, status: $status, isEmergency: $isEmergency, taxTypeId: $taxTypeId, serviceTypeId: $serviceTypeId, troubleTypeId: $troubleTypeId, priorityTypeId: $priorityTypeId, sourceChannelTypeId: $sourceChannelTypeId, executorId: $executorId, page: $page, perPage: $perPage}';
+  }
+
+  @override
   List<Object?> get props => [
+    searchText,
     startDate,
     endDate,
     status,

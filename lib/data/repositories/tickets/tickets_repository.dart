@@ -12,6 +12,8 @@ import 'package:hub_dom/data/models/tickets/employee_report_request_model.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
+import '../../models/tickets/ticket_report_model.dart';
+
 class TicketsRepository {
   final NetworkInfo networkInfo;
   final TicketsRemoteDatasource remoteDataSource;
@@ -47,6 +49,7 @@ class TicketsRepository {
   }
 
   Future<Either<Failure, TicketResponseModel>> getTickets({
+    String? search,
     String? startDate,
     String? endDate,
     String? status,
@@ -64,6 +67,7 @@ class TicketsRepository {
     if (isConnected) {
       try {
         final response = await remoteDataSource.getTickets(
+          search:search,
           startDate: startDate,
           endDate: endDate,
           status: status,
@@ -79,7 +83,7 @@ class TicketsRepository {
         );
         return Right(response);
       } catch (error) {
-        return Left(ServerFailure(error.toString()));
+        return Left(ServerFailure('Ошибка сервера'));
       }
     } else {
       return Left(ConnectionFailure(AppStrings.noInternet));
@@ -133,11 +137,17 @@ class TicketsRepository {
     }
   }
 
-  Future<Either<Failure, void>> rejectTicket(int ticketId, {String? rejectReason}) async {
+  Future<Either<Failure, void>> rejectTicket(
+    int ticketId, {
+    String? rejectReason,
+  }) async {
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
       try {
-        await remoteDataSource.rejectTicket(ticketId, rejectReason: rejectReason);
+        await remoteDataSource.rejectTicket(
+          ticketId,
+          rejectReason: rejectReason,
+        );
         return const Right(null);
       } catch (error) {
         final errorMessage = ErrorMessageHelper.getErrorMessage(error);
@@ -182,5 +192,26 @@ class TicketsRepository {
     } else {
       return Left(ConnectionFailure(AppStrings.noInternet));
     }
+  }
+
+  Future<void> toggleWorkUnits({
+    required int ticketId,
+    required List<ToggleWorkUnitItem> items,
+  }) async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (!isConnected) return;
+    return remoteDataSource.toggleWorkUnits(
+      ticketId: ticketId,
+      body: ToggleWorkUnitsRequest(workUnits: items),
+    );
+  }
+  Future<List<TicketReport>> getTicketReports({
+    required int ticketId,
+  }) async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (!isConnected) throw AppStrings.noInternet;
+
+    return remoteDataSource.getTicketReports(ticketId: ticketId);
+
   }
 }

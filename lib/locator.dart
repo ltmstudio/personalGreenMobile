@@ -5,6 +5,7 @@ import 'package:hub_dom/data/datasources/auth/auth_datasource.dart';
 import 'package:hub_dom/data/datasources/employees/employees_datasource.dart';
 import 'package:hub_dom/data/datasources/tickets/tickets_datasource.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/contacts/contacts_cubit.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
@@ -16,7 +17,9 @@ import 'package:hub_dom/presentation/bloc/application_details/application_detail
 import 'package:hub_dom/presentation/bloc/employee_report/employee_report_bloc.dart';
 import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
 import 'package:hub_dom/presentation/bloc/is_responsible/is_responsible_cubit.dart';
+import 'package:hub_dom/presentation/bloc/ticket_report/ticket_report_cubit.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
+import 'package:hub_dom/presentation/bloc/work_unit_toggle/work_unit_toggle_cubit.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +29,7 @@ import 'core/network/api_provider.dart';
 import 'core/network/api_provider_impl.dart';
 import 'core/network/network.dart';
 import 'core/usecase/addresses/get_addresses_usecase.dart';
+import 'core/usecase/addresses/get_contact_usecase.dart';
 import 'core/usecase/tickets/create_ticket_usecase.dart';
 import 'core/utils/time_ticker.dart';
 import 'data/repositories/addresses/addresses_repository.dart';
@@ -98,6 +102,9 @@ Future<void> initLocator() async {
   locator.registerLazySingleton<GetAddressesUseCase>(
     () => GetAddressesUseCase(locator()),
   );
+  locator.registerLazySingleton<GetContactsUseCase>(
+    () => GetContactsUseCase(locator()),
+  );
 
   ///blocs
   locator.registerSingleton(OtpTimerBloc(ticker: locator()));
@@ -112,6 +119,10 @@ Future<void> initLocator() async {
   locator.registerSingleton(SelectedCrmCubit(locator()));
   locator<SelectedCrmCubit>().checkCrmSystem();
   locator.registerSingleton(IsResponsibleCubit(locator(), locator()));
+
+  locator.registerSingleton(WorkUnitsCubit(locator()));
+  locator.registerSingleton(ContactsCubit(locator()));
+  locator.registerSingleton(ReportsCubit(locator()));
 
   locator.registerFactory<TicketsBloc>(() => TicketsBloc(locator(), locator()));
   locator.registerFactory<DictionariesBloc>(() => DictionariesBloc(locator()));

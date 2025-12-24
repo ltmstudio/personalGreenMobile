@@ -43,19 +43,50 @@ class AddressData {
   final int? id;
   final AddressType? type;
   final String? address;
+  final Statistics statistics;
 
-  AddressData({this.id, this.type, this.address});
+  AddressData({this.id, this.type, this.address, required this.statistics});
 
   factory AddressData.fromJson(Map<String, dynamic> json) => AddressData(
     id: json["id"],
     type: json["type"] == null ? null : addressTypeValues.map[json["type"]],
     address: json["address"],
+    statistics: Statistics.fromJson(json["statistics"]),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "type": type == null ? null : addressTypeValues.reverse[type],
     "address": address,
+    "statistics": statistics.toJson(),
+  };
+}
+
+class Statistics {
+  final int control;
+  final int approval;
+  final int inProgress;
+  final int done;
+
+  Statistics({
+    required this.control,
+    required this.approval,
+    required this.inProgress,
+    required this.done,
+  });
+
+  factory Statistics.fromJson(Map<String, dynamic> json) => Statistics(
+    control: json["control"],
+    approval: json["approval"],
+    inProgress: json["in_progress"],
+    done: json["done"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "control": control,
+    "approval": approval,
+    "in_progress": inProgress,
+    "done": done,
   };
 }
 
@@ -65,7 +96,16 @@ final addressTypeValues = EnumValues({
   "house": AddressType.house,
   "space": AddressType.space,
 });
-
+extension AddressTypeExtension on AddressType {
+  String get displayName {
+    switch (this) {
+      case AddressType.house:
+        return 'Дом';
+      case AddressType.space:
+        return 'Помещение';
+    }
+  }
+}
 class AddressLinks {
   final String? first;
   final String? last;

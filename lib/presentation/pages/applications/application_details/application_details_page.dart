@@ -270,7 +270,6 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           )
         : AppDetailsReportPage(
             ticketData: ticketData,
-            selectedExecutorId: selectedExecutorId,
             ticketId: widget.ticketId,
           );
   }

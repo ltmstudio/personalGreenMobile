@@ -142,11 +142,17 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
               if (state is TicketCreated) {
                 _showSuccess();
                 // Очищаем форму после успешного создания
+
                 Future.delayed(const Duration(seconds: 2), () {
-                  if (mounted) {
-                    context.pop();
-                  }
+                  if (!mounted) return;
+
+                  // 1) закрыть bottom sheet (root navigator)
+                  Navigator.of(context, rootNavigator: true).pop();
+
+                  // 2) закрыть страницу
+                  context.pop();
                 });
+
               } else if (state is TicketCreationError) {
                 // Обрабатываем ошибки валидации от сервера
                 _handleValidationErrors(state.message);
@@ -387,11 +393,10 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: BlocBuilder<TicketsBloc, TicketsState>(
                         builder: (context, state) {
-                          final isLoading = state is TicketsCreating;
                           return MainButton(
                             buttonTile: AppStrings.createNewApplication,
                             onPressed: () => _validateAndCreateTicket(context),
-                            isLoading: isLoading,
+                            isLoading: state is TicketsCreating,
                           );
                         },
                       ),
@@ -823,7 +828,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            BottomSheetTitle(title: AppStrings.selectPerformer),
+            BottomSheetTitle(title: AppStrings.createdSuccessfully),
             SizedBox(height: 60),
             SvgPicture.asset(IconAssets.success, height: 140, width: 140),
             SizedBox(height: 60),

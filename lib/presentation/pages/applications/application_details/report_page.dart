@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
+import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
+import 'package:hub_dom/presentation/bloc/ticket_report/ticket_report_cubit.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
 import 'package:hub_dom/presentation/widgets/reject_bottom_sheet.dart';
@@ -12,16 +14,16 @@ import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 
+import '../../../../data/models/tickets/ticket_report_model.dart';
+
 class AppDetailsReportPage extends StatefulWidget {
   const AppDetailsReportPage({
     super.key,
     this.ticketData,
-    this.selectedExecutorId,
     this.ticketId,
   });
 
   final Data? ticketData;
-  final int? selectedExecutorId;
   final int? ticketId;
 
   @override
@@ -29,16 +31,75 @@ class AppDetailsReportPage extends StatefulWidget {
 }
 
 class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
+
+  @override
+  void initState() {
+        super.initState();
+        locator<ReportsCubit>().load(ticketId: widget.ticketId!);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 14),
+          child: Text(
+            'Отчеты',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+
+        BlocBuilder<ReportsCubit, ReportsState>(
+          builder: (context, state) {
+            if (state.status == ReportsStatus.loading) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (state.status == ReportsStatus.failure) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  state.error ?? 'Ошибка загрузки',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                ),
+              );
+            }
+
+            if (state.items.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Нет отчетов',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+              );
+            }
+
+            return Column(
+              children: state.items.map((r) => ReportCard(report: r)).toList(),
+            );
+          },
+        ),
+        const SizedBox(height: 10),
+
         Expanded(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
+
+
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
@@ -53,8 +114,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Устранены повреждения кабеля, произведена замена проблемного кабеля с установкой защитной муфты",
-
+                    widget.ticketData?.comment ?? '',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
@@ -77,6 +137,8 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
             ),
           ),
         ),
+
+
         Container(
           height: 80,
           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -187,7 +249,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
 
   Widget _buildPhotosSection(BuildContext context) {
     final photos = widget.ticketData?.photos;
-    
+
     // Логируем для отладки
     if (photos != null) {
       debugPrint('Photos data type: ${photos.runtimeType}');
@@ -196,7 +258,7 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
 
     // Проверяем разные форматы данных photos
     List<String> photoUrls = [];
-    
+
     if (photos != null) {
       if (photos is List) {
         for (final photo in photos) {
@@ -206,14 +268,15 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
             url = photo;
           } else if (photo is Map) {
             // Если это объект - пытаемся извлечь URL из разных полей
-            url = photo['link'] ?? 
-                  photo['url'] ?? 
-                  photo['path'] ?? 
-                  photo['image_url'] ?? 
-                  photo['photo_url'] ??
-                  photo['src'];
+            url =
+                photo['link'] ??
+                photo['url'] ??
+                photo['path'] ??
+                photo['image_url'] ??
+                photo['photo_url'] ??
+                photo['src'];
           }
-          
+
           if (url != null && url.isNotEmpty) {
             photoUrls.add(url);
           }
@@ -246,10 +309,80 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Text(
           'Нет данных',
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(color: AppColors.gray),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
         ),
       );
     }
+  }
+
+
+
+}
+
+class ReportCard extends StatelessWidget {
+  final TicketReport report;
+
+  const ReportCard({super.key, required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = reportTitleByType(report.type);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDEDED)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                report.createdAt,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                report.comment,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String reportTitleByType(String type) {
+  switch (type) {
+    case 'manager':
+      return 'Отчет руководителя';
+    case 'executor':
+      return 'Отчет исполнителя';
+    default:
+      return 'Отчет';
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
@@ -184,28 +186,26 @@ final goRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: AppRoutes.managerTickets,
+      path: '${AppRoutes.managerTickets}/:initialTab',
       builder: (context, state) {
-        // Получаем initialTab и selectedDate из extra
-        int initialTab = 0;
-        DateTimeRange<DateTime>? selectedDate;
-        if (state.extra != null && state.extra is Map<String, dynamic>) {
-          final extra = state.extra as Map<String, dynamic>;
-          initialTab = extra['initialTab'] ?? 0;
-          final startDateStr = extra['startDate'] as String?;
-          final endDateStr = extra['endDate'] as String?;
+        final initialTab = int.tryParse(state.pathParameters['initialTab'] ?? '0') ?? 0;
 
-          // Восстанавливаем DateTimeRange из строк
-          if (startDateStr != null && endDateStr != null) {
-            try {
-              final startDate = DateTime.parse(startDateStr);
-              final endDate = DateTime.parse(endDateStr);
-              selectedDate = DateTimeRange(start: startDate, end: endDate);
-            } catch (e) {
-              // Игнорируем ошибки парсинга дат
-            }
+        // Get dates from query parameters
+        final startDateStr = state.uri.queryParameters['startDate'];
+        final endDateStr = state.uri.queryParameters['endDate'];
+
+        DateTimeRange<DateTime>? selectedDate;
+        if (startDateStr != null && endDateStr != null) {
+          try {
+            final startDate = DateTime.parse(startDateStr);
+            final endDate = DateTime.parse(endDateStr);
+            selectedDate = DateTimeRange(start: startDate, end: endDate);
+          } catch (e) {
+            // Ignore parsing errors
           }
         }
+
+        log(selectedDate.toString(), name: 'check');
 
         return ManagerTicketsPage(
           initialTab: initialTab,
@@ -213,6 +213,38 @@ final goRouter = GoRouter(
         );
       },
     ),
+    // GoRoute(
+    //   path: AppRoutes.managerTickets,
+    //   builder: (context, state) {
+    //     // Получаем initialTab и selectedDate из extra
+    //     int initialTab = 0;
+    //     DateTimeRange<DateTime>? selectedDate;
+    //     if (state.extra != null && state.extra is Map<String, dynamic>) {
+    //       final extra = state.extra as Map<String, dynamic>;
+    //       initialTab = extra['initialTab'] ?? 0;
+    //       final startDateStr = extra['startDate'] as String?;
+    //       final endDateStr = extra['endDate'] as String?;
+    //
+    //       // Восстанавливаем DateTimeRange из строк
+    //       if (startDateStr != null && endDateStr != null) {
+    //         try {
+    //           final startDate = DateTime.parse(startDateStr);
+    //           final endDate = DateTime.parse(endDateStr);
+    //           selectedDate = DateTimeRange(start: startDate, end: endDate);
+    //         } catch (e) {
+    //           // Игнорируем ошибки парсинга дат
+    //         }
+    //       }
+    //     }
+    //
+    //     log(selectedDate.toString(),name: 'check');
+    //
+    //     return ManagerTicketsPage(
+    //       initialTab: initialTab,
+    //       initialSelectedDate: selectedDate,
+    //     );
+    //   },
+    // ),
     GoRoute(
       path: '${AppRoutes.performerDetails}/:title',
 
@@ -229,12 +261,14 @@ final goRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: '${AppRoutes.addressDetails}/:title',
+      path: AppRoutes.addressDetails,
 
       builder: (context, state) {
-        final title = state.pathParameters['title'] ?? '';
+        // final title = state.pathParameters['title'] ?? '';
 
-        return AddressDetailsPage(title: title);
+        // return AddressDetailsPage(title: title);
+        return PerformerDetailsPage(title: null,);
+
       },
     ),
     GoRoute(

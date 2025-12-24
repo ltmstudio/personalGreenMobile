@@ -12,8 +12,15 @@ class AddressCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final address = ticketData?.object?.address ?? 'Данных нет';
+    final region = ticketData?.object?.region?.name ?? '';
+    final regionType = ticketData?.object?.region?.typeShort ?? '';
+    final cityType = ticketData?.object?.city?.typeShort ?? '';
+    final city = ticketData?.object?.city?.name ?? '';
     final section = ticketData?.section ?? 'Данных нет';
     final ls = ticketData?.object?.ls ?? 'Данных нет';
+
+    final regionTitle = ', $regionType $region';
+    final cityTitle = ', $cityType $city';
 
     return MainCardWidget(
       child: Column(
@@ -31,7 +38,7 @@ class AddressCardWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  address,
+                  '$address$regionTitle$cityTitle',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium,

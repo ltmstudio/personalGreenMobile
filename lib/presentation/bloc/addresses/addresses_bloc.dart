@@ -27,7 +27,7 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
       result.fold(
         (failure) {
           log.severe('LoadAddresses Error: ${failure.message}');
-          emit(AddressesError(failure.message));
+          emit(AddressesError('Произошла ошибка'));
         },
         (data) {
           emit(AddressesLoaded(data));

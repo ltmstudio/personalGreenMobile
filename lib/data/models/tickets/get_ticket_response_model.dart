@@ -39,9 +39,11 @@ class Data {
   bool? executorByManual;
   int? executorId;
   Executor? executor;
-  dynamic comment;
+  String? comment;
   dynamic photos;
   DateTime? createdAt;
+  final List<WorkUnit> workUnits;
+
 
   Data({
     this.id,
@@ -62,6 +64,8 @@ class Data {
     this.comment,
     this.photos,
     this.createdAt,
+    required this.workUnits,
+
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -95,6 +99,8 @@ class Data {
     createdAt: json["created_at"] == null
         ? null
         : DateTime.parse(json["created_at"]),
+    workUnits: List<WorkUnit>.from(json["work_units"].map((x) => WorkUnit.fromJson(x))),
+
   );
 
   Map<String, dynamic> toJson() => {
@@ -116,8 +122,40 @@ class Data {
     "comment": comment,
     "photos": photos,
     "created_at": createdAt?.toIso8601String(),
+    "work_units": List<dynamic>.from(workUnits.map((x) => x.toJson())),
+
   };
 }
+
+
+class WorkUnit {
+  final int id;
+  final String title;
+  final bool checked;
+
+  WorkUnit({
+    required this.id,
+    required this.title,
+    required this.checked,
+  });
+
+  factory WorkUnit.fromJson(Map<String, dynamic> json) => WorkUnit(
+    id: json["id"],
+    title: json["title"],
+    checked: json["checked"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "checked": checked,
+  };
+
+
+  WorkUnit copyWith({bool? checked}) =>
+      WorkUnit(id: id, title: title, checked: checked ?? this.checked);
+}
+
 
 class Object {
   ResidentComplex? residentComplex;

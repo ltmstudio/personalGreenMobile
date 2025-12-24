@@ -115,6 +115,7 @@ class AppStrings {
 
   static const createdAppSuccess =
       'Заявка назначена на выбранного исполнителя и ожидает выполнения';
+  static const createdSuccessfully = 'Успешно создано';
 
   static const searchHintEmployee = 'Введите ФИО или должность сотрудника';
 

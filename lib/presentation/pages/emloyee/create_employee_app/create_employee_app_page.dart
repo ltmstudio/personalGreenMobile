@@ -395,7 +395,7 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
 
   _showAddress(BuildContext context) {
     // Получаем AddressesBloc из контекста
-    final addressesBloc = BlocProvider.of<AddressesBloc>(context);
+    final addressesBloc = locator<AddressesBloc>();
 
     final state = addressesBloc.state;
 

@@ -5,6 +5,8 @@ import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/datasources/addresses/addresses_datasource.dart';
 import 'package:hub_dom/data/models/addresses/addresses_response_model.dart';
 
+import '../../models/contacts_model.dart';
+
 class AddressesRepository {
   final AddressesRemoteDatasource remoteDataSource;
   final NetworkInfo networkInfo;
@@ -27,4 +29,20 @@ class AddressesRepository {
       return Left(ConnectionFailure(AppStrings.noInternet));
     }
   }
+
+  Future<Either<Failure, List<ContactsModel>>> getContacts() async {
+    final bool isConnected = await networkInfo.isConnected;
+
+    if (!isConnected) {
+      return Left(ConnectionFailure(AppStrings.noInternet));
+    }
+
+    try {
+      final response = await remoteDataSource.getContacts();
+      return Right(response);
+    } catch (error) {
+      return Left(ServerFailure(error.toString()));
+    }
+  }
+
 }

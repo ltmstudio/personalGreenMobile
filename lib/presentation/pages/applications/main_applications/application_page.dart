@@ -7,6 +7,7 @@ import 'package:hub_dom/core/utils/date_time_utils.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/locator.dart';
+import 'package:hub_dom/presentation/bloc/addresses/addresses_event.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/bloc/employees/employees_bloc.dart';
 import 'package:hub_dom/presentation/widgets/appbar_icon.dart';
@@ -22,6 +23,9 @@ import 'package:hub_dom/presentation/widgets/cards/stat_card.dart';
 import 'package:hub_dom/presentation/widgets/filter_widget.dart';
 import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 
+import '../../../../data/models/addresses/addresses_response_model.dart';
+import '../../../bloc/addresses/addresses_bloc.dart';
+import '../../../bloc/addresses/addresses_state.dart';
 import 'components/address_widget.dart';
 import 'components/performer_widget.dart';
 
@@ -44,6 +48,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
     super.initState();
     _ticketsBloc = locator<TicketsBloc>();
     _employeesBloc = locator<EmployeesBloc>();
+    context.read<AddressesBloc>().add(LoadAddressesEvent());
     // Загружаем все заявки без фильтров для дашборда
     _loadTickets();
     // Загружаем сотрудников со статистикой
@@ -256,22 +261,18 @@ class _ApplicationPageState extends State<ApplicationPage> {
                           child: GestureDetector(
                             onTap: () {
                               // Переход на страницу с заявками с табом "Все"
-                              context.push(
-                                AppRoutes.managerTickets,
-                                extra: {
-                                  'initialTab': 0,
-                                  'startDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.start,
-                                        )
-                                      : null,
-                                  'endDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.end,
-                                        )
-                                      : null,
-                                },
+                              final queryParams = <String, String>{};
+                              if (selectedDate != null) {
+                                queryParams['startDate'] = DateTimeUtils.formatDateForApi(selectedDate!.start);
+                                queryParams['endDate'] = DateTimeUtils.formatDateForApi(selectedDate!.end);
+                              }
+
+                              final uri = Uri(
+                                path: '${AppRoutes.managerTickets}/0',
+                                queryParameters: queryParams.isEmpty ? null : queryParams,
                               );
+
+                              context.push(uri.toString());
                             },
                             child: MainCardWidget(
                               child: Column(
@@ -306,10 +307,10 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                               title: '',
                                               radius: 20,
                                             ),
-                                          if (stats['approval'] > 0)
+                                          if (stats['handleExecutor'] > 0)
                                             PieChartSectionData(
                                               color: AppColors.lightRed,
-                                              value: stats['approval']
+                                              value: stats['handleExecutor']
                                                   .toDouble(),
                                               title: '',
                                               radius: 20,
@@ -345,25 +346,24 @@ class _ApplicationPageState extends State<ApplicationPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+
                               GestureDetector(
                                 onTap: () {
                                   // Переход на страницу с табом "В работе" (индекс 2)
-                                  context.push(
-                                    AppRoutes.managerTickets,
-                                    extra: {
-                                      'initialTab': 2,
-                                      'startDate': selectedDate != null
-                                          ? DateTimeUtils.formatDateForApi(
-                                              selectedDate!.start,
-                                            )
-                                          : null,
-                                      'endDate': selectedDate != null
-                                          ? DateTimeUtils.formatDateForApi(
-                                              selectedDate!.end,
-                                            )
-                                          : null,
-                                    },
+
+                                  final queryParams = <String, String>{};
+                                  if (selectedDate != null) {
+                                    queryParams['startDate'] = DateTimeUtils.formatDateForApi(selectedDate!.start);
+                                    queryParams['endDate'] = DateTimeUtils.formatDateForApi(selectedDate!.end);
+                                  }
+
+                                  final uri = Uri(
+                                    path: '${AppRoutes.managerTickets}/1',
+                                    queryParameters: queryParams.isEmpty ? null : queryParams,
                                   );
+
+                                  context.push(uri.toString());
+
                                 },
                                 child: StatCard(
                                   title: "В работе",
@@ -372,29 +372,28 @@ class _ApplicationPageState extends State<ApplicationPage> {
                                   color: Colors.blue,
                                 ),
                               ),
+
                               GestureDetector(
                                 onTap: () {
-                                  context.push(
-                                    AppRoutes.managerTickets,
-                                    extra: {
-                                      'initialTab': 3,
-                                      'startDate': selectedDate != null
-                                          ? DateTimeUtils.formatDateForApi(
-                                              selectedDate!.start,
-                                            )
-                                          : null,
-                                      'endDate': selectedDate != null
-                                          ? DateTimeUtils.formatDateForApi(
-                                              selectedDate!.end,
-                                            )
-                                          : null,
-                                    },
+
+                                  final queryParams = <String, String>{};
+                                  if (selectedDate != null) {
+                                    queryParams['startDate'] = DateTimeUtils.formatDateForApi(selectedDate!.start);
+                                    queryParams['endDate'] = DateTimeUtils.formatDateForApi(selectedDate!.end);
+                                  }
+
+                                  final uri = Uri(
+                                    path: '${AppRoutes.managerTickets}/3',
+                                    queryParameters: queryParams.isEmpty ? null : queryParams,
                                   );
-                                },
+
+                                  context.push(uri.toString());
+
+                                  },
                                 child: StatCard(
-                                  title: "Согласование",
-                                  value: "${stats['approval']}",
-                                  percent: "${stats['approvalPercent']}%",
+                                  title: "Передана исполнителю",
+                                  value: "${stats['handleExecutor']}",
+                                  percent: "${stats['handleExecutor']}%",
                                   color: Color(0xffEB7B36),
                                 ),
                               ),
@@ -414,22 +413,20 @@ class _ApplicationPageState extends State<ApplicationPage> {
                           child: GestureDetector(
                             onTap: () {
                               // Переход на страницу с табом "Согласование" (индекс 3)
-                              context.push(
-                                AppRoutes.managerTickets,
-                                extra: {
-                                  'initialTab': 3,
-                                  'startDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.start,
-                                        )
-                                      : null,
-                                  'endDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.end,
-                                        )
-                                      : null,
-                                },
+
+                              final queryParams = <String, String>{};
+                              if (selectedDate != null) {
+                                queryParams['startDate'] = DateTimeUtils.formatDateForApi(selectedDate!.start);
+                                queryParams['endDate'] = DateTimeUtils.formatDateForApi(selectedDate!.end);
+                              }
+
+                              final uri = Uri(
+                                path: '${AppRoutes.managerTickets}/4',
+                                queryParameters: queryParams.isEmpty ? null : queryParams,
                               );
+
+                              context.push(uri.toString());
+
                             },
                             child: StatCard(
                               title: "Контроль",
@@ -443,22 +440,19 @@ class _ApplicationPageState extends State<ApplicationPage> {
                           child: GestureDetector(
                             onTap: () {
                               // Переход на страницу с табом "Выполнено" (индекс 4)
-                              context.push(
-                                AppRoutes.managerTickets,
-                                extra: {
-                                  'initialTab': 4,
-                                  'startDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.start,
-                                        )
-                                      : null,
-                                  'endDate': selectedDate != null
-                                      ? DateTimeUtils.formatDateForApi(
-                                          selectedDate!.end,
-                                        )
-                                      : null,
-                                },
+                              final queryParams = <String, String>{};
+                              if (selectedDate != null) {
+                                queryParams['startDate'] = DateTimeUtils.formatDateForApi(selectedDate!.start);
+                                queryParams['endDate'] = DateTimeUtils.formatDateForApi(selectedDate!.end);
+                              }
+
+                              final uri = Uri(
+                                path: '${AppRoutes.managerTickets}/2',
+                                queryParameters: queryParams.isEmpty ? null : queryParams,
                               );
+
+                              context.push(uri.toString());
+
                             },
                             child: StatCard(
                               title: "Выполнено",
@@ -552,55 +546,101 @@ class _ApplicationPageState extends State<ApplicationPage> {
 
                   const SizedBox(height: 12),
 
-                  ExpansionTile(
-                    title: Text(
-                      "Объекты (42)",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    initiallyExpanded: true,
-                    collapsedShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    // optional
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    children: [
-                      SelectBtn(
-                        title: 'Выберите объект',
-                        showBorder: false,
-                        //   value: selectedAddress,
-                        icon: Container(
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.lightGrayBorder,
-                          ),
-                          child: Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 14,
-                            color: AppColors.white,
-                          ),
+                  BlocBuilder<AddressesBloc, AddressesState>(
+
+
+                    builder: (context, state) {
+                      final addresses =
+                      state is AddressesLoaded ? (state.addresses.data ?? []) : <AddressData>[];
+
+                      final addressCount = addresses.length;
+
+                      return ExpansionTile(
+                        title: Text(
+                          "Объекты ($addressCount)",
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                        onTap: _showObject,
-                      ),
-                      ObjectCard(
-                        address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
-                        stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
-                      ),
-                      ObjectCard(
-                        address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
-                        stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
-                      ),
-                      ObjectCard(
-                        address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
-                        stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
-                      ),
-                      ObjectCard(
-                        address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
-                        stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
-                      ),
-                    ],
+                        initiallyExpanded: true,
+                        collapsedShape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        // optional
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        children: [
+                          SelectBtn(
+                            title: 'Выберите объект',
+                            showBorder: false,
+                            icon: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.lightGrayBorder,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 14,
+                                color: AppColors.white,
+                              ),
+                            ),
+                            onTap: _showObject,
+                          ),
+
+                          if (state is AddressesLoading)
+                            const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (state is AddressesError)
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Text(state.message),
+                            )
+                          else
+                            ...addresses.map((a) => ObjectCard(
+                              address: a.address ?? '',
+                              stats: _mapStatsToCard(a.statistics),
+                            )),
+                        ],
+                        // children: [
+                        //   SelectBtn(
+                        //     title: 'Выберите объект',
+                        //     showBorder: false,
+                        //     //   value: selectedAddress,
+                        //     icon: Container(
+                        //       padding: EdgeInsets.all(5),
+                        //       decoration: BoxDecoration(
+                        //         shape: BoxShape.circle,
+                        //         color: AppColors.lightGrayBorder,
+                        //       ),
+                        //       child: Icon(
+                        //         Icons.arrow_forward_ios_outlined,
+                        //         size: 14,
+                        //         color: AppColors.white,
+                        //       ),
+                        //     ),
+                        //     onTap: _showObject,
+                        //   ),
+                        //   ObjectCard(
+                        //     address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
+                        //     stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
+                        //   ),
+                        //   ObjectCard(
+                        //     address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
+                        //     stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
+                        //   ),
+                        //   ObjectCard(
+                        //     address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
+                        //     stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
+                        //   ),
+                        //   ObjectCard(
+                        //     address: "г. Воронеж, ЖК «Тестовый», ул. Краснознам...",
+                        //     stats: {"blue": 12, "red": 12, "green": 6, "orange": 1},
+                        //   ),
+                        // ],
+                      );
+                    }
                   ),
                 ],
               ),
@@ -609,6 +649,28 @@ class _ApplicationPageState extends State<ApplicationPage> {
         },
       ),
     );
+  }
+  Map<String, int> _mapStatsToCard(dynamic statistics) {
+    // если statistics у тебя Map<String, dynamic>
+    if (statistics is Map<String, dynamic>) {
+      int v(String k) => (statistics[k] as num?)?.toInt() ?? 0;
+
+      return {
+        "blue": v("in_progress"),
+        "red": v("control"),
+        "green": v("done"),
+        "orange": v("approval"),
+      };
+    }
+
+    // если statistics у тебя типизированная модель AddressStatistics
+    // замени поля под свою модель
+    return {
+      "blue": statistics?.inProgress ?? 0,
+      "red": statistics?.control ?? 0,
+      "green": statistics?.done ?? 0,
+      "orange": statistics?.approval ?? 0,
+    };
   }
 
   _showFilter() {
@@ -657,10 +719,12 @@ class _ApplicationPageState extends State<ApplicationPage> {
       isScrollControlled: true,
       child: AddressWidget(
         onSelectItem: (String value) {
-          // setState(() {
+          setState(() {
           selectedAddress = value;
-          // });
-          context.push('${AppRoutes.addressDetails}/$selectedAddress');
+          });
+          // context.push('${AppRoutes.addressDetails}/$selectedAddress');
+          context.push(AppRoutes.addressDetails);
+
         },
         isSelected: false,
       ),

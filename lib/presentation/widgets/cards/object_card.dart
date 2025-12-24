@@ -13,7 +13,9 @@ class ObjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push('${AppRoutes.addressDetails}/$address');
+        // context.push('${AppRoutes.addressDetails}/$address');
+        context.push(AppRoutes.addressDetails);
+
       },
       child: Card(
         shadowColor: AppColors.shadowColor,

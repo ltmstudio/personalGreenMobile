@@ -83,7 +83,20 @@ class _PerformerWidgetState extends State<PerformerWidget> {
             HomePageSearchWidget(
               hint: AppStrings.searchHintEmployee,
               searchCtrl: _searchCtrl,
-              onSearch: () {},
+              onSearch: () {
+                _employeesBloc.add(
+                      SearchEmployeesEvent(
+                    fullName: _searchCtrl.text,
+                    page: 1,
+                    perPage: 10,
+                  ),
+                );
+              },
+              onClear: (){
+                _employeesBloc.add(
+                  const LoadEmployeesEvent(page: 1, perPage: 10),
+                );
+              },
             ),
             SizedBox(height: 10),
             Expanded(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,10 +44,30 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
   // Стандартные статусы из API
   List<StatusModel> get standardStatuses {
     return [
-      StatusModel(name: 'in_progress', title: 'В работе', color: '#87CFF8', fontColor: '#127BF6'),
-      StatusModel(name: 'done', title: 'Выполнена', color: '#93CD64', fontColor: '#3DAE3B'),
-      StatusModel(name: 'approval', title: 'Согласование', color: '#EB7B36', fontColor: '#CF5104'),
-      StatusModel(name: 'control', title: 'Контроль', color: '#F1D675', fontColor: '#D18800'),
+      StatusModel(
+        name: 'in_progress',
+        title: 'В работе',
+        color: '#87CFF8',
+        fontColor: '#127BF6',
+      ),
+      StatusModel(
+        name: 'done',
+        title: 'Выполнена',
+        color: '#93CD64',
+        fontColor: '#3DAE3B',
+      ),
+      StatusModel(
+        name: 'approval',
+        title: 'Согласование',
+        color: '#EB7B36',
+        fontColor: '#CF5104',
+      ),
+      StatusModel(
+        name: 'control',
+        title: 'Контроль',
+        color: '#F1D675',
+        fontColor: '#D18800',
+      ),
     ];
   }
 
@@ -82,6 +104,41 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
 
     // Загружаем tickets при инициализации
     _loadTicketsForTab(selectedCategory);
+  }
+
+  @override
+  void didUpdateWidget(ManagerTicketsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    print('[ManagerTicketsPage] didUpdateWidget:');
+    print('  oldWidget.initialTab=${oldWidget.initialTab}');
+    print('  widget.initialTab=${widget.initialTab}');
+    print('  oldWidget.initialSelectedDate=${oldWidget.initialSelectedDate}');
+    print('  widget.initialSelectedDate=${widget.initialSelectedDate}');
+
+    // Проверяем, изменились ли параметры виджета
+    bool shouldReload = false;
+
+    // Если изменился таб
+    if (oldWidget.initialTab != widget.initialTab) {
+      selectedCategory = widget.initialTab;
+      shouldReload = true;
+      print('  Tab changed, updating selectedCategory to ${widget.initialTab}');
+    }
+
+    // Если изменился период
+    if (oldWidget.initialSelectedDate != widget.initialSelectedDate) {
+      selectedDate = widget.initialSelectedDate;
+      _initialDateFromDashboard = widget.initialSelectedDate;
+      shouldReload = true;
+      print('  Date changed, updating to ${widget.initialSelectedDate}');
+    }
+
+    // Перезагружаем данные если что-то изменилось
+    if (shouldReload) {
+      print('  Reloading tickets with new parameters');
+      _loadTicketsForTab(selectedCategory);
+    }
   }
 
   @override
@@ -124,18 +181,20 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
       );
     }
 
-    _ticketsBloc.add(
-      LoadTicketsEvent(
-        page: 1,
-        perPage: 1000,
-        status: statusApiValue,
-        startDate: startDate,
-        endDate: endDate,
-        serviceTypeId: selectedServiceType?.id,
-        troubleTypeId: selectedTroubleType?.id,
-        priorityTypeId: selectedPriorityType?.id,
-      ),
+    final event = LoadTicketsEvent(
+      page: 1,
+      perPage: 1000,
+      status: statusApiValue,
+      startDate: startDate,
+      endDate: endDate,
+      serviceTypeId: selectedServiceType?.id,
+      troubleTypeId: selectedTroubleType?.id,
+      priorityTypeId: selectedPriorityType?.id,
     );
+
+    log(event.toString(), name: 'big');
+
+    _ticketsBloc.add(event);
   }
 
   @override
@@ -143,7 +202,28 @@ class _ManagerTicketsPageState extends State<ManagerTicketsPage> {
     return Scaffold(
       appBar: AppBar(
         title: isSearching
-            ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {})
+            ? HomePageSearchWidget(
+                searchCtrl: searchCtrl,
+                onSearch: () {
+                  _ticketsBloc.add(
+                    LoadTicketsEvent(
+                      searchText: searchCtrl.text,
+                      page: 1,
+                      perPage: 1000,
+                    ),
+                  );
+                },
+          onClear: (){
+                  searchCtrl.clear();
+
+
+                  _ticketsBloc.add(LoadTicketsEvent(
+                    searchText: '',
+                    page: 1,
+                    perPage: 1000,
+                  ));
+          },
+              )
             : Text(AppStrings.applications),
         actions: isSearching
             ? [

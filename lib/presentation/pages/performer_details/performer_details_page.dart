@@ -22,7 +22,7 @@ import 'components/filter_performer_widget.dart';
 class PerformerDetailsPage extends StatefulWidget {
   const PerformerDetailsPage({super.key, required this.title, this.executorId});
 
-  final String title;
+  final String? title;
   final int? executorId;
 
   @override
@@ -124,8 +124,28 @@ class _PerformerDetailsPageState extends State<PerformerDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: isSearching
-            ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {})
-            : Text(widget.title),
+            ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {
+          _ticketsBloc.add(
+            LoadTicketsEvent(
+              searchText: searchCtrl.text,
+              page: 1,
+              perPage: 1000,
+            ),
+          );
+
+        },
+          onClear: (){
+            searchCtrl.clear();
+
+
+            _ticketsBloc.add(LoadTicketsEvent(
+              searchText: '',
+              page: 1,
+              perPage: 1000,
+            ));
+          },
+        )
+            : Text(widget.title ??'Заявки'),
         actions: isSearching
             ? [
                 TextButton(

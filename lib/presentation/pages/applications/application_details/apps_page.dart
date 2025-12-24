@@ -65,8 +65,8 @@ class _AppsPageState extends State<AppsPage> {
 
                 SizedBox(height: 14),
                 // Показываем выбор исполнителя только если исполнитель не выбран
-                if (widget.selectedPerformer == null && 
-                    widget.selectedExecutorId == null && 
+                if (widget.selectedPerformer == null &&
+                    widget.selectedExecutorId == null &&
                     widget.ticketData?.executor == null)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
@@ -107,7 +107,8 @@ class _AppsPageState extends State<AppsPage> {
                 ),
                 SizedBox(height: 12),
                 // Показываем выбор контактного лица только если контактное лицо не выбрано
-                if (widget.selectedContact == null && widget.ticketData?.resident == null)
+                if (widget.selectedContact == null &&
+                    widget.ticketData?.resident == null)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: SelectBtn(
@@ -144,27 +145,32 @@ class _AppsPageState extends State<AppsPage> {
                 ),
                 SizedBox(height: 16),
 
-                ExpansionTile(
-                  title: Text(
-                    AppStrings.action,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-
-                  initiallyExpanded: true,
-                  collapsedShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  // optional
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: MainCardWidget(child: ChecklistWidget()),
+                if (widget.ticketData != null &&
+                    widget.ticketData!.workUnits != null &&
+                    widget.ticketData!.workUnits.isNotEmpty)
+                  ExpansionTile(
+                    title: Text(
+                      AppStrings.action,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
-                  ],
-                ),
+
+                    initiallyExpanded: true,
+                    collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    // optional
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: MainCardWidget(
+                          child: ChecklistWidget(ticketData: widget.ticketData!),
+                        ),
+                      ),
+                    ],
+                  ),
                 SizedBox(height: 16),
 
                 Padding(
@@ -298,7 +304,7 @@ class _AppsPageState extends State<AppsPage> {
 
   Widget _buildPhotosSection(BuildContext context) {
     final photos = widget.ticketData?.photos;
-    
+
     // Логируем для отладки
     if (photos != null) {
       debugPrint('Photos data type: ${photos.runtimeType}');
@@ -307,7 +313,7 @@ class _AppsPageState extends State<AppsPage> {
 
     // Проверяем разные форматы данных photos
     List<String> photoUrls = [];
-    
+
     if (photos != null) {
       if (photos is List) {
         for (final photo in photos) {
@@ -317,14 +323,15 @@ class _AppsPageState extends State<AppsPage> {
             url = photo;
           } else if (photo is Map) {
             // Если это объект - пытаемся извлечь URL из разных полей
-            url = photo['link'] ?? 
-                  photo['url'] ?? 
-                  photo['path'] ?? 
-                  photo['image_url'] ?? 
-                  photo['photo_url'] ??
-                  photo['src'];
+            url =
+                photo['link'] ??
+                photo['url'] ??
+                photo['path'] ??
+                photo['image_url'] ??
+                photo['photo_url'] ??
+                photo['src'];
           }
-          
+
           if (url != null && url.isNotEmpty) {
             photoUrls.add(url);
           }
@@ -357,8 +364,9 @@ class _AppsPageState extends State<AppsPage> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Text(
           'Нет данных',
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(color: AppColors.gray),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
         ),
       );
     }

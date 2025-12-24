@@ -282,6 +282,7 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       CheckStatusBtn(
                         selectedIndex: _selected2,
@@ -387,6 +388,7 @@ class _NewEmployeeAppsPageState extends State<NewEmployeeAppsPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         overflow: TextOverflow.ellipsis,
+                          maxLines: 1
                       ),
 
                       Row(

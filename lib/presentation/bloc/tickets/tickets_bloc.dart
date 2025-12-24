@@ -31,6 +31,7 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState> {
     emit(const TicketsLoading());
 
     final result = await _repository.getTickets(
+      search: event.searchText,
       startDate: event.startDate,
       endDate: event.endDate,
       status: event.status,

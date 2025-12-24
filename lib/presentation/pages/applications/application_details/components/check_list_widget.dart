@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
+import 'package:hub_dom/locator.dart';
+import 'package:hub_dom/presentation/bloc/work_unit_toggle/work_unit_toggle_cubit.dart';
 
 class ChecklistWidget extends StatefulWidget {
-  const ChecklistWidget({super.key});
+  const ChecklistWidget({super.key, required this.ticketData});
+  final Data ticketData;
 
   @override
   State<ChecklistWidget> createState() => _ChecklistWidgetState();
 }
 
 class _ChecklistWidgetState extends State<ChecklistWidget> {
-  final List<String> tasks = [
-    "Проверить электрощитовую",
-    "Замерить напряжение в сети",
-    "Проверить автоматические выключатели и предохранители",
-    "Сообщить в электроснабжающую организацию при необходимости",
-  ];
+  late final List<WorkUnit> tasks;
 
-  // Track checked states
-  late List<bool> checked;
+  int? selectedId;
 
   @override
   void initState() {
     super.initState();
-    checked = List.generate(
-      tasks.length,
-      (index) => index < 2,
-    ); // first 2 checked
+    tasks = List<WorkUnit>.from(widget.ticketData.workUnits);
+
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +35,8 @@ class _ChecklistWidgetState extends State<ChecklistWidget> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: tasks.length,
       itemBuilder: (context, index) {
+        final item = tasks[index];
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -52,17 +53,23 @@ class _ChecklistWidgetState extends State<ChecklistWidget> {
                 children: [
                   Expanded(
                     child: Text(
-                      tasks[index],
+                      item.title?? 'Данных нет',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                   Checkbox(
 
-                    value: checked[index],
+                    value: item.checked ,
                     onChanged: (val) {
+                      if (val == null) return;
                       setState(() {
-                        checked[index] = val ?? false;
+                        tasks[index] = tasks[index].copyWith(checked: val);
                       });
+                      locator<WorkUnitsCubit>().toggleOne(
+                        ticketId: widget.ticketData.id!,
+                        workUnitId: item.id,
+                        checked: val,
+                      );
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),

@@ -21,4 +21,5 @@ class ApiEndpoints {
   static const addresses = 'engineer_api/addresses';
   static const employees = 'engineer_api/employee';
   static const isResponsible = 'engineer_api/is_responsible';
+  static const contacts = 'engineer_api/contacts';
 }

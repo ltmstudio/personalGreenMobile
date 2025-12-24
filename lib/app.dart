@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
+import 'package:hub_dom/presentation/bloc/contacts/contacts_cubit.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
 import 'package:hub_dom/presentation/bloc/is_responsible/is_responsible_cubit.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
 import 'package:hub_dom/presentation/bloc/selected_crm/selected_crm_cubit.dart';
 import 'package:hub_dom/presentation/bloc/set_profile/set_profile_cubit.dart';
+import 'package:hub_dom/presentation/bloc/ticket_report/ticket_report_cubit.dart';
 
 import 'locator.dart';
 import 'presentation/widgets/scroll_behavior.dart';
@@ -37,20 +40,40 @@ class AppStart extends StatelessWidget {
         BlocProvider<IsResponsibleCubit>(
           create: (context) => locator<IsResponsibleCubit>(),
         ),
+        BlocProvider<AddressesBloc>(
+          create: (context) => locator<AddressesBloc>(),
+        ),
+        BlocProvider<ContactsCubit>(
+          create: (context) => locator<ContactsCubit>(),
+        ),
+        BlocProvider<ReportsCubit>(
+          create: (context) => locator<ReportsCubit>(),
+        ),
       ],
-      child: MaterialApp.router(
-        title: AppStrings.appName,
-        theme: AppTheme.lightTheme(),
-        debugShowCheckedModeBanner: false,
-        scrollBehavior: const NoGlowScrollBehavior(),
-        routerConfig: goRouter,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('ru', 'RU'), Locale('en', 'US')],
-        locale: const Locale('ru', 'RU'),
+      child: Builder(
+        builder: (context) {
+          final mediaQuery = MediaQuery.of(context);
+
+          return MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: const TextScaler.linear(1.0),
+            ),
+            child: MaterialApp.router(
+              title: AppStrings.appName,
+              theme: AppTheme.lightTheme(),
+              debugShowCheckedModeBanner: false,
+              scrollBehavior: const NoGlowScrollBehavior(),
+              routerConfig: goRouter,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('ru', 'RU'), Locale('en', 'US')],
+              locale: const Locale('ru', 'RU'),
+            ),
+          );
+        }
       ),
     );
   }

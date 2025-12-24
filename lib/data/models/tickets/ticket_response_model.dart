@@ -37,6 +37,27 @@ class TicketResponseModel {
         : List<dynamic>.from(stats!.map((x) => x.toJson())),
   };
 }
+class ToggleWorkUnitItem {
+  final int id;
+  final bool checked;
+
+  ToggleWorkUnitItem({required this.id, required this.checked});
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "checked": checked,
+  };
+}
+
+class ToggleWorkUnitsRequest {
+  final List<ToggleWorkUnitItem> workUnits;
+
+  ToggleWorkUnitsRequest({required this.workUnits});
+
+  Map<String, dynamic> toJson() => {
+    "work_units": workUnits.map((e) => e.toJson()).toList(),
+  };
+}
 
 class Stat {
   final int? id;

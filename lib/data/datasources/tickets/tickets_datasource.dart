@@ -13,12 +13,15 @@ import 'package:hub_dom/data/models/tickets/employee_report_request_model.dart';
 import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/data/models/tickets/ticket_response_model.dart';
 
+import '../../models/tickets/ticket_report_model.dart';
+
 abstract class TicketsRemoteDatasource {
   Future<List<CollectionModel>> getCollections();
 
   Future<DictionaryModel> getDictionaries();
 
   Future<TicketResponseModel> getTickets({
+    String? search,
     String? startDate,
     String? endDate,
     String? status,
@@ -46,6 +49,14 @@ abstract class TicketsRemoteDatasource {
   Future<void> assignExecutor(int ticketId, int executorId);
 
   Future<void> submitReport(int ticketId, EmployeeReportRequestModel request);
+
+  Future<void> toggleWorkUnits({
+    required int ticketId,
+    required ToggleWorkUnitsRequest body,
+  });
+
+  Future<List<TicketReport>> getTicketReports({required int ticketId});
+
 }
 
 class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
@@ -88,6 +99,7 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
 
   @override
   Future<TicketResponseModel> getTickets({
+    String? search,
     String? startDate,
     String? endDate,
     String? status,
@@ -143,6 +155,9 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     if (executorId != null) {
       queryParams['executor_id'] = executorId;
     }
+    if (search != null) {
+      queryParams['term'] = search;
+    }
 
     log('=== API REQUEST ===', name: 'TicketsDatasource');
     log('Endpoint: ${ApiEndpoints.collections}', name: 'TicketsDatasource');
@@ -169,28 +184,40 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
 
     // Формируем FormData вручную для правильной передачи массива файлов
     final formData = FormData();
-    
+
     // Добавляем текстовые поля
     formData.fields.add(MapEntry('object_id', request.objectId.toString()));
     formData.fields.add(MapEntry('object_type', request.objectType));
-    formData.fields.add(MapEntry('service_type_id', request.serviceTypeId.toString()));
-    formData.fields.add(MapEntry('trouble_type_id', request.troubleTypeId.toString()));
-    formData.fields.add(MapEntry('priority_type_id', request.priorityTypeId.toString()));
+    formData.fields.add(
+      MapEntry('service_type_id', request.serviceTypeId.toString()),
+    );
+    formData.fields.add(
+      MapEntry('trouble_type_id', request.troubleTypeId.toString()),
+    );
+    formData.fields.add(
+      MapEntry('priority_type_id', request.priorityTypeId.toString()),
+    );
     formData.fields.add(MapEntry('deadlined_at', request.deadlinedAt));
     formData.fields.add(MapEntry('visiting_at', request.visitingAt));
-    formData.fields.add(MapEntry('is_emergency', request.isEmergency.toString()));
+    formData.fields.add(
+      MapEntry('is_emergency', request.isEmergency.toString()),
+    );
     formData.fields.add(MapEntry('comment', request.comment));
-    
+
     // Добавляем additional_contact только если он не пустой
     if (request.additionalContact.isNotEmpty) {
-      formData.fields.add(MapEntry('additional_contact', request.additionalContact));
+      formData.fields.add(
+        MapEntry('additional_contact', request.additionalContact),
+      );
     }
-    
+
     // Добавляем executor_id только если он указан
     if (request.executorId != null) {
-      formData.fields.add(MapEntry('executor_id', request.executorId.toString()));
+      formData.fields.add(
+        MapEntry('executor_id', request.executorId.toString()),
+      );
     }
-    
+
     // Для массива файлов с ключом photos[] добавляем каждый файл
     if (request.photos != null && request.photos!.isNotEmpty) {
       log('Adding ${request.photos!.length} photos', name: 'TicketsDatasource');
@@ -200,10 +227,7 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
         formData.files.add(
           MapEntry(
             'photos[]',
-            await MultipartFile.fromFile(
-              photo.path,
-              filename: fileName,
-            ),
+            await MultipartFile.fromFile(photo.path, filename: fileName),
           ),
         );
       }
@@ -214,7 +238,10 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     for (final field in formData.fields) {
       log('  ${field.key}: ${field.value}', name: 'TicketsDatasource');
     }
-    log('FormData files count: ${formData.files.length}', name: 'TicketsDatasource');
+    log(
+      'FormData files count: ${formData.files.length}',
+      name: 'TicketsDatasource',
+    );
     for (final file in formData.files) {
       log('  ${file.key}: ${file.value.filename}', name: 'TicketsDatasource');
     }
@@ -223,7 +250,7 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     // Так как postFormData принимает только Map, а нам нужен готовый FormData
     final impl = apiProvider as ApiProviderImpl;
     impl.dio.options.headers.remove('Content-Type');
-    
+
     try {
       final response = await impl.dio.post(
         ApiEndpoints.createTicket,
@@ -241,15 +268,24 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
       log('Status code: ${e.response?.statusCode}', name: 'TicketsDatasource');
       log('Error message: ${e.message}', name: 'TicketsDatasource');
       if (e.response != null) {
-        log('Error response data: ${e.response?.data}', name: 'TicketsDatasource');
+        log(
+          'Error response data: ${e.response?.data}',
+          name: 'TicketsDatasource',
+        );
         // Пытаемся извлечь детали ошибки валидации
         if (e.response?.data is Map) {
           final errorData = e.response!.data as Map;
           if (errorData.containsKey('errors')) {
-            log('Validation errors: ${errorData['errors']}', name: 'TicketsDatasource');
+            log(
+              'Validation errors: ${errorData['errors']}',
+              name: 'TicketsDatasource',
+            );
           }
           if (errorData.containsKey('message')) {
-            log('Error message: ${errorData['message']}', name: 'TicketsDatasource');
+            log(
+              'Error message: ${errorData['message']}',
+              name: 'TicketsDatasource',
+            );
           }
         }
       }
@@ -350,7 +386,10 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
   }
 
   @override
-  Future<void> submitReport(int ticketId, EmployeeReportRequestModel request) async {
+  Future<void> submitReport(
+    int ticketId,
+    EmployeeReportRequestModel request,
+  ) async {
     log('=== SUBMIT REPORT REQUEST ===', name: 'TicketsDatasource');
     final endpoint = ApiEndpoints.reportTicket.replaceAll(
       ':ticket_id',
@@ -359,15 +398,18 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     log('Endpoint: $endpoint', name: 'TicketsDatasource');
     log('Ticket ID: $ticketId', name: 'TicketsDatasource');
     log('Comment: ${request.comment}', name: 'TicketsDatasource');
-    log('Photos count: ${request.photos?.length ?? 0}', name: 'TicketsDatasource');
+    log(
+      'Photos count: ${request.photos?.length ?? 0}',
+      name: 'TicketsDatasource',
+    );
 
     // Формируем FormData вручную для правильной передачи массива файлов
     final formData = FormData();
-    
+
     if (request.comment != null && request.comment!.isNotEmpty) {
       formData.fields.add(MapEntry('comment', request.comment!));
     }
-    
+
     // Для массива файлов с ключом photos[] добавляем каждый файл
     if (request.photos != null && request.photos!.isNotEmpty) {
       for (final photo in request.photos!) {
@@ -375,10 +417,7 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
         formData.files.add(
           MapEntry(
             'photos[]',
-            await MultipartFile.fromFile(
-              photo.path,
-              filename: fileName,
-            ),
+            await MultipartFile.fromFile(photo.path, filename: fileName),
           ),
         );
       }
@@ -388,14 +427,35 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
     // Так как postFormData принимает только Map, а нам нужен готовый FormData
     final impl = apiProvider as ApiProviderImpl;
     impl.dio.options.headers.remove('Content-Type');
-    
-    final response = await impl.dio.post(
-      endpoint,
-      data: formData,
-    );
+
+    final response = await impl.dio.post(endpoint, data: formData);
 
     log('=== SUBMIT REPORT RESPONSE ===', name: 'TicketsDatasource');
     log('Response status: ${response.statusCode}', name: 'TicketsDatasource');
     log('Response data: ${response.data}', name: 'TicketsDatasource');
+  }
+
+  @override
+  Future<void> toggleWorkUnits({
+    required int ticketId,
+    required ToggleWorkUnitsRequest body,
+  }) async {
+    await apiProvider.post(
+      data: body.toJson(),
+      endPoint: '${ApiEndpoints.getTicket}/$ticketId/toggle_work_units',
+    );
+  }
+
+  @override
+  Future<List<TicketReport>> getTicketReports({required int ticketId})async {
+    final res = await apiProvider.get(
+        endPoint: '${ApiEndpoints.getTicket}/$ticketId/reports');
+
+    final data = res.data;
+    if (data is! Map<String, dynamic>) {
+      throw Exception('Unexpected response format');
+    }
+
+    return parseReportsData(data);
   }
 }

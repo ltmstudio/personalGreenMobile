@@ -8,13 +8,14 @@ class SupportItemWidget extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.color,
-    this.subTitle,
+    this.subTitle, this.onTap,
   });
 
   final String title;
   final String? subTitle;
   final String icon;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +37,15 @@ class SupportItemWidget extends StatelessWidget {
                 ),
             ],
           ),
-          Container(
-            height: 40,
-            width: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-            child: SvgPicture.asset(icon),
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              height: 40,
+              width: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+              child: SvgPicture.asset(icon),
+            ),
           ),
         ],
       ),

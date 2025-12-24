@@ -22,28 +22,42 @@ class ObjectItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return GestureDetector(
-      onTap: (){
-        context.push(AppRoutes.objectDetails);
-      },
+      onTap: () => context.push(AppRoutes.objectDetails),
       child: MainCardWidget(
         child: Row(
           children: [
             Container(
               height: 40,
               width: 40,
+              margin: const EdgeInsets.only(right: 12),
               alignment: Alignment.center,
               decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-              child: SvgPicture.asset(icon),
+              child: SvgPicture.asset(icon, width: 20, height: 20),
             ),
-            SizedBox(width: 12,),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
 
-                SizedBox(height: 4),
-                Text(subTitle, style: Theme.of(context).textTheme.bodySmall),
-              ],
+            // ВАЖНО: Flexible, чтобы правая часть реально ужималась
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subTitle,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -51,3 +65,5 @@ class ObjectItemWidget extends StatelessWidget {
     );
   }
 }
+
+

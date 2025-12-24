@@ -29,6 +29,11 @@ class CreateTicketParams {
     this.photos,
     this.executorId,
   });
+
+  @override
+  String toString() {
+    return 'CreateTicketParams{objectId: $objectId, objectType: $objectType, serviceTypeId: $serviceTypeId, troubleTypeId: $troubleTypeId, priorityTypeId: $priorityTypeId, deadlineDate: $deadlineDate, visitingDateTime: $visitingDateTime, comment: $comment, additionalContact: $additionalContact, isEmergency: $isEmergency, photos: $photos, executorId: $executorId}';
+  }
 }
 
 

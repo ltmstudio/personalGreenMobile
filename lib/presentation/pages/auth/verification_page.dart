@@ -125,7 +125,7 @@ class _VerificationPageState extends State<VerificationPage> {
                 alignment: Alignment.centerLeft,
 
                 child: Text(
-                  '${AppStrings.verificationSend} +7${widget.params.phoneNumber}',
+                  '${AppStrings.verificationSend} +7${widget.params.phoneNumber} - otp: ${ widget.params.code}',
 
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
