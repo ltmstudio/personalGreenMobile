@@ -40,161 +40,121 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-
-      children: [
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 14),
-          child: Text(
-            'Отчеты',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Отчет',
         ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
 
-        BlocBuilder<ReportsCubit, ReportsState>(
-          builder: (context, state) {
-            if (state.status == ReportsStatus.loading) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (state.status == ReportsStatus.failure) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  state.error ?? 'Ошибка загрузки',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-                ),
-              );
-            }
-
-            if (state.items.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Нет отчетов',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                ),
-              );
-            }
-
-            return Column(
-              children: state.items.map((r) => ReportCard(report: r)).toList(),
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    AppStrings.conclusion,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
-
-                SizedBox(height: 14),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    widget.ticketData?.comment ?? '',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    AppStrings.photoReport,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
-                SizedBox(height: 14),
-
-                _buildPhotosSection(context),
-                SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-
-
-        Container(
-          height: 80,
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(20),
-              topLeft: Radius.circular(20),
-            ),
-          ),
-          child: BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
-            listener: (context, state) {
-              if (state is ApplicationDetailsAccepted) {
-                Toast.show(context, 'Заявка принята');
-                Navigator.of(context).pop();
-              } else if (state is ApplicationDetailsRejected) {
-                Toast.show(context, 'Заявка отклонена');
-                Navigator.of(context).pop();
-              } else if (state is ApplicationDetailsError) {
-                Toast.show(context, state.message);
-              }
-            },
-            builder: (context, state) {
-              final isProcessing =
-                  state is ApplicationDetailsAccepting ||
-                  state is ApplicationDetailsRejecting;
-
-              return Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: MainButton(
-                      buttonTile: AppStrings.reject,
-                      onPressed: widget.ticketId != null && !isProcessing
-                          ? () => _confirmReject(context, widget.ticketId!)
-                          : null,
-                      isLoading: state is ApplicationDetailsRejecting,
-                      btnColor: AppColors.red,
+
+
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      AppStrings.conclusion,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: MainButton(
-                      buttonTile: AppStrings.confirm,
-                      onPressed: widget.ticketId != null && !isProcessing
-                          ? () => _handleConfirm(context, widget.ticketId!)
-                          : null,
-                      isLoading: state is ApplicationDetailsAccepting,
-                      btnColor: AppColors.green,
+
+                  SizedBox(height: 14),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      widget.ticketData?.comment ?? '',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
+                  SizedBox(height: 20),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      AppStrings.photoReport,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                  SizedBox(height: 14),
+
+                  _buildPhotosSection(context),
+                  SizedBox(height: 20),
                 ],
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      ],
+
+
+          Container(
+            height: 80,
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(20),
+                topLeft: Radius.circular(20),
+              ),
+            ),
+            child: BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
+              listener: (context, state) {
+                if (state is ApplicationDetailsAccepted) {
+                  Toast.show(context, 'Заявка принята');
+                  Navigator.of(context).pop();
+                } else if (state is ApplicationDetailsRejected) {
+                  Toast.show(context, 'Заявка отклонена');
+                  Navigator.of(context).pop();
+                } else if (state is ApplicationDetailsError) {
+                  Toast.show(context, state.message);
+                }
+              },
+              builder: (context, state) {
+                final isProcessing =
+                    state is ApplicationDetailsAccepting ||
+                    state is ApplicationDetailsRejecting;
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: MainButton(
+                        buttonTile: AppStrings.reject,
+                        onPressed: widget.ticketId != null && !isProcessing
+                            ? () => _confirmReject(context, widget.ticketId!)
+                            : null,
+                        isLoading: state is ApplicationDetailsRejecting,
+                        btnColor: AppColors.red,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: MainButton(
+                        buttonTile: AppStrings.confirm,
+                        onPressed: widget.ticketId != null && !isProcessing
+                            ? () => _handleConfirm(context, widget.ticketId!)
+                            : null,
+                        isLoading: state is ApplicationDetailsAccepting,
+                        btnColor: AppColors.green,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

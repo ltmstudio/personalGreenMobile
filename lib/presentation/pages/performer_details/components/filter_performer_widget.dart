@@ -130,9 +130,8 @@ class _FilterPerformerWidgetState extends State<FilterPerformerWidget> {
                                 selectedTroubleType = null;
                               });
                             },
-                            onTap: selectedServiceType != null
-                                ? _showWorkType
-                                : null,
+                            onTap: _showWorkType
+                               ,
                             isDisabled: selectedServiceType == null,
                           ),
                         ),

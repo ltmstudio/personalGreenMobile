@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/error/failure.dart';
@@ -214,4 +216,26 @@ class TicketsRepository {
     return remoteDataSource.getTicketReports(ticketId: ticketId);
 
   }
+
+  Future<Either<Failure, void>> createTicketReport({
+    required int ticketId,
+    String? comment,
+    List<File>? photos,
+  }) async {
+    final bool isConnected = await networkInfo.isConnected;
+    if (!isConnected) return Left(ConnectionFailure(AppStrings.noInternet));
+
+    try {
+      await remoteDataSource.createTicketReport(
+        ticketId: ticketId,
+        comment: comment,
+        photos: photos,
+      );
+      return const Right(null);
+    } catch (error) {
+      final errorMessage = ErrorMessageHelper.getErrorMessage(error);
+      return Left(ServerFailure(errorMessage));
+    }
+  }
+
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
+import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
 import 'package:hub_dom/presentation/bloc/contacts/contacts_cubit.dart';
 import 'package:hub_dom/presentation/bloc/crm_system/crm_system_cubit.dart';
@@ -46,9 +47,13 @@ class AppStart extends StatelessWidget {
         BlocProvider<ContactsCubit>(
           create: (context) => locator<ContactsCubit>(),
         ),
+        BlocProvider<ApplicationDetailsBloc>(
+          create: (context) => locator<ApplicationDetailsBloc>(),
+        ),
         BlocProvider<ReportsCubit>(
           create: (context) => locator<ReportsCubit>(),
         ),
+
       ],
       child: Builder(
         builder: (context) {

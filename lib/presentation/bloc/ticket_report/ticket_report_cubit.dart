@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hub_dom/data/models/tickets/ticket_report_model.dart';
@@ -20,4 +22,27 @@ class ReportsCubit extends Cubit<ReportsState> {
       emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
     }
   }
+
+  Future<void> createReport({
+    required int ticketId,
+    String? comment,
+    List<File>? photos,
+  }) async {
+    emit(state.copyWith(isSubmitting: true, error: null));
+
+    final res = await repo.createTicketReport(
+      ticketId: ticketId,
+      comment: comment,
+      photos: photos,
+    );
+
+    res.fold(
+          (l) => emit(state.copyWith(isSubmitting: false, error: l.message)),
+          (_) async {
+        emit(state.copyWith(isSubmitting: false));
+        await load(ticketId: ticketId); // ✅ обновить список
+      },
+    );
+  }
+
 }

@@ -57,6 +57,12 @@ abstract class TicketsRemoteDatasource {
 
   Future<List<TicketReport>> getTicketReports({required int ticketId});
 
+  Future<void> createTicketReport({
+    required int ticketId,
+    String? comment,
+    List<File>? photos,
+  });
+
 }
 
 class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
@@ -458,4 +464,46 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
 
     return parseReportsData(data);
   }
+
+
+  @override
+  Future<void> createTicketReport({
+    required int ticketId,
+    String? comment,
+    List<File>? photos,
+  }) async {
+    final endpoint = ApiEndpoints.reportTicket.replaceAll(
+      ':ticket_id',
+      ticketId.toString(),
+    );
+
+    final formData = FormData();
+
+    if (comment != null && comment.trim().isNotEmpty) {
+      formData.fields.add(MapEntry('comment', comment.trim()));
+    }
+
+    if (photos != null && photos.isNotEmpty) {
+      for (final photo in photos) {
+        final fileName = photo.path.split(Platform.pathSeparator).last;
+        formData.files.add(
+          MapEntry(
+            'photos[]',
+            await MultipartFile.fromFile(photo.path, filename: fileName),
+          ),
+        );
+      }
+    }
+
+    // debug
+    log('fields=${formData.fields}', name: 'REPORT');
+    log('files=${formData.files.length}', name: 'REPORT');
+
+    final impl = apiProvider as ApiProviderImpl;
+    impl.dio.options.headers.remove('Content-Type'); // важно
+    await impl.dio.post(endpoint, data: formData);
+  }
+
+
+
 }

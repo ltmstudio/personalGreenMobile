@@ -5,8 +5,10 @@ import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/utils/color_utils.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
+import 'package:hub_dom/presentation/bloc/ticket_report/ticket_report_cubit.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/report_page.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
+import 'package:hub_dom/presentation/pages/applications/application_details/report_table_section.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/selectable_btn.dart';
@@ -14,6 +16,7 @@ import 'package:hub_dom/presentation/widgets/confirm_bottomsheet.dart';
 import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
+import 'add_report_bottomsheet.dart';
 import 'apps_page.dart';
 
 class ApplicationDetailsPage extends StatefulWidget {
@@ -268,10 +271,44 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             onShowPerformer: () => _showPerformer(context, bloc),
             onShowContact: () => _showPerformer(context, bloc),
           )
-        : AppDetailsReportPage(
+        : ReportsTabSection(
+            ticketId: widget.ticketId!,
             ticketData: ticketData,
-            ticketId: widget.ticketId,
+            onAddReport: () async {
+              final ok = await showModalBottomSheet<bool>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (_) {
+                  return AddReportBottomSheet(
+                    ticketId: widget.ticketId,
+                    onSubmit: (comment, files) async {
+                      // // Вариант 1: через кубит (предпочтительно)
+                      // сделай метод createReport в ReportsCubit
+                      if (widget.ticketId != null) {
+                        await context.read<ReportsCubit>().createReport(
+                          ticketId: widget.ticketId!,
+                          comment: comment,
+                          photos: files,
+                        );
+                      }
+                    },
+                  );
+                },
+              );
+
+              if (ok == true && context.mounted) {
+                // например Toast.show(context, 'Отчет добавлен');
+              }
+            },
           );
+    // AppDetailsReportPage(
+    //         ticketData: ticketData,
+    //         ticketId: widget.ticketId,
+    //       );
   }
 
   void _showPerformer(BuildContext context, ApplicationDetailsBloc bloc) {
