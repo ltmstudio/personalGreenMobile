@@ -9,6 +9,10 @@ final class CrmSystemLoaded extends CrmSystemState {
 
   CrmSystemLoaded(this.data);
 }
-final class CrmSystemError extends CrmSystemState {}
+final class CrmSystemError extends CrmSystemState {
+  final String message;
+
+  CrmSystemError(this.message);
+}
 final class CrmSystemEmpty extends CrmSystemState {}
 final class CrmSystemConnectionError extends CrmSystemState {}

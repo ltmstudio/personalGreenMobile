@@ -8,7 +8,6 @@ import 'package:hub_dom/core/config/routes/widget_keys_str.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/data/models/auth/auth_params.dart';
 import 'package:hub_dom/data/models/auth/crm_system_model.dart';
-import 'package:hub_dom/presentation/pages/address_details/address_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/app_category/app_category_page.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/application_details_page.dart';
 import 'package:hub_dom/presentation/pages/applications/create_application/create_aplication_page.dart';
@@ -51,12 +50,7 @@ final List<StatefulShellBranch> mainBranches = [
     navigatorKey: shellNavKey2,
     routes: [
       // Добавляем оба роута в один branch - GoRouter должен правильно обрабатывать это
-      GoRoute(
-        path: AppRoutes.applications,
-        pageBuilder: (context, state) {
-          return NoTransitionPage(child: ApplicationPage());
-        },
-      ),
+
       GoRoute(
         path: AppRoutes.organizations,
         pageBuilder: (context, state) {
@@ -67,18 +61,21 @@ final List<StatefulShellBranch> mainBranches = [
           GoRoute(
             path: 'organizationDetails',
             builder: (context, state) {
-              if (state.extra != null && state.extra is Map<String, dynamic>) {
-                final extra = state.extra as Map<String, dynamic>;
-                final CrmSystemModel model = extra['model'];
-                return OrganizationDetailsPage(model: model);
-              }
-              return Scaffold(
-                appBar: AppBar(),
-                body: Center(child: Text(AppStrings.error)),
-              );
+              final model = (state.extra is Map<String, dynamic>)
+                  ? (state.extra as Map<String, dynamic>)['model'] as CrmSystemModel?
+                  : null;
+
+              return OrganizationDetailsPage(model: model);
             },
           ),
+
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.applications,
+        pageBuilder: (context, state) {
+          return NoTransitionPage(child: ApplicationPage());
+        },
       ),
     ],
   ),

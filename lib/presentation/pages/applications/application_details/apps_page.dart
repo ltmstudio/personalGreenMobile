@@ -105,32 +105,33 @@ class _AppsPageState extends State<AppsPage> {
                     ticketData: widget.ticketData,
                   ),
                 ),
-                SizedBox(height: 12),
+               SizedBox(height: 12),
+                //todo contact
                 // Показываем выбор контактного лица только если контактное лицо не выбрано
-                if (widget.selectedContact == null &&
-                    widget.ticketData?.resident == null)
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: SelectBtn(
-                      title: AppStrings.selectContactPerson,
-                      value: widget.selectedContact,
-                      showBorder: false,
-                      icon: Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.lightGrayBorder,
-                        ),
-                        child: Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 14,
-                          color: AppColors.white,
-                        ),
-                      ),
-                      onTap: widget.onShowContact,
-                    ),
-                  ),
-                SizedBox(height: 6),
+                // if (widget.selectedContact == null &&
+                //     widget.ticketData?.resident == null)
+                //   Padding(
+                //     padding: EdgeInsets.symmetric(horizontal: 16),
+                //     child: SelectBtn(
+                //       title: AppStrings.selectContactPerson,
+                //       value: widget.selectedContact,
+                //       showBorder: false,
+                //       icon: Container(
+                //         padding: EdgeInsets.all(5),
+                //         decoration: BoxDecoration(
+                //           shape: BoxShape.circle,
+                //           color: AppColors.lightGrayBorder,
+                //         ),
+                //         child: Icon(
+                //           Icons.arrow_forward_ios_outlined,
+                //           size: 14,
+                //           color: AppColors.white,
+                //         ),
+                //       ),
+                //       onTap: widget.onShowContact,
+                //     ),
+                //   ),
+                // SizedBox(height: 6),
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),

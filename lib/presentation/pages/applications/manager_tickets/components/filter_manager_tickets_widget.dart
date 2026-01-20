@@ -127,7 +127,7 @@ class _FilterManagerTicketsWidgetState
                               const Duration(days: 365),
                             ),
                             initialDateRange:
-                                selectedDate ?? widget.initialDate,
+                                selectedDate,
                             onDateRangeSelected: (v) {
                               setState(() {
                                 selectedDate = v;

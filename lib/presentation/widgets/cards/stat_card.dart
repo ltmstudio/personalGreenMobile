@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:hub_dom/core/config/routes/routes_path.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 
 class StatCard extends StatelessWidget {

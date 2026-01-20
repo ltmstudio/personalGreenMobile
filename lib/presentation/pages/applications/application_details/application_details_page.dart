@@ -4,9 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/utils/color_utils.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/bloc/ticket_report/ticket_report_cubit.dart';
-import 'package:hub_dom/presentation/pages/applications/application_details/report_page.dart';
 import 'package:hub_dom/data/models/employees/get_employee_response_model.dart';
 import 'package:hub_dom/presentation/pages/applications/application_details/report_table_section.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/performer_widget.dart';
@@ -18,6 +18,7 @@ import 'package:hub_dom/presentation/widgets/toast_widget.dart';
 
 import 'add_report_bottomsheet.dart';
 import 'apps_page.dart';
+import 'components/contact_widget.dart';
 
 class ApplicationDetailsPage extends StatefulWidget {
   final int? ticketId;
@@ -36,6 +37,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   int? selectedExecutorId;
   Employee?
   _pendingEmployee; // Временно сохраненный исполнитель до успешного ответа
+
+  Contact? _contact;
 
   @override
   void initState() {
@@ -269,7 +272,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             selectedContact: selectedContact,
             selectedExecutorId: selectedExecutorId,
             onShowPerformer: () => _showPerformer(context, bloc),
-            onShowContact: () => _showPerformer(context, bloc),
+            onShowContact: () => _showContacts(context, ticketData?.contacts??[]),
           )
         : ReportsTabSection(
             ticketId: widget.ticketId!,
@@ -311,6 +314,32 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     //       );
   }
 
+  void _showContacts(BuildContext context, List<Contact> contacts) {
+    bottomSheetWidget(
+      context: context,
+      isScrollControlled: true,
+      child: ContactPickerWidget(
+        contacts: contacts,
+        onSelectItem: (String value) {
+          setState(() {
+            selectedContact = value;
+          });
+        },
+        onSelectContact: (Contact contact) {
+          // PerformerWidget уже закрывает bottom sheet при isSelected == true
+          // Показываем диалог подтверждения после небольшой задержки
+          // чтобы bottom sheet успел закрыться
+          Future.microtask(() {
+            if (mounted) {
+              _showAssignContactDialog(context,  contact);
+            }
+          });
+        },
+        isSelected: true,
+      ),
+    );
+  }
+
   void _showPerformer(BuildContext context, ApplicationDetailsBloc bloc) {
     bottomSheetWidget(
       context: context,
@@ -336,6 +365,33 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           },
           isSelected: true,
         ),
+      ),
+    );
+  }
+
+  void _showAssignContactDialog(
+      BuildContext context,
+      Contact contact,
+      ) {
+    bottomSheetWidget(
+      context: context,
+      isScrollControlled: false,
+      child: ConfirmBottomSheet(
+        title: 'Назначить контакт?',
+        body: 'Заявка будет привязана к выбранному контакту',
+        confirmButtonText: AppStrings.assign,
+        cancelButtonText: 'Закрыть',
+        onTap: () {
+          // Сохраняем выбранного исполнителя во временную переменную
+          // Применим его только после успешного ответа
+          setState(() {
+            _contact = contact;
+          });
+          // Вызываем assignExecutor после подтверждения
+          if (widget.ticketId != null && contact.id != null) {
+
+          }
+        },
       ),
     );
   }

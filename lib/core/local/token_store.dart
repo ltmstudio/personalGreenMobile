@@ -11,6 +11,8 @@ class Store {
   final String _refreshTokenKey = 'refreshToken';
   final String _isResponsibleKey = 'isResponsible';
 
+  final String _selectedCrmIdKey = 'selectedCrmId';
+
   Future<void> setToken(String token) async {
     await _secureStorage.write(key: _tokenKey,value:  token,);
   }
@@ -42,8 +44,22 @@ class Store {
     await _secureStorage.delete(key: _refreshTokenKey);
     await _secureStorage.delete(key: _isResponsibleKey);
   }
+  Future<void> clearSelectedCrm() async {
+    await _secureStorage.delete(key: _selectedCrmIdKey);
+  }
+
   Future<bool> isTokenAvailable() async {
     String? token = await _secureStorage.read( key: _tokenKey);
     return Future.value((token != null));
+  }
+
+  Future<void> setSelectedCrmId(int id) async {
+    await _secureStorage.write(key: _selectedCrmIdKey, value: id.toString());
+  }
+
+  Future<int?> getSelectedCrmId() async {
+    final value = await _secureStorage.read(key: _selectedCrmIdKey);
+    if (value == null || value.isEmpty) return null;
+    return int.tryParse(value);
   }
 }

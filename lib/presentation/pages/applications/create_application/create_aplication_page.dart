@@ -808,6 +808,7 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       isEmergency: 0,
       photos: _selectedPhotos.isNotEmpty ? _selectedPhotos : null,
       executorId: _selectedEmployeeData?.id,
+      contact: _nameCtrl.text,
     );
 
     // Отправляем событие создания заявки

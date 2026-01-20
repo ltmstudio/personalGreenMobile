@@ -20,7 +20,9 @@ class CrmSystemCubit extends Cubit<CrmSystemState> {
         if (error is ConnectionFailure) {
           emit(CrmSystemConnectionError());
         } else {
-          emit(CrmSystemError());
+          emit(CrmSystemError(
+            error.message
+          ));
         }
       },
       (data) {

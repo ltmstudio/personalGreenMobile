@@ -43,6 +43,8 @@ class Data {
   dynamic photos;
   DateTime? createdAt;
   final List<WorkUnit> workUnits;
+  final List<Contact> contacts;
+
 
 
   Data({
@@ -65,6 +67,7 @@ class Data {
     this.photos,
     this.createdAt,
     required this.workUnits,
+    required this.contacts,
 
   });
 
@@ -100,6 +103,7 @@ class Data {
         ? null
         : DateTime.parse(json["created_at"]),
     workUnits: List<WorkUnit>.from(json["work_units"].map((x) => WorkUnit.fromJson(x))),
+    contacts: List<Contact>.from(json["contacts"].map((x) => Contact.fromJson(x))),
 
   );
 
@@ -127,6 +131,31 @@ class Data {
   };
 }
 
+
+class Contact {
+  final String id;
+  final String number;
+  final String title;
+
+  Contact({
+    required this.id,
+    required this.number,
+    required this.title,
+  });
+
+  factory Contact.fromJson(Map<String, dynamic> json) {
+    return Contact(
+      id: json['id']??'0',
+      number: json['number'],
+      title: json['title'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'number': number,
+    'title': title,
+  };
+}
 
 class WorkUnit {
   final int id;

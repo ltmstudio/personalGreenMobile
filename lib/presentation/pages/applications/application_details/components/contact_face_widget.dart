@@ -13,11 +13,11 @@ class ContactFaceCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resident = ticketData?.resident;
+    final resident = ticketData?.contacts.first.title;
     final residentName = resident != null
         ? (resident is String ? resident : resident.toString())
         : 'Данных нет';
-    final contactPhone = ticketData?.contactPhone;
+    final contactPhone = ticketData?.contacts.first.number;
     final phone = contactPhone != null
         ? (contactPhone is String ? contactPhone : contactPhone.toString())
         : 'Данных нет';

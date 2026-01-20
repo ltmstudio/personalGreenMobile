@@ -5,6 +5,8 @@ import 'package:hub_dom/data/models/auth/crm_system_model.dart';
 import 'package:hub_dom/data/repositories/auth/auth_repository.dart';
 import 'package:hub_dom/locator.dart';
 
+import '../../../core/local/token_store.dart';
+
 part 'selected_crm_state.dart';
 
 class SelectedCrmCubit extends Cubit<SelectedCrmState> {
@@ -25,12 +27,27 @@ class SelectedCrmCubit extends Cubit<SelectedCrmState> {
           emit(SelectedCrmError());
         }
       },
-      (data) {
+      (data)async  {
+        await locator<Store>().setSelectedCrmId(data.crm.id);
         emit(SelectedCrmLoaded(data));
       },
     );
   }
+  Future<void> setCrmSystemByModel(CrmSystemModel model) async {
+    emit(SelectedCrmLoading());
+    try {
+      // сохраняем то, что уже и так сохраняете в datasource
+      await locator<AppPreferences>().setCrmHost(model.crm.host);
+      await locator<AppPreferences>().setCrmName(model.crm.name);
+      await locator<AppPreferences>().setCrmToken(model.token);
 
+      await locator<Store>().setSelectedCrmId(model.crm.id);
+
+      emit(SelectedCrmLoaded(model));
+    } catch (_) {
+      emit(SelectedCrmError());
+    }
+  }
   Future<void> checkCrmSystem() async {
     final isTokenStored = await locator<AppPreferences>().isCrmAvailable();
 

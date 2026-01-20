@@ -15,13 +15,16 @@ import 'package:hub_dom/presentation/widgets/cards/app_item_card.dart';
 import 'package:hub_dom/presentation/widgets/chip_widget.dart';
 import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
+import '../../../../core/local/token_store.dart';
+import '../../../bloc/crm_system/crm_system_cubit.dart';
+import '../../../bloc/selected_crm/selected_crm_cubit.dart';
 import 'components/filter_organization_widget.dart';
 import 'package:hub_dom/data/models/tickets/dictionary_model.dart';
 
 class OrganizationDetailsPage extends StatefulWidget {
   const OrganizationDetailsPage({super.key, required this.model});
 
-  final CrmSystemModel model;
+  final CrmSystemModel? model;
 
   @override
   State<OrganizationDetailsPage> createState() =>
@@ -30,6 +33,8 @@ class OrganizationDetailsPage extends StatefulWidget {
 
 class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
   late final TicketsBloc _ticketsBloc;
+  CrmSystemModel? _model;
+  bool _isResolvingModel = false;
   bool isSearching = false;
   final TextEditingController searchCtrl = TextEditingController();
 
@@ -59,9 +64,40 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
   void initState() {
     super.initState();
     _ticketsBloc = locator<TicketsBloc>();
+    _model = widget.model;
+    if (_model == null) {
+      _resolveModel();
+    } else {
+      _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 10));
+    }
+  }
 
-    // Загружаем все tickets при инициализации (без фильтров)
-    _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 10));
+  Future<void> _resolveModel() async {
+    setState(() => _isResolvingModel = true);
+
+    final selectedCrmId = await locator<Store>().getSelectedCrmId();
+    if (selectedCrmId == null) {
+      if (mounted) setState(() => _isResolvingModel = false);
+      return;
+    }
+
+    final crmCubit = locator<CrmSystemCubit>();
+    await crmCubit.getCrmSystems();
+
+    final st = crmCubit.state;
+    if (st is CrmSystemLoaded) {
+      final found = st.data.where((e) => e.crm.id == selectedCrmId).toList();
+      if (found.isNotEmpty) {
+        _model = found.first;
+
+        // ✅ set current crm context (host/token) WITHOUT index
+        await locator<SelectedCrmCubit>().setCrmSystemByModel(_model!);
+
+        _ticketsBloc.add(const LoadTicketsEvent(page: 1, perPage: 10));
+      }
+    }
+
+    if (mounted) setState(() => _isResolvingModel = false);
   }
 
   @override
@@ -73,11 +109,38 @@ class _OrganizationDetailsPageState extends State<OrganizationDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (_isResolvingModel) {
+      return const Scaffold(
+        body: Center(child: GrayLoadingIndicator()),
+      );
+    }
+
+    if (_model == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(AppStrings.organizations)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(AppStrings.error),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _resolveModel,
+                child: Text(AppStrings.repeat),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: isSearching
             ? HomePageSearchWidget(searchCtrl: searchCtrl, onSearch: () {})
-            : Text(widget.model.crm.name),
+            : Text(_model?.crm.name ?? AppStrings.organizations),
         actions: isSearching
             ? [
                 TextButton(

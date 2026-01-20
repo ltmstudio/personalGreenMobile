@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppPreferences {
@@ -39,6 +41,7 @@ class AppPreferences {
   }
 
   Future<String?> getCrmToken() async {
+    log(_crmToken,name: 'getCrmToken');
     return _sharedPreferences.getString(_crmToken);
   }
 

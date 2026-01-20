@@ -14,6 +14,7 @@ class CreateTicketParams {
   final int isEmergency;
   final List<File>? photos;
   final int? executorId;
+  final String  contact;
 
   CreateTicketParams({
     required this.objectId,
@@ -24,6 +25,7 @@ class CreateTicketParams {
     required this.deadlineDate,
     required this.visitingDateTime,
     required this.comment,
+    required this.contact,
     this.additionalContact,
     this.isEmergency = 0,
     this.photos,
@@ -32,7 +34,7 @@ class CreateTicketParams {
 
   @override
   String toString() {
-    return 'CreateTicketParams{objectId: $objectId, objectType: $objectType, serviceTypeId: $serviceTypeId, troubleTypeId: $troubleTypeId, priorityTypeId: $priorityTypeId, deadlineDate: $deadlineDate, visitingDateTime: $visitingDateTime, comment: $comment, additionalContact: $additionalContact, isEmergency: $isEmergency, photos: $photos, executorId: $executorId}';
+    return 'CreateTicketParams{objectId: $objectId, objectType: $objectType,  contact: $contact, serviceTypeId: $serviceTypeId, troubleTypeId: $troubleTypeId, priorityTypeId: $priorityTypeId, deadlineDate: $deadlineDate, visitingDateTime: $visitingDateTime, comment: $comment, additionalContact: $additionalContact, isEmergency: $isEmergency, photos: $photos, executorId: $executorId}';
   }
 }
 

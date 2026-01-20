@@ -373,6 +373,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
       isEmergency: 0,
       photos: null, // Пока без фотографий
       executorId: null,
+      contact: '',
+      //todo contact
     );
 
     // Отправляем событие создания тикета

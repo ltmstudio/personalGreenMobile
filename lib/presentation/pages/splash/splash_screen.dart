@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
+import 'package:hub_dom/core/local/token_store.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/auth_bloc/user_auth_bloc.dart';
 import 'package:hub_dom/presentation/widgets/main_logo_widget.dart';
@@ -30,9 +31,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (isRegistered is UserAuthenticated) {
       _hasNavigated = true;
+
+      final isResponsible = await  locator<Store>().getIsResponsible() ?? false;
+
+      if(isResponsible){
+        context.go(AppRoutes.applications);
+
+      }else{
+        context.go(AppRoutes.organizations);
+      }
+
       // Если пользователь уже залогинен, переходим на дефолтную страницу
       // Проверка isResponsible происходит в SecurityCodePage после логина
-      context.go(AppRoutes.applications);
     } else {
       _hasNavigated = true;
       context.go(AppRoutes.signIn);

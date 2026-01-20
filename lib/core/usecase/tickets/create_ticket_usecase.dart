@@ -55,6 +55,7 @@ class CreateTicketUseCase
       comment: params.comment,
       photos: params.photos,
       executorId: params.executorId,
+      contact: params.contact,
     );
 
     return await repository.createTicket(request);

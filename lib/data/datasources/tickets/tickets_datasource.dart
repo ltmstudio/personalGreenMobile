@@ -216,6 +216,12 @@ class TicketsRemoteDatasourceImpl implements TicketsRemoteDatasource {
         MapEntry('additional_contact', request.additionalContact),
       );
     }
+    // Добавляем additional_contact_name только если он не пустой
+    if (request.contact.isNotEmpty) {
+      formData.fields.add(
+        MapEntry('additional_contact_name', request.contact),
+      );
+    }
 
     // Добавляем executor_id только если он указан
     if (request.executorId != null) {

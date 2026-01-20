@@ -88,7 +88,7 @@ class AuthenticationRepository {
       try {
         final response = await remoteDataSource.getProfile();
         return Right(response);
-      } catch (error, stackTrace) {
+      } catch (error) {
         return Left(ServerFailure(error.toString()));
       }
     } else {
@@ -99,12 +99,12 @@ class AuthenticationRepository {
   Future<Either<Failure, List<CrmSystemModel>>> getCrmSystem() async {
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
-      // try {
+      try {
       final response = await remoteDataSource.getCrmSystem();
       return Right(response);
-      // } catch (error) {
-      //   return Left(ServerFailure(error.toString()));
-      // }
+      } catch (error) {
+        return Left(ServerFailure(error.toString()));
+      }
     } else {
       return Left(ConnectionFailure(AppStrings.noInternet));
     }
@@ -114,12 +114,12 @@ class AuthenticationRepository {
   Future<Either<Failure, CrmSystemModel>> setCrmSystem(int index) async {
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
-      // try {
+      try {
       final response = await remoteDataSource.setCrmSystem(index);
       return Right(response);
-      // } catch (error) {
-      //   return Left(ServerFailure(error.toString()));
-      // }
+      } catch (error) {
+        return Left(ServerFailure(error.toString()));
+      }
     } else {
       return Left(ConnectionFailure(AppStrings.noInternet));
     }
@@ -128,12 +128,12 @@ class AuthenticationRepository {
   Future<Either<Failure, ProfileModel>> setProfile(SetProfileParams params) async {
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
-      // try {
+      try {
       final response = await remoteDataSource.setProfile(params);
       return Right(response);
-      // } catch (error) {
-      //   return Left(ServerFailure(error.toString()));
-      // }
+      } catch (error) {
+        return Left(ServerFailure(error.toString()));
+      }
     } else {
       return Left(ConnectionFailure(AppStrings.noInternet));
     }
