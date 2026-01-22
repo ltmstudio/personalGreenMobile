@@ -32,8 +32,8 @@ class CreatePerformerWidget extends StatelessWidget {
             child: KTextField(
               controller: nameCtrl,
               isSubmitted: false,
-              keyboardType: TextInputType.number,
-              hintText: AppStrings.phoneHintText,
+              keyboardType: TextInputType.name,
+              hintText: AppStrings.selectContactPerson,
               borderColor: AppColors.lightGrayBorder,
               filled: true,
             ),

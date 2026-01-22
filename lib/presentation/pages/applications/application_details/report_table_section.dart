@@ -30,7 +30,7 @@ extension ReportFilterX on ReportFilter {
       case ReportFilter.all:
         return null;
       case ReportFilter.manager:
-        return 'manager';
+        return 'responsible';
       case ReportFilter.executor:
         return 'executor';
     }
@@ -198,14 +198,17 @@ class _FilterChips extends StatelessWidget {
       );
     }
 
-    return Row(
-      children: [
-        chip(ReportFilter.all),
-        const SizedBox(width: 8),
-        chip(ReportFilter.manager),
-        const SizedBox(width: 8),
-        chip(ReportFilter.executor),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          chip(ReportFilter.all),
+          const SizedBox(width: 8),
+          chip(ReportFilter.manager),
+          const SizedBox(width: 8),
+          chip(ReportFilter.executor),
+        ],
+      ),
     );
   }
 }

@@ -12,6 +12,7 @@ import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/presentation/widgets/buttons/search_btn.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hub_dom/presentation/widgets/shimmer_image.dart';
 
 import 'create_performer_widget.dart';
 import 'work_units_widget.dart';
@@ -96,7 +97,7 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: SelectBtn(
-              title: AppStrings.selectPerformer,
+              title: AppStrings.selectContactPerson,
               value: selectedPerformer,
               showBorder: false,
               icon: Container(
@@ -203,17 +204,50 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           ),
           SizedBox(height: 14),
 
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Данных нет',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
-            ),
-          ),
+          _buildPhotosSection(context,widget.ticketData?.photos??[]),
+
+
           SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+  Widget _buildPhotosSection(BuildContext context, List<Photo> photos) {
+    final urls = photos
+        .map((e) => (e.link ?? '').trim())
+        .where((u) => u.isNotEmpty)
+        .toList();
+
+    if (urls.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Text(
+          'Нет данных',
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.gray),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 70,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: urls.length,
+        itemBuilder: (context, index) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ImageWithShimmer(
+              imageUrl: urls[index],
+              width: 70,
+              height: 70,
+            ),
+          );
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
       ),
     );
   }

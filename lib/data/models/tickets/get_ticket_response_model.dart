@@ -2,14 +2,6 @@
 //
 //     final getTicketResponseModel = getTicketResponseModelFromJson(jsonString);
 
-import 'dart:convert';
-
-GetTicketResponseModel getTicketResponseModelFromJson(String str) =>
-    GetTicketResponseModel.fromJson(json.decode(str));
-
-String getTicketResponseModelToJson(GetTicketResponseModel data) =>
-    json.encode(data.toJson());
-
 class GetTicketResponseModel {
   Data? data;
 
@@ -40,7 +32,7 @@ class Data {
   int? executorId;
   Executor? executor;
   String? comment;
-  dynamic photos;
+  final List<Photo> photos;
   DateTime? createdAt;
   final List<WorkUnit> workUnits;
   final List<Contact> contacts;
@@ -64,7 +56,7 @@ class Data {
     this.executorId,
     this.executor,
     this.comment,
-    this.photos,
+    required this.photos,
     this.createdAt,
     required this.workUnits,
     required this.contacts,
@@ -98,7 +90,10 @@ class Data {
         ? null
         : Executor.fromJson(json["executor"]),
     comment: json["comment"],
-    photos: json["photos"],
+    photos: (json['photos'] as List?)
+        ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
+        .toList() ??
+        const [],
     createdAt: json["created_at"] == null
         ? null
         : DateTime.parse(json["created_at"]),
@@ -131,6 +126,29 @@ class Data {
   };
 }
 
+
+class Photo {
+  final int? id;
+  final String? name;
+  final String? size;
+  final String? link;
+
+  const Photo({this.id, this.name, this.size, this.link});
+
+  factory Photo.fromJson(Map<String, dynamic> json) => Photo(
+    id: (json['id'] as num?)?.toInt(),
+    name: json['name'] as String?,
+    size: json['size'] as String?,
+    link: json['link'] as String?,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'size': size,
+    'link': link,
+  };
+}
 
 class Contact {
   final String id;

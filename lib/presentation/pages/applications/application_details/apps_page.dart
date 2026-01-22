@@ -64,10 +64,20 @@ class _AppsPageState extends State<AppsPage> {
                 ),
 
                 SizedBox(height: 14),
+                Padding(
+                  padding:  EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Text(
+                    AppStrings.performer,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                SizedBox(height: 8),
                 // Показываем выбор исполнителя только если исполнитель не выбран
-                if (widget.selectedPerformer == null &&
-                    widget.selectedExecutorId == null &&
-                    widget.ticketData?.executor == null)
+                // if (widget.selectedPerformer == null &&
+                //     widget.selectedExecutorId == null &&
+                //     widget.ticketData?.executor == null)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: SelectBtn(
@@ -90,14 +100,14 @@ class _AppsPageState extends State<AppsPage> {
                     ),
                   ),
                 // Всегда показываем карточку исполнителя
-                SizedBox(height: 6),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: PerformerCardWidget(
-                    ticketData: widget.ticketData,
-                    selectedPerformer: widget.selectedPerformer,
-                  ),
-                ),
+                // SizedBox(height: 6),
+                // Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 20),
+                //   child: PerformerCardWidget(
+                //     ticketData: widget.ticketData,
+                //     selectedPerformer: widget.selectedPerformer,
+                //   ),
+                // ),
                 SizedBox(height: 6),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
@@ -257,11 +267,8 @@ class _AppsPageState extends State<AppsPage> {
   void _handleConfirm(BuildContext context, int ticketId) {
     // Проверяем наличие отчета (comment или photos)
     final hasReport =
-        widget.ticketData?.comment != null &&
-            widget.ticketData!.comment.toString().isNotEmpty ||
-        (widget.ticketData?.photos != null &&
-            widget.ticketData!.photos is List &&
-            (widget.ticketData!.photos as List).isNotEmpty);
+        (widget.ticketData?.comment?.trim().isNotEmpty ?? false) ||
+            ((widget.ticketData?.photos?.isNotEmpty ?? false));
 
     if (hasReport) {
       // Если есть отчет, показываем диалог подтверждения
@@ -304,72 +311,47 @@ class _AppsPageState extends State<AppsPage> {
   }
 
   Widget _buildPhotosSection(BuildContext context) {
-    final photos = widget.ticketData?.photos;
+    final photos = widget.ticketData?.photos ?? const <Photo>[];
 
-    // Логируем для отладки
-    if (photos != null) {
-      debugPrint('Photos data type: ${photos.runtimeType}');
-      debugPrint('Photos data: $photos');
-    }
+    final photoUrls = photos
+        .map((p) => (p.link ?? '').trim())
+        .where((u) => u.isNotEmpty)
+        .toList();
 
-    // Проверяем разные форматы данных photos
-    List<String> photoUrls = [];
+    debugPrint('Photos count: ${photos.length}');
+    debugPrint('Photo urls: $photoUrls');
 
-    if (photos != null) {
-      if (photos is List) {
-        for (final photo in photos) {
-          String? url;
-          if (photo is String) {
-            // Если это строка - используем как URL
-            url = photo;
-          } else if (photo is Map) {
-            // Если это объект - пытаемся извлечь URL из разных полей
-            url =
-                photo['link'] ??
-                photo['url'] ??
-                photo['path'] ??
-                photo['image_url'] ??
-                photo['photo_url'] ??
-                photo['src'];
-          }
-
-          if (url != null && url.isNotEmpty) {
-            photoUrls.add(url);
-          }
-        }
-      }
-    }
-
-    if (photoUrls.isNotEmpty) {
-      return SizedBox(
-        height: 70,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          itemCount: photoUrls.length,
-          itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ImageWithShimmer(
-                imageUrl: photoUrls[index],
-                width: 70,
-                height: 70,
-              ),
-            );
-          },
-          separatorBuilder: (context, index) => SizedBox(width: 6),
-        ),
-      );
-    } else {
+    if (photoUrls.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Text(
           'Нет данных',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.gray),
         ),
       );
     }
+
+    return SizedBox(
+      height: 70,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: photoUrls.length,
+        itemBuilder: (context, index) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ImageWithShimmer(
+              imageUrl: photoUrls[index],
+              width: 70,
+              height: 70,
+            ),
+          );
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+      ),
+    );
   }
 }

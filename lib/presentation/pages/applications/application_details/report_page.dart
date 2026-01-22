@@ -17,11 +17,7 @@ import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import '../../../../data/models/tickets/ticket_report_model.dart';
 
 class AppDetailsReportPage extends StatefulWidget {
-  const AppDetailsReportPage({
-    super.key,
-    this.ticketData,
-    this.ticketId,
-  });
+  const AppDetailsReportPage({super.key, this.ticketData, this.ticketId});
 
   final Data? ticketData;
   final int? ticketId;
@@ -31,21 +27,16 @@ class AppDetailsReportPage extends StatefulWidget {
 }
 
 class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
-
   @override
   void initState() {
-        super.initState();
-        locator<ReportsCubit>().load(ticketId: widget.ticketId!);
+    super.initState();
+    locator<ReportsCubit>().load(ticketId: widget.ticketId!);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Отчет',
-        ),
-      ),
+      appBar: AppBar(title: Text('Отчет')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -56,9 +47,6 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-
-
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
@@ -90,13 +78,12 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                   ),
                   SizedBox(height: 14),
 
-                  _buildPhotosSection(context),
+                  _buildPhotosSection(context,widget.ticketData?.photos??[]),
                   SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-
 
           Container(
             height: 80,
@@ -108,50 +95,53 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
                 topLeft: Radius.circular(20),
               ),
             ),
-            child: BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
-              listener: (context, state) {
-                if (state is ApplicationDetailsAccepted) {
-                  Toast.show(context, 'Заявка принята');
-                  Navigator.of(context).pop();
-                } else if (state is ApplicationDetailsRejected) {
-                  Toast.show(context, 'Заявка отклонена');
-                  Navigator.of(context).pop();
-                } else if (state is ApplicationDetailsError) {
-                  Toast.show(context, state.message);
-                }
-              },
-              builder: (context, state) {
-                final isProcessing =
-                    state is ApplicationDetailsAccepting ||
-                    state is ApplicationDetailsRejecting;
+            child:
+                BlocConsumer<ApplicationDetailsBloc, ApplicationDetailsState>(
+                  listener: (context, state) {
+                    if (state is ApplicationDetailsAccepted) {
+                      Toast.show(context, 'Заявка принята');
+                      Navigator.of(context).pop();
+                    } else if (state is ApplicationDetailsRejected) {
+                      Toast.show(context, 'Заявка отклонена');
+                      Navigator.of(context).pop();
+                    } else if (state is ApplicationDetailsError) {
+                      Toast.show(context, state.message);
+                    }
+                  },
+                  builder: (context, state) {
+                    final isProcessing =
+                        state is ApplicationDetailsAccepting ||
+                        state is ApplicationDetailsRejecting;
 
-                return Row(
-                  children: [
-                    Expanded(
-                      child: MainButton(
-                        buttonTile: AppStrings.reject,
-                        onPressed: widget.ticketId != null && !isProcessing
-                            ? () => _confirmReject(context, widget.ticketId!)
-                            : null,
-                        isLoading: state is ApplicationDetailsRejecting,
-                        btnColor: AppColors.red,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: MainButton(
-                        buttonTile: AppStrings.confirm,
-                        onPressed: widget.ticketId != null && !isProcessing
-                            ? () => _handleConfirm(context, widget.ticketId!)
-                            : null,
-                        isLoading: state is ApplicationDetailsAccepting,
-                        btnColor: AppColors.green,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: MainButton(
+                            buttonTile: AppStrings.reject,
+                            onPressed: widget.ticketId != null && !isProcessing
+                                ? () =>
+                                      _confirmReject(context, widget.ticketId!)
+                                : null,
+                            isLoading: state is ApplicationDetailsRejecting,
+                            btnColor: AppColors.red,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: MainButton(
+                            buttonTile: AppStrings.confirm,
+                            onPressed: widget.ticketId != null && !isProcessing
+                                ? () =>
+                                      _handleConfirm(context, widget.ticketId!)
+                                : null,
+                            isLoading: state is ApplicationDetailsAccepting,
+                            btnColor: AppColors.green,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
           ),
         ],
       ),
@@ -161,11 +151,9 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
   void _handleConfirm(BuildContext context, int ticketId) {
     // Проверяем наличие отчета (comment или photos)
     final hasReport =
-        widget.ticketData?.comment != null &&
-            widget.ticketData!.comment.toString().isNotEmpty ||
-        (widget.ticketData?.photos != null &&
-            widget.ticketData!.photos is List &&
-            (widget.ticketData!.photos as List).isNotEmpty);
+        (widget.ticketData?.comment?.trim().isNotEmpty ?? false) ||
+            ((widget.ticketData?.photos.isNotEmpty ?? false));
+
 
     if (hasReport) {
       // Если есть отчет, показываем диалог подтверждения
@@ -207,78 +195,45 @@ class _AppDetailsReportPageState extends State<AppDetailsReportPage> {
     );
   }
 
-  Widget _buildPhotosSection(BuildContext context) {
-    final photos = widget.ticketData?.photos;
+  Widget _buildPhotosSection(BuildContext context, List<Photo> photos) {
+    final urls = photos
+        .map((e) => (e.link ?? '').trim())
+        .where((u) => u.isNotEmpty)
+        .toList();
 
-    // Логируем для отладки
-    if (photos != null) {
-      debugPrint('Photos data type: ${photos.runtimeType}');
-      debugPrint('Photos data: $photos');
-    }
-
-    // Проверяем разные форматы данных photos
-    List<String> photoUrls = [];
-
-    if (photos != null) {
-      if (photos is List) {
-        for (final photo in photos) {
-          String? url;
-          if (photo is String) {
-            // Если это строка - используем как URL
-            url = photo;
-          } else if (photo is Map) {
-            // Если это объект - пытаемся извлечь URL из разных полей
-            url =
-                photo['link'] ??
-                photo['url'] ??
-                photo['path'] ??
-                photo['image_url'] ??
-                photo['photo_url'] ??
-                photo['src'];
-          }
-
-          if (url != null && url.isNotEmpty) {
-            photoUrls.add(url);
-          }
-        }
-      }
-    }
-
-    if (photoUrls.isNotEmpty) {
-      return SizedBox(
-        height: 70,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          itemCount: photoUrls.length,
-          itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ImageWithShimmer(
-                imageUrl: photoUrls[index],
-                width: 70,
-                height: 70,
-              ),
-            );
-          },
-          separatorBuilder: (context, index) => SizedBox(width: 6),
-        ),
-      );
-    } else {
+    if (urls.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Text(
           'Нет данных',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.gray),
         ),
       );
     }
+
+    return SizedBox(
+      height: 70,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: urls.length,
+        itemBuilder: (context, index) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ImageWithShimmer(
+              imageUrl: urls[index],
+              width: 70,
+              height: 70,
+            ),
+          );
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+      ),
+    );
   }
-
-
-
 }
 
 class ReportCard extends StatelessWidget {
@@ -307,17 +262,17 @@ class ReportCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 report.createdAt,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -338,7 +293,7 @@ class ReportCard extends StatelessWidget {
 
 String reportTitleByType(String type) {
   switch (type) {
-    case 'manager':
+    case 'responsible':
       return 'Отчет руководителя';
     case 'executor':
       return 'Отчет исполнителя';
