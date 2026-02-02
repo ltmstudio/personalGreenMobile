@@ -15,6 +15,7 @@ import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/select_time_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
+import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
 import 'package:hub_dom/presentation/widgets/k_textfield.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
@@ -54,6 +55,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
 
   DictionariesBloc? _dictionariesBloc;
   TicketsBloc? _ticketsBloc;
+
+  bool _shouldOpenAddressList = false;
 
   @override
   void initState() {
@@ -102,183 +105,203 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
           },
         ),
       ],
-      child: BlocListener<TicketsBloc, TicketsState>(
-        listener: (context, state) {
-          if (state is TicketCreated) {
-            _showSuccessSnackBar('Тикет успешно создан!');
-            // Можно добавить навигацию назад или очистку формы
-            Navigator.of(context).pop();
-          } else if (state is TicketCreationError) {
-            _showErrorSnackBar('Ошибка создания тикета: ${state.message}');
-          }
-        },
-        child: Scaffold(
-          appBar: AppBar(title: Text(AppStrings.createApplication)),
-          body: BlocBuilder<DictionariesBloc, DictionariesState>(
-            builder: (context, state) {
-              return SingleChildScrollView(
-                padding: EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Text(
-                        AppStrings.applicationData,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.address,
-                        child: Builder(
-                          builder: (builderContext) {
-                            return SelectBtn(
-                              title: AppStrings.selectAddress,
-                              value: selectedAddress?.address,
+      child: Builder(
+        builder: (context) => BlocListener<AddressesBloc, AddressesState>(
+          listener: (context, state) {
+            if (state is AddressesLoaded && _shouldOpenAddressList) {
+              _shouldOpenAddressList = false;
+              _openAddressList(context, state.addresses.data ?? []);
+            } else if (state is AddressesError && _shouldOpenAddressList) {
+              _shouldOpenAddressList = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Ошибка: ${state.message}')),
+              );
+            }
+          },
+          child: BlocListener<TicketsBloc, TicketsState>(
+            listener: (context, state) {
+              if (state is TicketCreated) {
+                _showSuccessSnackBar('Тикет успешно создан!');
+                // Можно добавить навигацию назад или очистку формы
+                Navigator.of(context).pop();
+              } else if (state is TicketCreationError) {
+                _showErrorSnackBar('Ошибка создания тикета: ${state.message}');
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(title: Text(AppStrings.createApplication)),
+              body: BlocBuilder<DictionariesBloc, DictionariesState>(
+                builder: (context, state) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            AppStrings.applicationData,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        SizedBox(height: 14),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.address,
+                            child: BlocBuilder<AddressesBloc, AddressesState>(
+                              builder: (context, state) {
+                                final isLoading = state is AddressesLoading;
+                                return SelectBtn(
+                                  title: AppStrings.selectAddress,
+                                  value: selectedAddress?.address,
+                                  icon: isLoading
+                                      ? const GrayLoadingIndicator(size: 20)
+                                      : Icon(Icons.keyboard_arrow_down),
+                                  showBorder: true,
+                                  onTap: isLoading
+                                      ? () {}
+                                      : () => _showAddress(context),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 12),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.service,
+                            child: SelectBtn(
+                              title: AppStrings.selectService,
+                              value: selectedService?.title,
                               icon: Icon(Icons.keyboard_arrow_down),
                               showBorder: true,
-                              onTap: () => _showAddress(builderContext),
-                            );
-                          },
+                              onTap: _showService,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                        SizedBox(height: 12),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.service,
-                        child: SelectBtn(
-                          title: AppStrings.selectService,
-                          value: selectedService?.title,
-                          icon: Icon(Icons.keyboard_arrow_down),
-                          showBorder: true,
-                          onTap: _showService,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.workType,
+                            child: SelectBtn(
+                              title: AppStrings.selectWorkType,
+                              value: selectedWorkType?.title,
+                              icon: Icon(Icons.keyboard_arrow_down),
+                              showBorder: true,
+                              onTap: selectedService != null
+                                  ? _showWorkType
+                                  : () {},
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                        SizedBox(height: 12),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.workType,
-                        child: SelectBtn(
-                          title: AppStrings.selectWorkType,
-                          value: selectedWorkType?.title,
-                          icon: Icon(Icons.keyboard_arrow_down),
-                          showBorder: true,
-                          onTap: selectedService != null
-                              ? _showWorkType
-                              : () {},
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.categoryType,
+                            child: SelectBtn(
+                              title: AppStrings.selectCategoryType,
+                              value: selectedUrgency?.title,
+                              icon: Icon(Icons.keyboard_arrow_down),
+                              showBorder: true,
+                              onTap: _showUrgency,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                        SizedBox(height: 12),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.categoryType,
-                        child: SelectBtn(
-                          title: AppStrings.selectCategoryType,
-                          value: selectedUrgency?.title,
-                          icon: Icon(Icons.keyboard_arrow_down),
-                          showBorder: true,
-                          onTap: _showUrgency,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.doUntil,
+                            child: SelectBtn(
+                              title: AppStrings.selectDate,
+                              value: formattedTime,
+                              icon: Icon(Icons.calendar_today_outlined),
+                              showBorder: true,
+
+                              onTap: _showTime,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                        SizedBox(height: 12),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.doUntil,
-                        child: SelectBtn(
-                          title: AppStrings.selectDate,
-                          value: formattedTime,
-                          icon: Icon(Icons.calendar_today_outlined),
-                          showBorder: true,
-
-                          onTap: _showTime,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.additionalPhoneContactPerson,
+                            child: KTextField(
+                              controller: _phoneCtrl,
+                              isSubmitted: false,
+                              keyboardType: TextInputType.phone,
+                              hintText: '+7 (___) ___-__-__',
+                              borderColor: AppColors.lightGrayBorder,
+                              filled: true,
+                              inputFormatters: [_phoneMaskFormatter],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                        SizedBox(height: 12),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.additionalPhoneContactPerson,
-                        child: KTextField(
-                          controller: _phoneCtrl,
-                          isSubmitted: false,
-                          keyboardType: TextInputType.phone,
-                          hintText: '+7 (___) ___-__-__',
-                          borderColor: AppColors.lightGrayBorder,
-                          filled: true,
-                          inputFormatters: [_phoneMaskFormatter],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: TextFieldTitle(
+                            title: AppStrings.comments,
+                            child: KTextField(
+                              controller: _commentCtrl,
+                              isSubmitted: false,
+                              hintText: AppStrings.addComments,
+                              borderColor: AppColors.lightGrayBorder,
+                              filled: true,
+                              maxLines: 3,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextFieldTitle(
-                        title: AppStrings.comments,
-                        child: KTextField(
-                          controller: _commentCtrl,
-                          isSubmitted: false,
-                          hintText: AppStrings.addComments,
-                          borderColor: AppColors.lightGrayBorder,
-                          filled: true,
-                          maxLines: 3,
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            AppStrings.photoObject,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Text(
-                        AppStrings.photoObject,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    ),
 
-                    SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Text(
-                        AppStrings.upload10Photo,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                        SizedBox(height: 14),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            AppStrings.upload10Photo,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        MultiImagePickerWidget(),
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: BlocBuilder<TicketsBloc, TicketsState>(
+                            builder: (context, state) {
+                              final isLoading = state is TicketsCreating;
+                              return MainButton(
+                                buttonTile: AppStrings.createNewApplication,
+                                onPressed: _validateAndCreateTicket,
+                                isLoading: isLoading,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 6),
-                    MultiImagePickerWidget(),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: BlocBuilder<TicketsBloc, TicketsState>(
-                        builder: (context, state) {
-                          final isLoading = state is TicketsCreating;
-                          return MainButton(
-                            buttonTile: AppStrings.createNewApplication,
-                            onPressed: _validateAndCreateTicket,
-                            isLoading: isLoading,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -371,7 +394,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
       comment: _commentCtrl.text.trim(),
       additionalContact: formattedPhone.isNotEmpty ? formattedPhone : null,
       isEmergency: 0,
-      photos: null, // Пока без фотографий
+      photos: null,
+      // Пока без фотографий
       executorId: null,
       contact: '',
       //todo contact
@@ -396,52 +420,47 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
   }
 
   _showAddress(BuildContext context) {
-    // Получаем AddressesBloc из контекста
-    final addressesBloc = locator<AddressesBloc>();
-
+    final addressesBloc = BlocProvider.of<AddressesBloc>(context);
     final state = addressesBloc.state;
 
     if (state is AddressesLoaded) {
       final addresses = state.addresses.data ?? [];
-
-      if (addresses.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
-        return;
-      }
-
-      bottomSheetWidget(
-        context: context,
-        isScrollControlled: true,
-        child: _AddressesSelectionWidget(
-          addresses: addresses,
-          selectedAddress: selectedAddress,
-          onSelect: (address) {
-            setState(() {
-              selectedAddress = address;
-            });
-          },
-        ),
-      );
+      _openAddressList(context, addresses);
     } else if (state is AddressesLoading) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+      // Already loading, set flag so BlocListener opens the list when complete
+      _shouldOpenAddressList = true;
     } else if (state is AddressesError) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Ошибка: ${state.message}')));
-    } else if (state is AddressesInitial) {
+      // Retry loading on error
+      _shouldOpenAddressList = true;
       addressesBloc.add(const LoadAddressesEvent());
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Неизвестное состояние')));
+    } else if (state is AddressesInitial) {
+      // Trigger load and set flag to open list when complete
+      _shouldOpenAddressList = true;
+      addressesBloc.add(const LoadAddressesEvent());
     }
+  }
+
+  void _openAddressList(BuildContext context, List<AddressData> addresses) {
+    if (addresses.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
+      return;
+    }
+
+    bottomSheetWidget(
+      context: context,
+      isScrollControlled: true,
+      child: _AddressesSelectionWidget(
+        addresses: addresses,
+        selectedAddress: selectedAddress,
+        onSelect: (address) {
+          setState(() {
+            selectedAddress = address;
+          });
+        },
+      ),
+    );
   }
 
   _showService() {
@@ -571,6 +590,548 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
     );
   }
 }
+
+// class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
+//   DateTime? selectedDate;
+//   TimeOfDay? selectedTime;
+//
+//   AddressData? selectedAddress;
+//
+//   ServiceType? selectedService;
+//   TroubleType? selectedWorkType;
+//   Type? selectedUrgency;
+//
+//   String? formattedTime;
+//
+//   final TextEditingController _phoneCtrl = TextEditingController();
+//   final TextEditingController _commentCtrl = TextEditingController();
+//
+//   // Маска для российского номера телефона: +7 (999) 999-99-99
+//   final _phoneMaskFormatter = MaskTextInputFormatter(
+//     mask: '+7 (###) ###-##-##',
+//     filter: {"#": RegExp(r'[0-9]')},
+//     type: MaskAutoCompletionType.lazy,
+//   );
+//
+//   DictionariesBloc? _dictionariesBloc;
+//   TicketsBloc? _ticketsBloc;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     selectedService = null;
+//     selectedWorkType = null;
+//     selectedUrgency = null;
+//     selectedDate = null;
+//     selectedTime = null;
+//     selectedAddress = null;
+//     formattedTime = null;
+//   }
+//
+//   @override
+//   void dispose() {
+//     _phoneCtrl.dispose();
+//     _commentCtrl.dispose();
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     if (selectedDate != null || selectedTime != null) {
+//       formattedTime = formattedDateTime(selectedDate, selectedTime);
+//     }
+//     return MultiBlocProvider(
+//       providers: [
+//         BlocProvider(
+//           create: (context) {
+//             _dictionariesBloc = locator<DictionariesBloc>()
+//               ..add(const LoadDictionariesEvent());
+//             return _dictionariesBloc!;
+//           },
+//         ),
+//         BlocProvider(
+//           create: (context) {
+//             _ticketsBloc = locator<TicketsBloc>();
+//             return _ticketsBloc!;
+//           },
+//         ),
+//         BlocProvider(
+//           create: (context) {
+//             final bloc = locator<AddressesBloc>();
+//             bloc.add(const LoadAddressesEvent());
+//             return bloc;
+//           },
+//         ),
+//       ],
+//       child: BlocListener<TicketsBloc, TicketsState>(
+//         listener: (context, state) {
+//           if (state is TicketCreated) {
+//             _showSuccessSnackBar('Тикет успешно создан!');
+//             // Можно добавить навигацию назад или очистку формы
+//             Navigator.of(context).pop();
+//           } else if (state is TicketCreationError) {
+//             _showErrorSnackBar('Ошибка создания тикета: ${state.message}');
+//           }
+//         },
+//         child: Scaffold(
+//           appBar: AppBar(title: Text(AppStrings.createApplication)),
+//           body: BlocBuilder<DictionariesBloc, DictionariesState>(
+//             builder: (context, state) {
+//               return SingleChildScrollView(
+//                 padding: EdgeInsets.symmetric(vertical: 20),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: Text(
+//                         AppStrings.applicationData,
+//                         style: Theme.of(context).textTheme.titleMedium,
+//                       ),
+//                     ),
+//                     SizedBox(height: 14),
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.address,
+//                         child: Builder(
+//                           builder: (builderContext) {
+//                             return SelectBtn(
+//                               title: AppStrings.selectAddress,
+//                               value: selectedAddress?.address,
+//                               icon: Icon(Icons.keyboard_arrow_down),
+//                               showBorder: true,
+//                               onTap: () => _showAddress(builderContext),
+//                             );
+//                           },
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.service,
+//                         child: SelectBtn(
+//                           title: AppStrings.selectService,
+//                           value: selectedService?.title,
+//                           icon: Icon(Icons.keyboard_arrow_down),
+//                           showBorder: true,
+//                           onTap: _showService,
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.workType,
+//                         child: SelectBtn(
+//                           title: AppStrings.selectWorkType,
+//                           value: selectedWorkType?.title,
+//                           icon: Icon(Icons.keyboard_arrow_down),
+//                           showBorder: true,
+//                           onTap: selectedService != null
+//                               ? _showWorkType
+//                               : () {},
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.categoryType,
+//                         child: SelectBtn(
+//                           title: AppStrings.selectCategoryType,
+//                           value: selectedUrgency?.title,
+//                           icon: Icon(Icons.keyboard_arrow_down),
+//                           showBorder: true,
+//                           onTap: _showUrgency,
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.doUntil,
+//                         child: SelectBtn(
+//                           title: AppStrings.selectDate,
+//                           value: formattedTime,
+//                           icon: Icon(Icons.calendar_today_outlined),
+//                           showBorder: true,
+//
+//                           onTap: _showTime,
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.additionalPhoneContactPerson,
+//                         child: KTextField(
+//                           controller: _phoneCtrl,
+//                           isSubmitted: false,
+//                           keyboardType: TextInputType.phone,
+//                           hintText: '+7 (___) ___-__-__',
+//                           borderColor: AppColors.lightGrayBorder,
+//                           filled: true,
+//                           inputFormatters: [_phoneMaskFormatter],
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 12),
+//
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: TextFieldTitle(
+//                         title: AppStrings.comments,
+//                         child: KTextField(
+//                           controller: _commentCtrl,
+//                           isSubmitted: false,
+//                           hintText: AppStrings.addComments,
+//                           borderColor: AppColors.lightGrayBorder,
+//                           filled: true,
+//                           maxLines: 3,
+//                         ),
+//                       ),
+//                     ),
+//                     SizedBox(height: 20),
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: Text(
+//                         AppStrings.photoObject,
+//                         style: Theme.of(context).textTheme.bodyLarge,
+//                       ),
+//                     ),
+//
+//                     SizedBox(height: 14),
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: Text(
+//                         AppStrings.upload10Photo,
+//                         style: Theme.of(context).textTheme.bodySmall,
+//                       ),
+//                     ),
+//                     SizedBox(height: 6),
+//                     MultiImagePickerWidget(),
+//                     SizedBox(height: 20),
+//                     Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//                       child: BlocBuilder<TicketsBloc, TicketsState>(
+//                         builder: (context, state) {
+//                           final isLoading = state is TicketsCreating;
+//                           return MainButton(
+//                             buttonTile: AppStrings.createNewApplication,
+//                             onPressed: _validateAndCreateTicket,
+//                             isLoading: isLoading,
+//                           );
+//                         },
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             },
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   /// Валидация и создание тикета
+//   void _validateAndCreateTicket() {
+//     // Валидация обязательных полей
+//     if (selectedAddress == null) {
+//       _showErrorSnackBar('Выберите адрес');
+//       return;
+//     }
+//
+//     if (selectedService == null) {
+//       _showErrorSnackBar('Выберите услугу');
+//       return;
+//     }
+//
+//     if (selectedWorkType == null) {
+//       _showErrorSnackBar('Выберите тип работы');
+//       return;
+//     }
+//
+//     if (selectedUrgency == null) {
+//       _showErrorSnackBar('Выберите категорию срочности');
+//       return;
+//     }
+//
+//     if (selectedDate == null || selectedTime == null) {
+//       _showErrorSnackBar('Выберите дату и время выполнения');
+//       return;
+//     }
+//
+//     // Проверяем, что номер телефона полностью заполнен (18 символов с маской)
+//     if (_phoneCtrl.text.trim().isEmpty) {
+//       _showErrorSnackBar('Введите дополнительный номер телефона');
+//       return;
+//     }
+//
+//     // Проверяем, что номер полностью введён (без учёта +7, скобок и дефисов остаётся 10 цифр)
+//     final unmaskedPhone = _phoneMaskFormatter.getUnmaskedText();
+//     if (unmaskedPhone.length < 10) {
+//       _showErrorSnackBar('Введите полный номер телефона');
+//       return;
+//     }
+//
+//     if (_commentCtrl.text.trim().isEmpty) {
+//       _showErrorSnackBar('Введите комментарий');
+//       return;
+//     }
+//
+//     // Создаем тикет
+//     _createTicket();
+//   }
+//
+//   /// Создание тикета
+//   void _createTicket() {
+//     if (_ticketsBloc == null) return;
+//
+//     // Формируем дату выполнения
+//     final deadlineDate = selectedDate!;
+//
+//     // Формируем дату и время визита
+//     final visitingDateTime = DateTime(
+//       selectedDate!.year,
+//       selectedDate!.month,
+//       selectedDate!.day,
+//       selectedTime!.hour,
+//       selectedTime!.minute,
+//     );
+//
+//     // Форматируем телефон - получаем только цифры из маски
+//     final formattedPhone = TicketFormatter.formatPhone(
+//       _phoneCtrl.text,
+//       _phoneMaskFormatter,
+//     );
+//
+//     // Создаем параметры для UseCase
+//     final params = CreateTicketParams(
+//       objectId: selectedAddress!.id!,
+//       objectType: selectedAddress!.type == AddressType.house
+//           ? 'house'
+//           : 'space',
+//       serviceTypeId: selectedService!.id!,
+//       troubleTypeId: selectedWorkType!.id!,
+//       priorityTypeId: selectedUrgency!.id!,
+//       deadlineDate: deadlineDate,
+//       visitingDateTime: visitingDateTime,
+//       comment: _commentCtrl.text.trim(),
+//       additionalContact: formattedPhone.isNotEmpty ? formattedPhone : null,
+//       isEmergency: 0,
+//       photos: null, // Пока без фотографий
+//       executorId: null,
+//       contact: '',
+//       //todo contact
+//     );
+//
+//     // Отправляем событие создания тикета
+//     _ticketsBloc!.add(CreateTicketEvent(params));
+//   }
+//
+//   /// Показать ошибку
+//   void _showErrorSnackBar(String message) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text(message), backgroundColor: Colors.red),
+//     );
+//   }
+//
+//   /// Показать успех
+//   void _showSuccessSnackBar(String message) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text(message), backgroundColor: Colors.green),
+//     );
+//   }
+//
+//   _showAddress(BuildContext context) {
+//     // Получаем AddressesBloc из контекста
+//     final addressesBloc = BlocProvider.of<AddressesBloc>(context);
+//
+//     final state = addressesBloc.state;
+//
+//     if (state is AddressesLoaded) {
+//       final addresses = state.addresses.data ?? [];
+//
+//       if (addresses.isEmpty) {
+//         ScaffoldMessenger.of(
+//           context,
+//         ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
+//         return;
+//       }
+//
+//       bottomSheetWidget(
+//         context: context,
+//         isScrollControlled: true,
+//         child: _AddressesSelectionWidget(
+//           addresses: addresses,
+//           selectedAddress: selectedAddress,
+//           onSelect: (address) {
+//             setState(() {
+//               selectedAddress = address;
+//             });
+//           },
+//         ),
+//       );
+//     } else if (state is AddressesLoading) {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+//     } else if (state is AddressesError) {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(SnackBar(content: Text('Ошибка: ${state.message}')));
+//     } else if (state is AddressesInitial) {
+//       addressesBloc.add(const LoadAddressesEvent());
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+//     } else {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Неизвестное состояние')));
+//     }
+//   }
+//
+//   _showService() {
+//     if (_dictionariesBloc == null) return;
+//     final state = _dictionariesBloc!.state;
+//
+//     if (state is DictionariesLoaded) {
+//       final serviceTypes = state.dictionaries.serviceTypes ?? [];
+//
+//       bottomSheetWidget(
+//         context: context,
+//         isScrollControlled: true,
+//         child: _ServiceTypesSelectionWidget(
+//           serviceTypes: serviceTypes,
+//           selectedServiceType: selectedService,
+//           onSelect: (serviceType) {
+//             setState(() {
+//               selectedService = serviceType;
+//               selectedWorkType = null; // Сбрасываем выбранный тип проблемы
+//             });
+//           },
+//         ),
+//       );
+//     } else {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+//     }
+//   }
+//
+//   _showWorkType() {
+//     if (selectedService == null) {
+//       _showErrorSnackBar('Сначала выберите услугу');
+//       return;
+//     }
+//     if (_dictionariesBloc == null) return;
+//
+//     final state = _dictionariesBloc!.state;
+//
+//     if (state is DictionariesLoaded) {
+//       // Получаем troubleTypes для выбранной услуги
+//       // Сначала пробуем из вложенного списка в service
+//       var troubleTypes = selectedService!.troubleTypes ?? [];
+//
+//       // Если список пустой, фильтруем общий список по service_type_id
+//       if (troubleTypes.isEmpty) {
+//         final allTroubleTypes = state.dictionaries.troubleTypes ?? [];
+//         troubleTypes = allTroubleTypes
+//             .where((tt) => tt.serviceTypeId == selectedService!.id)
+//             .toList();
+//       }
+//
+//       if (troubleTypes.isEmpty) {
+//         _showErrorSnackBar('Для выбранной услуги нет доступных типов работ');
+//         return;
+//       }
+//
+//       bottomSheetWidget(
+//         context: context,
+//         isScrollControlled: false,
+//         child: _TroubleTypesSelectionWidget(
+//           troubleTypes: troubleTypes,
+//           selectedTroubleType: selectedWorkType,
+//           onSelect: (troubleType) {
+//             setState(() {
+//               selectedWorkType = troubleType;
+//             });
+//           },
+//         ),
+//       );
+//     } else {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+//     }
+//   }
+//
+//   _showUrgency() {
+//     if (_dictionariesBloc == null) return;
+//     final state = _dictionariesBloc!.state;
+//
+//     if (state is DictionariesLoaded) {
+//       final priorityTypes = state.dictionaries.priorityTypes ?? [];
+//
+//       bottomSheetWidget(
+//         context: context,
+//         isScrollControlled: false,
+//         child: _PriorityTypesSelectionWidget(
+//           priorityTypes: priorityTypes,
+//           selectedPriorityType: selectedUrgency,
+//           onSelect: (priorityType) {
+//             setState(() {
+//               selectedUrgency = priorityType;
+//             });
+//           },
+//         ),
+//       );
+//     } else {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Загрузка справочников...')));
+//     }
+//   }
+//
+//   _showTime() {
+//     bottomSheetWidget(
+//       context: context,
+//       isScrollControlled: false,
+//       child: SelectTimeWidget(
+//         onSelectDate: (DateTime value) {
+//           setState(() {
+//             selectedDate = value;
+//           });
+//         },
+//         onSelectTime: (TimeOfDay value) {
+//           setState(() {
+//             selectedTime = value;
+//           });
+//         },
+//         onClear: () {
+//           setState(() {
+//             selectedDate = null;
+//             selectedTime = null;
+//           });
+//         },
+//       ),
+//     );
+//   }
+// }
 
 // Виджет выбора типов услуг
 class _ServiceTypesSelectionWidget extends StatelessWidget {
