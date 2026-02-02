@@ -419,22 +419,44 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
       final addresses = state.addresses.data ?? [];
       _openAddressList(context, addresses);
     } else if (state is AddressesLoading) {
+      // Already loading, set flag so BlocListener opens the list when complete
       _shouldOpenAddressList = true;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
     } else if (state is AddressesError) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Ошибка: ${state.message}')));
-    } else if (state is AddressesInitial) {
+      // Retry loading on error
       _shouldOpenAddressList = true;
       addressesBloc.add(const LoadAddressesEvent());
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+    } else if (state is AddressesInitial) {
+      // Trigger load and set flag to open list when complete
+      _shouldOpenAddressList = true;
+      addressesBloc.add(const LoadAddressesEvent());
     }
   }
+  // _showAddress(BuildContext context) {
+  //   final addressesBloc = BlocProvider.of<AddressesBloc>(context);
+  //   final state = addressesBloc.state;
+  //
+  //   if (state is AddressesLoaded) {
+  //     final addresses = state.addresses.data ?? [];
+  //     _openAddressList(context, addresses);
+  //   }
+  //   // else if (state is AddressesLoading) {
+  //   //   _shouldOpenAddressList = true;
+  //   //   ScaffoldMessenger.of(
+  //   //     context,
+  //   //   ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+  //   // }
+  //   else if (state is AddressesError) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text('Ошибка: ${state.message}')));
+  //   } else if (state is AddressesInitial) {
+  //     _shouldOpenAddressList = true;
+  //     addressesBloc.add(const LoadAddressesEvent());
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(const SnackBar(content: Text('Загрузка адресов...')));
+  //   }
+  // }
 
   void _openAddressList(BuildContext context, List<AddressData> addresses) {
     if (addresses.isEmpty) {

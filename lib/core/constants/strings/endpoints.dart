@@ -1,5 +1,6 @@
 class ApiEndpoints {
-  static const baseUrl = 'https://staging.hub.dom-connect.ru/api/v2/';
+  static const baseUrl = 'https://hub.dom-connect.ru/api/v2/';
+  // static const baseUrl = 'https://staging.hub.dom-connect.ru/api/v2/';
 
   // static const crmBaseUrl = 'https://staging.hub.dom-connect.ru';
   static const sendOtp = 'auth/attempt';
