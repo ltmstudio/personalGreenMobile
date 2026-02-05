@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hub_dom/core/config/routes/routes_path.dart';
+import 'package:hub_dom/core/constants/colors/app_colors.dart';
+import 'package:hub_dom/core/constants/strings/assets_manager.dart';
 import 'package:hub_dom/data/models/auth/auth_params.dart';
 import 'package:hub_dom/locator.dart';
 import 'package:hub_dom/presentation/bloc/otp_cubit/otp_cubit.dart';
@@ -65,7 +67,37 @@ class _SignInPageState extends State<SignInPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(alignment: Alignment.center, child: MainLogoWidget()),
+                Align(
+                  alignment: Alignment.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Image.asset(
+                          ImageAssets.splashLogo,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        AppStrings.appName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 30,
+                          color: AppColors.darkBlue,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Персонал',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 40),
 
                 Text(

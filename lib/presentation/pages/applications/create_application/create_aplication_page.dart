@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,6 +21,7 @@ import 'package:hub_dom/presentation/pages/applications/main_applications/compon
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/select_time_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/k_textfield.dart';
+import 'package:hub_dom/presentation/widgets/search_widgets/search_widget.dart';
 import 'package:hub_dom/presentation/widgets/textfield_title.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/constants/strings/assets_manager.dart';
@@ -129,8 +132,8 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
           listener: (context, state) {
             if (state is AddressesLoaded && _shouldOpenAddressList) {
               _shouldOpenAddressList = false;
-              _openAddressList(context, state.addresses.data ?? []);
-            } else if (state is AddressesError && _shouldOpenAddressList) {
+              _openAddressList(context);
+            } else if (state is AddressesError && state.previousAddresses == null && _shouldOpenAddressList) {
               _shouldOpenAddressList = false;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Ошибка: ${state.message}')),
@@ -416,8 +419,8 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
     final state = addressesBloc.state;
 
     if (state is AddressesLoaded) {
-      final addresses = state.addresses.data ?? [];
-      _openAddressList(context, addresses);
+      // final addresses = state.addresses.data ?? [];
+      _openAddressList(context);
     } else if (state is AddressesLoading) {
       // Already loading, set flag so BlocListener opens the list when complete
       _shouldOpenAddressList = true;
@@ -458,19 +461,19 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
   //   }
   // }
 
-  void _openAddressList(BuildContext context, List<AddressData> addresses) {
-    if (addresses.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
-      return;
-    }
+  void _openAddressList(BuildContext context) {
+    // if (addresses.isEmpty) {
+    //   ScaffoldMessenger.of(
+    //     context,
+    //   ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
+    //   return;
+    // }
 
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: _AddressesSelectionWidget(
-        addresses: addresses,
+      child: AddressesSelectionWidget(
+     //   addresses: addresses,
         selectedAddress: selectedAddress,
         onSelect: (address, addressData) {
           setState(() {
@@ -869,17 +872,64 @@ class _CreateApplicationPageState extends State<CreateApplicationPage> {
   }
 }
 
-// Виджет выбора адресов из API
-class _AddressesSelectionWidget extends StatelessWidget {
-  final List<AddressData> addresses;
+class AddressesSelectionWidget extends StatefulWidget {
   final String? selectedAddress;
   final Function(String, AddressData) onSelect;
 
-  const _AddressesSelectionWidget({
-    required this.addresses,
+  const AddressesSelectionWidget({
     required this.selectedAddress,
     required this.onSelect,
   });
+
+  @override
+  State<AddressesSelectionWidget> createState() =>
+      _AddressesSelectionWidgetState();
+}
+
+class _AddressesSelectionWidgetState extends State<AddressesSelectionWidget> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _scrollController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      final currentState = context.read<AddressesBloc>().state;
+      if (currentState is AddressesLoaded && currentState.hasMore) {
+        context.read<AddressesBloc>().add(
+          LoadMoreAddressesEvent(search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim()),
+        );
+      }
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      final searchQuery = query.trim().isEmpty ? null : query.trim();
+      context.read<AddressesBloc>().add(SearchAddressesEvent(searchQuery ?? ''));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -888,59 +938,268 @@ class _AddressesSelectionWidget extends StatelessWidget {
       child: Column(
         children: [
           BottomSheetTitle(title: AppStrings.selectAddress),
-          const SizedBox(height: 20),
+          HomePageSearchWidget(
+            searchCtrl: _searchCtrl,
+            onSearch: () => _onSearchChanged(_searchCtrl.text),
+        //    onChanged: _onSearchChanged,
+          ),
+          const SizedBox(height: 12),
+          // Pagination info
+          // BlocBuilder<AddressesBloc, AddressesState>(
+          //   builder: (context, state) {
+          //     if (state is AddressesLoaded && state.meta != null) {
+          //       return Padding(
+          //         padding: const EdgeInsets.symmetric(vertical: 8.0),
+          //         child: Text(
+          //           'Показано ${state.addresses.length} из ${state.meta!.total ?? 0}',
+          //           style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          //             color: Colors.grey,
+          //           ),
+          //         ),
+          //       );
+          //     }
+          //     return const SizedBox.shrink();
+          //   },
+          // ),
+          const SizedBox(height: 8),
           Flexible(
-            child: addresses.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text('Нет доступных адресов'),
-                    ),
-                  )
-                : ListView.separated(
-                    itemCount: addresses.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      final address = addresses[index];
-                      final addressText = address.address ?? '';
-                      final isSelected = selectedAddress == addressText;
+            child: BlocBuilder<AddressesBloc, AddressesState>(
+              builder: (context, state) {
+                if (state is AddressesLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                      return InkWell(
-                        onTap: () {
-                          onSelect(addressText, address);
-                          context.pop();
-                        },
-                        borderRadius: BorderRadius.circular(6),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8.0,
-                            horizontal: 2,
+                if (state is AddressesError && state.previousAddresses == null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(state.message),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<AddressesBloc>().add(
+                              LoadAddressesEvent(
+                                search: _searchCtrl.text.trim().isEmpty
+                                    ? null
+                                    : _searchCtrl.text.trim(),
+                              ),
+                            );
+                          },
+                          child: const Text('Повторить'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                List<AddressData> addresses = [];
+                bool isLoadingMore = false;
+                bool hasMore = false;
+                AddressMeta? meta;
+
+                if (state is AddressesLoaded) {
+                  addresses = state.addresses;
+                  hasMore = state.hasMore;
+                  meta = state.meta;
+                } else if (state is AddressesLoadingMore) {
+                  addresses = state.currentAddresses;
+                  isLoadingMore = true;
+                  meta = state.meta;
+                }
+
+                if (addresses.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: Colors.grey[400],
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  addressText,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 16),
+                          Text(
+                            _searchCtrl.text.trim().isEmpty
+                                ? 'Нет доступных адресов'
+                                : 'Адреса не найдены',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          if (_searchCtrl.text.trim().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                'Попробуйте изменить запрос',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
                                 ),
                               ),
-                              if (isSelected)
-                                const Icon(Icons.check, color: Colors.green),
-                            ],
-                          ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  controller: _scrollController,
+                  itemCount: addresses.length + (isLoadingMore || hasMore ? 1 : 0),
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    if (index >= addresses.length) {
+                      if (isLoadingMore) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else if (hasMore) {
+                        return const SizedBox(height: 50);
+                      }
+                      return const SizedBox.shrink();
+                    }
+
+                    final address = addresses[index];
+                    final addressText = address.address ?? '';
+                    final isSelected = widget.selectedAddress == addressText;
+
+                    return InkWell(
+                      onTap: () {
+                        widget.onSelect(addressText, address);
+                        context.pop();
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 4,
                         ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => const Divider(),
-                  ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    addressText,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (address.type != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        address.type!.displayName,
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check, color: Colors.green),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    if (index >= addresses.length - 1) {
+                      return const SizedBox.shrink();
+                    }
+                    return const Divider();
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+// class _AddressesSelectionWidget extends StatelessWidget {
+//   final List<AddressData> addresses;
+//   final String? selectedAddress;
+//   final Function(String, AddressData) onSelect;
+//
+//   const _AddressesSelectionWidget({
+//     required this.addresses,
+//     required this.selectedAddress,
+//     required this.onSelect,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final TextEditingController _searchCtrl = TextEditingController();
+//
+//     return Padding(
+//       padding: const EdgeInsets.all(20.0),
+//       child: Column(
+//         children: [
+//           BottomSheetTitle(title: AppStrings.selectAddress),
+//           HomePageSearchWidget(searchCtrl: _searchCtrl, onSearch: () {}),
+//
+//           const SizedBox(height: 20),
+//           Flexible(
+//             child: addresses.isEmpty
+//                 ? const Center(
+//                     child: Padding(
+//                       padding: EdgeInsets.all(20.0),
+//                       child: Text('Нет доступных адресов'),
+//                     ),
+//                   )
+//                 : ListView.separated(
+//                     itemCount: addresses.length,
+//                     shrinkWrap: true,
+//                     itemBuilder: (context, index) {
+//                       final address = addresses[index];
+//                       final addressText = address.address ?? '';
+//                       final isSelected = selectedAddress == addressText;
+//
+//                       return InkWell(
+//                         onTap: () {
+//                           onSelect(addressText, address);
+//                           context.pop();
+//                         },
+//                         borderRadius: BorderRadius.circular(6),
+//                         child: Padding(
+//                           padding: const EdgeInsets.symmetric(
+//                             vertical: 8.0,
+//                             horizontal: 2,
+//                           ),
+//                           child: Row(
+//                             children: [
+//                               Expanded(
+//                                 child: Text(
+//                                   addressText,
+//                                   style: Theme.of(context).textTheme.bodyMedium,
+//                                   maxLines: 2,
+//                                   overflow: TextOverflow.ellipsis,
+//                                 ),
+//                               ),
+//                               if (isSelected)
+//                                 const Icon(Icons.check, color: Colors.green),
+//                             ],
+//                           ),
+//                         ),
+//                       );
+//                     },
+//                     separatorBuilder: (context, index) => const Divider(),
+//                   ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 // Виджет выбора типов услуг из справочников
 class _ServiceTypesSelectionWidget extends StatelessWidget {

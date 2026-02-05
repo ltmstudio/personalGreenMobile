@@ -22,32 +22,77 @@ class _SplashScreenState extends State<SplashScreen> {
     _timer = Timer(const Duration(milliseconds: 3000), _goNext);
   }
 
+  // void _goNext() async {
+  //   if (_hasNavigated) return;
+  //
+  //   final isRegistered = locator<UserAuthBloc>().state;
+  //
+  //   if (!mounted) return;
+  //
+  //   if (isRegistered is UserAuthenticated) {
+  //     _hasNavigated = true;
+  //
+  //     final isResponsible = await  locator<Store>().getIsResponsible() ?? false;
+  //
+  //     if(isResponsible){
+  //       context.go(AppRoutes.applications);
+  //
+  //     }else{
+  //       context.go(AppRoutes.organizations);
+  //     }
+  //
+  //     // Если пользователь уже залогинен, переходим на дефолтную страницу
+  //     // Проверка isResponsible происходит в SecurityCodePage после логина
+  //   } else {
+  //     _hasNavigated = true;
+  //     context.go(AppRoutes.signIn);
+  //   }
+  // }
+
   void _goNext() async {
     if (_hasNavigated) return;
-    
-    final isRegistered = locator<UserAuthBloc>().state;
 
-    if (!mounted) return;
+    try {
+      final isRegistered = locator<UserAuthBloc>().state;
 
-    if (isRegistered is UserAuthenticated) {
-      _hasNavigated = true;
+      if (!mounted) return;
 
-      final isResponsible = await  locator<Store>().getIsResponsible() ?? false;
+      if (isRegistered is UserAuthenticated) {
+        _hasNavigated = true;
 
-      if(isResponsible){
-        context.go(AppRoutes.applications);
+        final isResponsible = await locator<Store>().getIsResponsible() ?? false;
 
-      }else{
-        context.go(AppRoutes.organizations);
+        if (isResponsible) {
+          context.go(AppRoutes.applications);
+        } else {
+          context.go(AppRoutes.organizations);
+        }
+      } else {
+        _hasNavigated = true;
+        context.go(AppRoutes.signIn);
       }
+    } catch (e, stackTrace) {
+      // Log the error
+      // print('Error in SplashScreen navigation: $e');
+      // print('Stack trace: $stackTrace');
 
-      // Если пользователь уже залогинен, переходим на дефолтную страницу
-      // Проверка isResponsible происходит в SecurityCodePage после логина
-    } else {
-      _hasNavigated = true;
-      context.go(AppRoutes.signIn);
+      // Optionally show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Произошла ошибка: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+
+        // Navigate to sign in as fallback
+        _hasNavigated = true;
+        context.go(AppRoutes.signIn);
+      }
     }
   }
+
 
   @override
   void initState() {

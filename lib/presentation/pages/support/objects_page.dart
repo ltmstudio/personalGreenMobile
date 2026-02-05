@@ -76,7 +76,7 @@ class _ObjectsPageState extends State<ObjectsPage> {
                 }
 
                 final items = state is AddressesLoaded
-                    ? (state.addresses.data ?? <AddressData>[])
+                    ? (state.addresses ?? <AddressData>[])
                     : <AddressData>[];
 
                 final q = searchCtrl.text.trim().toLowerCase();

@@ -13,6 +13,7 @@ import 'package:hub_dom/presentation/bloc/addresses/addresses_event.dart';
 import 'package:hub_dom/presentation/bloc/addresses/addresses_state.dart';
 import 'package:hub_dom/presentation/bloc/dictionaries/dictionaries_bloc.dart';
 import 'package:hub_dom/presentation/bloc/tickets/tickets_bloc.dart';
+import 'package:hub_dom/presentation/pages/applications/create_application/create_aplication_page.dart';
 import 'package:hub_dom/presentation/pages/applications/main_applications/components/select_time_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/main_btn.dart';
 import 'package:hub_dom/presentation/widgets/gray_loading_indicator.dart';
@@ -35,7 +36,10 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
 
-  AddressData? selectedAddress;
+  // AddressData? selectedAddress;
+
+  String? selectedAddress;
+  AddressData? _selectedAddressData;
 
   ServiceType? selectedService;
   TroubleType? selectedWorkType;
@@ -110,8 +114,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
           listener: (context, state) {
             if (state is AddressesLoaded && _shouldOpenAddressList) {
               _shouldOpenAddressList = false;
-              _openAddressList(context, state.addresses.data ?? []);
-            } else if (state is AddressesError && _shouldOpenAddressList) {
+              _openAddressList(context);
+            } else if (state is AddressesError && state.previousAddresses == null && _shouldOpenAddressList) {
               _shouldOpenAddressList = false;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Ошибка: ${state.message}')),
@@ -154,7 +158,7 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
                                 final isLoading = state is AddressesLoading;
                                 return SelectBtn(
                                   title: AppStrings.selectAddress,
-                                  value: selectedAddress?.address,
+                                  value: selectedAddress,
                                   icon: isLoading
                                       ? const GrayLoadingIndicator(size: 20)
                                       : Icon(Icons.keyboard_arrow_down),
@@ -382,8 +386,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
 
     // Создаем параметры для UseCase
     final params = CreateTicketParams(
-      objectId: selectedAddress!.id!,
-      objectType: selectedAddress!.type == AddressType.house
+      objectId: _selectedAddressData!.id!,
+      objectType: _selectedAddressData!.type == AddressType.house
           ? 'house'
           : 'space',
       serviceTypeId: selectedService!.id!,
@@ -424,8 +428,8 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
     final state = addressesBloc.state;
 
     if (state is AddressesLoaded) {
-      final addresses = state.addresses.data ?? [];
-      _openAddressList(context, addresses);
+      // final addresses = state.addresses.data ?? [];
+      _openAddressList(context);
     } else if (state is AddressesLoading) {
       // Already loading, set flag so BlocListener opens the list when complete
       _shouldOpenAddressList = true;
@@ -440,23 +444,25 @@ class _CreateEmployeeAppPageState extends State<CreateEmployeeAppPage> {
     }
   }
 
-  void _openAddressList(BuildContext context, List<AddressData> addresses) {
-    if (addresses.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
-      return;
-    }
+  void _openAddressList(BuildContext context) {
+    // if (addresses.isEmpty) {
+    //   ScaffoldMessenger.of(
+    //     context,
+    //   ).showSnackBar(const SnackBar(content: Text('Нет доступных адресов')));
+    //   return;
+    // }
 
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: _AddressesSelectionWidget(
-        addresses: addresses,
+      child: AddressesSelectionWidget(
+        // addresses: addresses,
         selectedAddress: selectedAddress,
-        onSelect: (address) {
+        onSelect: (address, addressData) {
           setState(() {
             selectedAddress = address;
+            _selectedAddressData = addressData;
+
           });
         },
       ),

@@ -551,7 +551,7 @@ class _ApplicationPageState extends State<ApplicationPage> {
 
                     builder: (context, state) {
                       final addresses =
-                      state is AddressesLoaded ? (state.addresses.data ?? []) : <AddressData>[];
+                      state is AddressesLoaded ? (state.addresses ?? []) : <AddressData>[];
 
                       final addressCount = addresses.length;
 
@@ -717,17 +717,27 @@ class _ApplicationPageState extends State<ApplicationPage> {
     bottomSheetWidget(
       context: context,
       isScrollControlled: true,
-      child: AddressWidget(
-        onSelectItem: (String value) {
+      child:  AddressWidget(
+        selectedAddress: selectedAddress,
+        onSelectItem: (address, addressData) {
           setState(() {
-          selectedAddress = value;
+            selectedAddress = address;
+            // _selectedAddressData = addressData;
           });
-          // context.push('${AppRoutes.addressDetails}/$selectedAddress');
           context.push(AppRoutes.addressDetails);
-
         },
-        isSelected: false,
       ),
+      // AddressWidget(
+      //   onSelectItem: (String value) {
+      //     setState(() {
+      //     selectedAddress = value;
+      //     });
+      //     // context.push('${AppRoutes.addressDetails}/$selectedAddress');
+      //     context.push(AppRoutes.addressDetails);
+      //
+      //   },
+      //   isSelected: false,
+      // ),
     );
   }
 }

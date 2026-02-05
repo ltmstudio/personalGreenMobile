@@ -7,7 +7,7 @@ import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/presentation/widgets/main_card.dart';
 
 class ContactFaceCardWidget extends StatelessWidget {
-  const ContactFaceCardWidget({super.key, this.ticketData});
+  const ContactFaceCardWidget({super.key,required this.ticketData});
 
   final Data? ticketData;
 

@@ -20,7 +20,7 @@ import 'work_units_widget.dart';
 class EmployeeAppsPage extends StatefulWidget {
   final Data? ticketData;
 
-  const EmployeeAppsPage({super.key, this.ticketData});
+  const EmployeeAppsPage({super.key, required this.ticketData});
 
   @override
   State<EmployeeAppsPage> createState() => _EmployeeAppsPageState();
@@ -118,18 +118,18 @@ class _EmployeeAppsPageState extends State<EmployeeAppsPage> {
           SizedBox(height: 6),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: ApplicationDetailDataCard(),
+            child: ApplicationDetailDataCard(ticketData: widget.ticketData,),
           ),
           SizedBox(height: 12),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: ContactFaceCardWidget(),
+            child: ContactFaceCardWidget(ticketData: widget.ticketData,),
           ),
 
           SizedBox(height: 12),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: AddressCardWidget(),
+            child: AddressCardWidget(ticketData: widget.ticketData,),
           ),
 
           SizedBox(height: 16),

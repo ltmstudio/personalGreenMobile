@@ -1,13 +1,15 @@
 import 'package:hub_dom/core/constants/strings/endpoints.dart';
 import 'package:hub_dom/core/network/api_provider.dart';
+import 'package:hub_dom/core/usecase/addresses/get_addresses_usecase.dart';
 import 'package:hub_dom/data/models/addresses/addresses_response_model.dart';
 import 'package:hub_dom/data/models/contacts_model.dart';
+import 'package:hub_dom/presentation/bloc/addresses/addresses_bloc.dart';
 import 'package:logging/logging.dart';
 
 final log = Logger('AddressesDatasource');
 
 abstract class AddressesRemoteDatasource {
-  Future<AddressesResponseModel> getAddresses();
+  Future<AddressesResponseModel> getAddresses(AddressParams params);
   Future<List<ContactsModel>> getContacts();
 }
 
@@ -17,11 +19,11 @@ class AddressesRemoteDatasourceImpl implements AddressesRemoteDatasource {
   AddressesRemoteDatasourceImpl({required this.apiProvider});
 
   @override
-  Future<AddressesResponseModel> getAddresses() async {
+  Future<AddressesResponseModel> getAddresses(AddressParams params) async {
     try {
       final response = await apiProvider.get(
         endPoint: ApiEndpoints.addresses,
-        query: {'with_statistics': 1},
+        query: params.toQueryParameters(),
       );
       final result = AddressesResponseModel.fromJson(response.data);
       return result;

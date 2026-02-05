@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hub_dom/core/constants/colors/app_colors.dart';
 import 'package:hub_dom/core/constants/strings/app_strings.dart';
 import 'package:hub_dom/core/utils/color_utils.dart';
+import 'package:hub_dom/data/models/tickets/get_ticket_response_model.dart';
 import 'package:hub_dom/presentation/bloc/application_details/application_details_bloc.dart';
 import 'package:hub_dom/presentation/widgets/bottom_sheet_widget.dart';
 import 'package:hub_dom/presentation/widgets/buttons/selectable_btn.dart';
@@ -153,7 +154,7 @@ class _EmployeeAppDetailsPageState extends State<EmployeeAppDetailsPage> {
   Widget _buildBody(
     BuildContext context,
     ApplicationDetailsState state,
-    dynamic ticketData,
+    Data? ticketData,
   ) {
     if (state is ApplicationDetailsLoading) {
       return Center(child: const GrayLoadingIndicator());

@@ -10,24 +10,35 @@ class MainLogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 200,
-          height: 200,
-          child: Image.asset(
-            ImageAssets.splashLogo,
-            fit: BoxFit.contain,
-          ),
-        ),
-        SizedBox(height: 10),
-        Text(AppStrings.appName,style: TextStyle(fontWeight: FontWeight.w700,fontSize: 30,color: AppColors.darkBlue),),
-        SizedBox(height: 5),
-        Text('Персонал',style: Theme.of(context).textTheme.titleLarge,),
+    return SizedBox.expand(
 
-      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+         const Spacer(),
+          SizedBox(
+            width: 200,
+            height: 200,
+            child: Image.asset(
+              ImageAssets.splashLogo,
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(AppStrings.appName,style: TextStyle(fontWeight: FontWeight.w700,fontSize: 30,color: AppColors.darkBlue),),
+          SizedBox(height: 5),
+          Text('Персонал',style: Theme.of(context).textTheme.titleLarge,),
+         const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Text(
+              AppStrings.version,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
