@@ -26,7 +26,9 @@ class ApplicationDetailDataCard extends StatelessWidget {
     if (ticketData?.visitingAt != null) {
       try {
         if (ticketData!.visitingAt is DateTime) {
-          visitingAt = DateTimeUtils.formatDateTime(ticketData!.visitingAt as DateTime);
+          visitingAt = DateTimeUtils.formatDateTime(
+            ticketData!.visitingAt as DateTime,
+          );
         } else if (ticketData!.visitingAt is String) {
           final dateTime = DateTime.parse(ticketData!.visitingAt as String);
           visitingAt = DateTimeUtils.formatDateTime(dateTime);
@@ -111,12 +113,7 @@ class ApplicationDetailDataCard extends StatelessWidget {
           ],
           if (comment != 'Данных нет') ...[
             SizedBox(height: 12),
-            Text(
-              comment,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(comment, style: Theme.of(context).textTheme.bodyMedium),
           ],
         ],
       ),

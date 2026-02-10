@@ -1,6 +1,6 @@
 class AppStrings {
   static const String appName = "Дом коннект";
-  static const String version = "1.0.0+7";
+  static const String version = "1.0.0+8";
   static const String signIn = "Вход";
   static const String phoneNumber = 'Номер телефона';
   static const String phoneHintText = 'Введите номер телефона';

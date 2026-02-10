@@ -43,6 +43,7 @@ class AppsPage extends StatefulWidget {
 }
 
 class _AppsPageState extends State<AppsPage> {
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -82,7 +83,7 @@ class _AppsPageState extends State<AppsPage> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: SelectBtn(
                       title: AppStrings.selectPerformer,
-                      value: widget.selectedPerformer,
+                      value: widget.selectedPerformer ?? widget.ticketData?.executor?.fullName,
                       showBorder: false,
                       icon: Container(
                         padding: EdgeInsets.all(5),
